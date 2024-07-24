@@ -1,5 +1,6 @@
 package org.tidepool.sdk.model.auth;
 
+@Suppress("EnumEntryName")
 enum class Realm {
 	dev1,
 	qa1,

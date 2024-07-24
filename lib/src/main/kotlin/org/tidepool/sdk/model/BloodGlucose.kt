@@ -4,11 +4,20 @@ import com.google.gson.annotations.SerializedName
 import kotlin.time.Duration
 
 public class BloodGlucose {
-	public enum class Units {
+	public enum class Units(private val value: Double) {
 		@SerializedName("mg/dL")
-		milligramsPerDeciliter,
+		milligramsPerDeciliter(18.018),
 		@SerializedName("mmol/L")
-		millimolesPerLiter
+		millimolesPerLiter(1.0);
+
+		companion object {
+			fun Units?.convert(amount: Double, units: Units) : Double {
+				if (this == null || this == units) {
+					return amount
+				}
+				return amount * units.value / value
+			}
+		}
 	}
 
 	enum class Trend {
@@ -45,7 +54,7 @@ public class BloodGlucose {
 		}
 		fun clamp(value: Double, units: Units) {
 			val range = valueRange(units)
-			Math.min(Math.max(value, range.start), range.endInclusive)
+			value.coerceAtLeast(range.start).coerceAtMost(range.endInclusive)
 		}
 	}
 }

@@ -9,7 +9,7 @@ import org.tidepool.sdk.model.data.BaseData
 
 interface Data {
 	@GET("/data/{userId}")
-	fun getDataForUser(
+	suspend fun getDataForUser(
 		@Header("X-Tidepool-Session-Token") sessionToken: String,
 		@Path("userId") userId: String,
 		@Query("uploadId") uploadId: String? = null,

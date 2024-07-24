@@ -1,8 +1,8 @@
-package org.tidepool.sdk.auth;
+package org.tidepool.sdk.requests;
 
 import com.google.gson.annotations.SerializedName
 
-public data class TokenRequest(
+data class TokenRequest(
 	val grant_type: GrantType,
 	val client_id: String,
 	val client_secret: String? = null,

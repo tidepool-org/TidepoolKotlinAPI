@@ -6,7 +6,7 @@ import org.tidepool.sdk.model.auth.User
 
 interface Users {
 	@GET("/auth/user")
-	fun getCurrentUserInfo(
+	suspend fun getCurrentUserInfo(
 		@Header("X-Tidepool-Session-Token") sessionToken: String
 	) : User
 }

@@ -20,7 +20,9 @@ import com.google.gson.stream.JsonWriter
 import kotlin.reflect.typeOf
 import org.tidepool.sdk.deserialization.registerNewDeserializer
 import org.tidepool.sdk.data.Data
+import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.requests.Users
+import java.time.Instant
 
 public class CommunicationHelper(private val environment: Environment) {
 	private val retrofit: Retrofit by lazy {
@@ -45,6 +47,7 @@ public class CommunicationHelper(private val environment: Environment) {
 		internal val gsonBuilder: GsonBuilder
 			get() = GsonBuilder().apply {
 				registerNewDeserializer<BaseData.DataType, BaseData>()
+				registerTypeAdapter(Instant::class.java, InstantSerializer())
 			}
 	}
 

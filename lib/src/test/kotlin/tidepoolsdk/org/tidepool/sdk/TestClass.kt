@@ -1,7 +1,7 @@
 package org.tidepool.sdk
 
 import kotlin.test.Test
-import org.tidepool.sdk.auth.TokenRequest
+import org.tidepool.sdk.requests.TokenRequest
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.launch
 import org.tidepool.sdk.model.auth.Realm

@@ -8,7 +8,7 @@ data class User(
 	val termsAccepted: Instant? = null,
 	val userid: String = "",
 	val username: String? = null,
-	val roles: Array<String>? = null,
+	val roles: List<String>? = null,
 	val createdTime: Instant? = null,
 	val createdUserId: String? = null,
 	val modifiedTime: Instant? = null,

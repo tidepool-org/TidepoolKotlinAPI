@@ -21,7 +21,7 @@ dependencies {
 	implementation("com.squareup.retrofit2:retrofit:2.11.0")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
 	//implementation("com.google.code.gson:gson:2.8.5")
-	implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+	api("com.squareup.retrofit2:converter-gson:2.11.0")
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 
@@ -29,12 +29,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.9.3")
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // This dependency is exported to consumers, that is to say found on their compile classpath.
-    api("org.apache.commons:commons-math3:3.6.1")
-
-    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
-    implementation("com.google.guava:guava:32.1.1-jre")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

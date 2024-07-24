@@ -2,9 +2,10 @@ package org.tidepool.sdk.auth
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.lazy
 import com.google.gson.Gson
 import org.tidepool.sdk.CommunicationHelper
+import org.tidepool.sdk.requests.GrantType
+import org.tidepool.sdk.requests.TokenRequest
 
 class AuthSerializationTest {
 	val gson: Gson by CommunicationHelper.Companion::gsonConfig
