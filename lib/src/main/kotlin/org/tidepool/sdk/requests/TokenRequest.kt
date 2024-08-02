@@ -16,17 +16,29 @@ data class TokenRequest(
 	val code_verifier: String? = null
 ) {
 	companion object {
-		fun createWithAuthorizationCode(client_id: String, code: String) : Builder {
-			return Builder(GrantType.authorization_code, client_id).code(code)
+		fun createWithAuthorizationCode(client_id: String, code: String, initializer: Builder.() -> Unit = {}) : TokenRequest {
+			return Builder(GrantType.authorization_code, client_id).apply {
+				this.code = code
+				initializer()
+			}.build()
 		}
-		fun createWithRefreshToken(client_id: String) : Builder {
-			return Builder(GrantType.refresh_token, client_id)
+		fun createWithRefreshToken(client_id: String, initializer: Builder.() -> Unit = {}) : TokenRequest {
+			return Builder(GrantType.refresh_token, client_id).apply {
+				initializer()
+			}.build()
 		}
-		fun createWithPassword(client_id: String, username: String, password: String) : Builder {
-			return Builder(GrantType.password, client_id).username(username).password(password)
+		fun createWithPassword(client_id: String, username: String, password: String, initializer: Builder.() -> Unit = {}) : TokenRequest {
+			return Builder(GrantType.password, client_id).apply {
+				this.username = username
+				this.password = password
+				initializer()
+			}.build()
 		}
-		fun createWithTokenExchange(client_id: String, subject_token: String) : Builder {
-			return Builder(GrantType.tokenExchange, client_id).subjectToken(subject_token)
+		fun createWithTokenExchange(client_id: String, subject_token: String, initializer: Builder.() -> Unit = {}) : TokenRequest {
+			return Builder(GrantType.tokenExchange, client_id).apply {
+				this.subject_token = subject_token
+				initializer()
+			}.build()
 		}
 	}
 	class Builder(val grant_type: GrantType, val client_id: String) {
@@ -39,43 +51,7 @@ data class TokenRequest(
 		var password: String? = null
 		var code: String? = null
 		var code_verifier: String? = null
-		fun clientSecret(client_secret: String) : Builder {
-			this.client_secret = client_secret
-			return this
-		}
-		fun subjectToken(subject_token: String) : Builder {
-			this.subject_token = subject_token
-			return this
-		}
-		fun subjectTokenType(subject_token_type: SubjectTokenType) : Builder {
-			this.subject_token_type = subject_token_type
-			return this
-		}
-		fun requestedTokenType(requested_token_type: RequestedTokenType) : Builder {
-			this.requested_token_type = requested_token_type
-			return this
-		}
-		fun subjectIssuer(subject_issuer: String) : Builder {
-			this.subject_issuer = subject_issuer
-			return this
-		}
-		fun username(username: String) : Builder {
-			this.username = username;
-			return this
-		}
-		fun password(password: String) : Builder {
-			this.password = password
-			return this
-		}
-		fun code(code: String) : Builder {
-			this.code = code
-			return this
-		}
-		fun codeVerifier(code_verifier: String) : Builder {
-			this.code_verifier = code_verifier
-			return this
-		}
-		fun build(): TokenRequest {
+		internal fun build(): TokenRequest {
 			return TokenRequest(
 				grant_type,
 				client_id,

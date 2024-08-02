@@ -1,7 +1,5 @@
 package org.tidepool.sdk.auth;
 
-import com.google.gson.annotations.SerializedName;
-
 data class TokenResponse(
 	val expires_in: Int,
 	val access_token: String,

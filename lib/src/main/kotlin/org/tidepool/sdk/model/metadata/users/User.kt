@@ -1,8 +1,9 @@
-package org.tidepool.sdk.model.auth
+package org.tidepool.sdk.model.metadata.users
 
+import org.tidepool.sdk.model.metadata.Profile
 import java.time.Instant
 
-data class User(
+open class User(
 	val emailVerified: Boolean = false,
 	val emails: List<String>? = null,
 	val termsAccepted: Instant? = null,
@@ -14,5 +15,6 @@ data class User(
 	val modifiedTime: Instant? = null,
 	val modifiedUserId: String? = null,
 	val deletedTime: Instant? = null,
-	val deletedUserId: String? = null
+	val deletedUserId: String? = null,
+	val profile: Profile? = null,
 )

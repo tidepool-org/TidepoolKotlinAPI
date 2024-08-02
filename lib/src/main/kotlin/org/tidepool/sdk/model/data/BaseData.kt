@@ -9,7 +9,8 @@ import org.tidepool.sdk.model.Association
 import org.tidepool.sdk.deserialization.ResultType
 import org.tidepool.sdk.model.auth.Realm
 
-public sealed class BaseData(
+//TODO: finish implementing base.v1
+sealed class BaseData(
 	val type: DataType = DataType.alert,
 	val time: Instant? = null,
 	val annotations: Array<Map<String, Any>>? = null,
@@ -19,14 +20,15 @@ public sealed class BaseData(
 	val dataSetId: String? = null,
 	val deviceTime: String? = null,
 	val id: String? = null,
-	//TODO: Add location
 	val notes: Array<String>? = null,
 	val timeZone: TimeZone? = null,
 	val timeZoneOffset: Duration? = null
 ) {
+	val location: Nothing
+		get() = TODO("schema \"\" not implemented")
 	enum class DataType(override val subclassType: KClass<out BaseData>) : ResultType<BaseData> {
 		alert(BaseData::class),
-		basal(BaseData::class),
+		basal(BasalAutomatedData::class),
 		bloodKetone(BaseData::class),
 		bolus(BaseData::class),
 		@SerializedName("wizard")
@@ -36,7 +38,7 @@ public sealed class BaseData(
 		controllerSettings(BaseData::class),
 		controllerStatus(BaseData::class),
 		deviceEvent(BaseData::class),
-		dosingDecision(BaseData::class),
+		dosingDecision(DosingDecisionData::class),
 		food(BaseData::class),
 		insulin(BaseData::class),
 		physicalActivity(BaseData::class),

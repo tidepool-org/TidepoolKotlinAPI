@@ -8,7 +8,7 @@ import org.tidepool.sdk.requests.GrantType
 import org.tidepool.sdk.requests.TokenRequest
 
 class AuthSerializationTest {
-	val gson: Gson by CommunicationHelper.Companion::gsonConfig
+	private val gson: Gson by CommunicationHelper.Companion::gsonConfig
 
 	@Test
 	fun serializationTest() {

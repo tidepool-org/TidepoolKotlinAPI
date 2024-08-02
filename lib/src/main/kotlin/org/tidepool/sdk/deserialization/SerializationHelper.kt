@@ -2,9 +2,6 @@ package org.tidepool.sdk.deserialization
 
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonDeserializer
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonElement
-import java.lang.reflect.Type
 
 inline fun <reified E, reified B> GsonBuilder.registerNewDeserializer(jsonTypeName: String = "type") where E : Enum<E>, E: ResultType<B> {
 	val deserializer = JsonDeserializer<B> { json, _, context ->
