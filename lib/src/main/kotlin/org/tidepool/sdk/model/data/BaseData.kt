@@ -30,7 +30,7 @@ sealed class BaseData(
 		alert(BaseData::class),
 		basal(BasalAutomatedData::class),
 		bloodKetone(BaseData::class),
-		bolus(BaseData::class),
+		bolus(BolusData::class),
 		@SerializedName("wizard")
 		calculator(BaseData::class),
 		cbg(ContinuousGlucoseData::class),
@@ -40,7 +40,7 @@ sealed class BaseData(
 		deviceEvent(BaseData::class),
 		dosingDecision(DosingDecisionData::class),
 		food(BaseData::class),
-		insulin(BaseData::class),
+		insulin(InsulinData::class),
 		physicalActivity(BaseData::class),
 		pumpSettings(BaseData::class),
 		pumpStatus(BaseData::class),

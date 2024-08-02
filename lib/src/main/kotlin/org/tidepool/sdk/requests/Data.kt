@@ -15,7 +15,7 @@ interface Data {
 		@Path("userId") userId: String,
 		@Query("uploadId") uploadId: String? = null,
 		@Query("deviceId") deviceId: String? = null,
-		@Query("type", encoded = true) type: CommaSeparatedArray<DataType>? = null,
+		@Query("type", encoded = true) types: CommaSeparatedArray<DataType>? = null,
 		//TODO: Add subtype
 		@Query("startDate") startDate: Instant? = null,
 		@Query("endDate") endDate: Instant? = null,

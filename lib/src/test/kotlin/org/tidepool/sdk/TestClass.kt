@@ -16,7 +16,7 @@ class TestClass {
 		launch {
 			val connectionResponse = helper.auth.obtainToken(Realm.qa2, TokenRequest.createWithPassword("client_id", "username", "password"))
 			val user = helper.users.getCurrentUserInfo(connectionResponse.access_token)
-			val allData = helper.data.getDataForUser(connectionResponse.access_token, user.userid, type = CommaSeparatedArray(BaseData.DataType.cbg))
+			val allData = helper.data.getDataForUser(connectionResponse.access_token, user.userid, types = CommaSeparatedArray(BaseData.DataType.cbg))
 			for (data in allData) {
 				(data as? ContinuousGlucoseData)?.run {
 					println("Glucose Data Found:")
