@@ -39,7 +39,7 @@ sealed class BaseData(
 		controllerStatus(BaseData::class),
 		deviceEvent(BaseData::class),
 		dosingDecision(DosingDecisionData::class),
-		food(BaseData::class),
+		food(FoodData::class),
 		insulin(InsulinData::class),
 		physicalActivity(BaseData::class),
 		pumpSettings(BaseData::class),
