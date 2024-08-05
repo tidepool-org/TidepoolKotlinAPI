@@ -56,7 +56,7 @@ suspend fun Confirmations.receivedInvitations(
 private suspend fun Confirmation.perform(
 	sessionToken: String,
 	userId: String,
-	func: suspend (String, String, String ConfirmationLookup) -> Unit
+	func: suspend (String, String, String, ConfirmationLookup) -> Unit
 ) {
 	func(sessionToken, userId, creatorId, ConfirmationLookup(key))
 }
