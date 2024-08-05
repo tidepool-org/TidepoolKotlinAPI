@@ -4,12 +4,12 @@ import org.tidepool.sdk.model.metadata.Profile
 import java.time.Instant
 
 data class Confirmation(
-        val key: String,
-        val type: ConfirmationType,
-        val status: ConfirmationStatus,
-        val email: String,
-        val creatorId: String,
-        val created: Instant,
+	val key: String,
+	val type: ConfirmationType,
+	val status: ConfirmationStatus,
+	val email: String,
+	val creatorId: String,
+	val created: Instant,
     val modified: Instant?,
     val creator: Creator?,
     val context: String?, // no context for context :3
