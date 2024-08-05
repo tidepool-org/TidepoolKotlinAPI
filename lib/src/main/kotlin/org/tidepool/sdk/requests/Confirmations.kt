@@ -12,6 +12,12 @@ interface Confirmations {
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("userId") userId: String
     ) : Response<Array<Confirmation>>
+
+	@GET("/confirm/invitations/{userId}")
+	suspend fun getReceivedInvitations(
+		@Header("X-Tidepool-Session-Token") sessionToken: String,
+		@Path("userId") userId: String
+	) : Response<Array<Confirmation>>
 }
 
 suspend fun Confirmations.pendingCareTeamInvitations(
@@ -19,4 +25,11 @@ suspend fun Confirmations.pendingCareTeamInvitations(
     userId: String
 ): Array<Confirmation> {
     return  getPendingCareTeamInvitations(sessionToken, userId).body() ?: arrayOf()
+}
+
+suspend fun Confirmations.receivedInvitations(
+    sessionToken: String,
+    userId: String
+): Array<Confirmation> {
+    return getReceivedInvitations(sessionToken, userId).body() ?: arrayOf()
 }
