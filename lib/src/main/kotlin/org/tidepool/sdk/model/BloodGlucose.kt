@@ -1,14 +1,18 @@
 package org.tidepool.sdk.model
 
 import com.google.gson.annotations.SerializedName
+import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
+import org.tidepool.sdk.model.BloodGlucose.Units.milligramsPerDeciliter
+import org.tidepool.sdk.model.BloodGlucose.Units.millimolesPerLiter
+import kotlin.math.roundToInt
 import kotlin.time.Duration
 
 public class BloodGlucose {
-	public enum class Units(private val value: Double) {
+	public enum class Units(private val value: Double, val shorthand: String) {
 		@SerializedName("mg/dL", alternate = ["mg/dl"])
-		milligramsPerDeciliter(18.018),
+		milligramsPerDeciliter(18.018, "mg/dL"),
 		@SerializedName("mmol/L", alternate = ["mmol/l"])
-		millimolesPerLiter(1.0);
+		millimolesPerLiter(1.0, "mmol/L");
 
 		fun convert(amount: Double, units: Units): Double {
 			if (this == units) {
@@ -36,44 +40,30 @@ public class BloodGlucose {
 		}
 
 		override fun hashCode(): Int {
-			return inUnit(Units.milligramsPerDeciliter).hashCode()
+			return inUnit(milligramsPerDeciliter).hashCode()
 		}
 
   		override fun compareTo(other: GlucoseReading): Int {
 			return amount.compareTo(other.inUnit(units))
 		}
-	}
-
-	public fun Int.mgdl(): GlucoseReading {
-		return GlucoseReading(toDouble(), Units.milligramsPerDeciliter)
-	}
-
-	public fun Long.mgdl(): GlucoseReading {
-		return GlucoseReading(toDouble(), Units.milligramsPerDeciliter)
-	}
-
-	public fun Float.mgdl(): GlucoseReading {
-		return GlucoseReading(toDouble(), Units.milligramsPerDeciliter)
-	}
-
-	public fun Double.mgdl(): GlucoseReading {
-		return GlucoseReading(this, Units.milligramsPerDeciliter)
-	}
-
-	public fun Int.mmoll(): GlucoseReading {
-		return GlucoseReading(toDouble(), Units.millimolesPerLiter)
-	}
-
-	public fun Long.mmoll(): GlucoseReading {
-		return GlucoseReading(toDouble(), Units.millimolesPerLiter)
-	}
-
-	public fun Float.mmoll(): GlucoseReading {
-		return GlucoseReading(toDouble(), Units.millimolesPerLiter)
-	}
-
-	public fun Double.mmoll(): GlucoseReading {
-		return GlucoseReading(this, Units.millimolesPerLiter)
+		
+		private fun Double.roundMillimolesPerLiter(): Double {
+			return (this * 10).roundToInt() / 10.0
+		}
+		
+		fun toString(unit: Units): String {
+			return when(unit) {
+				millimolesPerLiter     -> inUnit(unit).roundMillimolesPerLiter().toString()
+				milligramsPerDeciliter -> inUnit(unit).roundToInt().toString()
+			}
+		}
+		
+		fun toSignString(unit: Units): String {
+			return when(unit) {
+				millimolesPerLiter     -> inUnit(unit).let { if (it == 0.0) "0" else "%+.1f".format(it.roundMillimolesPerLiter()) }
+				milligramsPerDeciliter -> inUnit(unit).let { amount -> amount.roundToInt().let { if (it == 0) "0" else "%+d".format(it) } }
+			}
+		}
 	}
 
 	enum class Trend {
@@ -104,8 +94,8 @@ public class BloodGlucose {
 	companion object {
 		private fun Units.valueRange(): ClosedRange<Double> {
 			return when (this) {
-				Units.milligramsPerDeciliter -> 0.0..1000.0
-				Units.millimolesPerLiter -> 0.0..55.0
+				milligramsPerDeciliter -> 0.0..1000.0
+				millimolesPerLiter -> 0.0..55.0
 			}
 		}
 		fun clamp(value: Double, units: Units): Double {
@@ -113,3 +103,13 @@ public class BloodGlucose {
 		}
 	}
 }
+
+public val Int.mgdl: GlucoseReading get() = GlucoseReading(toDouble(), milligramsPerDeciliter)
+public val Long.mgdl: GlucoseReading get() = GlucoseReading(toDouble(), milligramsPerDeciliter)
+public val Float.mgdl: GlucoseReading get() = GlucoseReading(toDouble(), milligramsPerDeciliter)
+public val Double.mgdl: GlucoseReading get() = GlucoseReading(this, milligramsPerDeciliter)
+
+public val Int.mmoll: GlucoseReading get() = GlucoseReading(toDouble(), millimolesPerLiter)
+public val Long.mmoll: GlucoseReading get() = GlucoseReading(toDouble(), millimolesPerLiter)
+public val Float.mmoll: GlucoseReading get() = GlucoseReading(toDouble(), millimolesPerLiter)
+public val Double.mmoll: GlucoseReading get() = GlucoseReading(this, millimolesPerLiter)
