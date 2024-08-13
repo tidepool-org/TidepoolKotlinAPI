@@ -7,7 +7,7 @@
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-	kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.0.0"
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 }
@@ -18,16 +18,16 @@ repositories {
 }
 
 dependencies {
-	implementation("com.squareup.retrofit2:retrofit:2.11.0")
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
-	//implementation("com.google.code.gson:gson:2.8.5")
-	api("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
+    // implementation("com.google.code.gson:gson:2.8.5")
+    api("com.squareup.retrofit2:converter-gson:2.11.0")
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-
+    
     // Use the JUnit 5 integration.
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-
+    
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

@@ -9,6 +9,7 @@ import org.tidepool.sdk.model.metadata.users.TrustorUser
 import java.lang.reflect.Type
 
 class TrustUserDeserializer : JsonDeserializer<TrustUser> {
+    
     override fun deserialize(
         json: JsonElement,
         typeOfT: Type?,

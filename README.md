@@ -1,5 +1,7 @@
 [api-docs]: <https://tidepool.stoplight.io/docs/tidepool-api/7ef2485b09b04-welcome> "Tidepool Stoplight Docs"
+
 [example]: <https://github.com/tidepool-org/AndroidCarePartner> "Android Care Partner Application"
+
 [swift-api]: <https://github.com/tidepool-org/TidepoolKit> "Swift Library for Backend Communication"
 
 # TidepoolKotlinAPI

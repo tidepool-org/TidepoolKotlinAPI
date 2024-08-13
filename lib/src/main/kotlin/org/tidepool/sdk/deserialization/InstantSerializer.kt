@@ -1,14 +1,11 @@
 package org.tidepool.sdk.deserialization
 
-import com.google.gson.JsonDeserializationContext
-import com.google.gson.JsonDeserializer
-import com.google.gson.JsonElement
-import com.google.gson.JsonSerializationContext
-import com.google.gson.JsonSerializer
+import com.google.gson.*
 import java.lang.reflect.Type
 import java.time.Instant
 
-class InstantSerializer: JsonSerializer<Instant>, JsonDeserializer<Instant> {
+class InstantSerializer : JsonSerializer<Instant>, JsonDeserializer<Instant> {
+    
     override fun serialize(
         src: Instant?,
         typeOfSrc: Type?,
@@ -16,7 +13,7 @@ class InstantSerializer: JsonSerializer<Instant>, JsonDeserializer<Instant> {
     ): JsonElement {
         return context.serialize(src.toString(), String::class.java)
     }
-
+    
     override fun deserialize(
         json: JsonElement,
         typeOfT: Type?,
@@ -24,5 +21,5 @@ class InstantSerializer: JsonSerializer<Instant>, JsonDeserializer<Instant> {
     ): Instant {
         return Instant.parse(context.deserialize(json, String::class.java))
     }
-
+    
 }
