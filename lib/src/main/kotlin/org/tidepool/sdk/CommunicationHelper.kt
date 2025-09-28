@@ -1,19 +1,22 @@
 package org.tidepool.sdk
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import org.tidepool.sdk.auth.Auth
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
+import okhttp3.MediaType.Companion.toMediaType
+import org.tidepool.sdk.requests.Auth
 import org.tidepool.sdk.deserialization.InstantSerializer
-import org.tidepool.sdk.deserialization.TrustUserDeserializer
-import org.tidepool.sdk.deserialization.registerNewDeserializer
-import org.tidepool.sdk.model.data.BaseData
+import org.tidepool.sdk.model.data.*
 import org.tidepool.sdk.model.metadata.users.TrustUser
+import org.tidepool.sdk.model.metadata.users.TrusteeUser
+import org.tidepool.sdk.model.metadata.users.TrustorUser
 import org.tidepool.sdk.requests.Confirmations
 import org.tidepool.sdk.requests.Data
 import org.tidepool.sdk.requests.Metadata
 import org.tidepool.sdk.requests.Users
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.time.Instant
 
 public class CommunicationHelper(private val environment: Environment) {
@@ -21,28 +24,43 @@ public class CommunicationHelper(private val environment: Environment) {
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(environment.url)
-            .addConverterFactory(GsonConverterFactory.create(gsonConfig))
+            .addConverterFactory(jsonConfig.asConverterFactory("application/json".toMediaType()))
             .build()
     }
     
     private val authRetrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(environment.auth.url)
-            .addConverterFactory(GsonConverterFactory.create(gsonConfig))
+            .addConverterFactory(jsonConfig.asConverterFactory("application/json".toMediaType()))
             .build()
     }
     
     companion object {
         
-        public val gsonConfig: Gson by lazy {
-            gsonBuilder.create()
-        }
-        
-        internal val gsonBuilder: GsonBuilder by lazy {
-            GsonBuilder().apply {
-                registerNewDeserializer<BaseData.DataType, BaseData>()
-                registerTypeAdapter(Instant::class.java, InstantSerializer())
-                registerTypeAdapter(TrustUser::class.java, TrustUserDeserializer())
+        public val jsonConfig: Json by lazy {
+            Json {
+                ignoreUnknownKeys = true
+                encodeDefaults = true
+                isLenient = true
+                classDiscriminator =
+                    "__type"  // Use different discriminator to avoid conflict with 'type' property
+                serializersModule = SerializersModule {
+                    contextual(Instant::class, InstantSerializer)
+                    polymorphic(TrustUser::class) {
+                        subclass(TrusteeUser::class)
+                        subclass(TrustorUser::class)
+                    }
+                    // Configure BaseData polymorphism  
+                    polymorphic(BaseData::class) {
+                        subclass(BasalAutomatedData::class)
+                        subclass(BolusData::class)
+                        subclass(ContinuousGlucoseData::class)
+                        subclass(DosingDecisionData::class)
+                        subclass(FoodData::class)
+                        subclass(InsulinData::class)
+                        // Add other BaseData subclasses as they get implemented
+                    }
+                }
             }
         }
     }

@@ -1,6 +1,7 @@
 package org.tidepool.sdk.model
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
 import org.tidepool.sdk.model.BloodGlucose.Units.milligramsPerDeciliter
 import org.tidepool.sdk.model.BloodGlucose.Units.millimolesPerLiter
@@ -8,11 +9,13 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration
 
 public class BloodGlucose {
+    @Serializable
     public enum class Units(private val value: Double, val shorthand: String) {
-        @SerializedName("mg/dL", alternate = ["mg/dl"])
+        
+        @SerialName("mg/dL")
         milligramsPerDeciliter(18.018, "mg/dL"),
         
-        @SerializedName("mmol/L", alternate = ["mmol/l"])
+        @SerialName("mmol/L")
         millimolesPerLiter(1.0, "mmol/L");
         
         fun convert(amount: Double, units: Units): Double {
@@ -23,6 +26,7 @@ public class BloodGlucose {
         }
     }
     
+    @Serializable
     public class GlucoseReading(val amount: Double, val units: Units) : Comparable<GlucoseReading> {
         
         public fun inUnit(newUnit: Units): Double {
@@ -80,6 +84,7 @@ public class BloodGlucose {
         }
     }
     
+    @Serializable
     enum class Trend {
         constant,
         slowFall,
@@ -90,6 +95,7 @@ public class BloodGlucose {
         rapidRise
     }
     
+    @Serializable
     public data class Target(
         val target: Double?,
         val range: Double?,
@@ -97,6 +103,7 @@ public class BloodGlucose {
         val high: Double?
     )
     
+    @Serializable
     public data class StartTarget(
         val start: Duration?,
         val target: Double?,

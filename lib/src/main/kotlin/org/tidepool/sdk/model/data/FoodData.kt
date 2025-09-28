@@ -1,6 +1,9 @@
 package org.tidepool.sdk.model.data
 
+import kotlinx.serialization.Serializable
+
 // schema food.v1
+@Serializable
 data class FoodData(
     val brand: String? = null,
     val code: String? = null,
@@ -16,6 +19,7 @@ data class FoodData(
     val nutrition: Nothing
         get() = TODO("schema \"nutrition.v1\" not implemented")
     
+    @Serializable
     enum class Meal {
         breakfast,
         lunch,

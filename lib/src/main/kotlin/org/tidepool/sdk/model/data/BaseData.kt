@@ -1,6 +1,8 @@
 package org.tidepool.sdk.model.data
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Contextual
 import org.tidepool.sdk.deserialization.ResultType
 import org.tidepool.sdk.model.Association
 import java.time.Instant
@@ -9,31 +11,33 @@ import kotlin.reflect.KClass
 import kotlin.time.Duration
 
 // TODO: finish implementing base.v1
+@Serializable
 sealed class BaseData(
     val type: DataType = DataType.alert,
-    val time: Instant? = null,
-    val annotations: Array<Map<String, Any>>? = null,
+    @Contextual val time: Instant? = null,
+    val annotations: Array<Map<String, String>>? = null,
     val associations: Array<Association>? = null,
-    val clockDriftOffset: Duration? = null,
-    val conversionOffset: Duration? = null,
+    @Contextual val clockDriftOffset: Duration? = null,
+    @Contextual val conversionOffset: Duration? = null,
     val dataSetId: String? = null,
     val deviceTime: String? = null,
     val id: String? = null,
     val notes: Array<String>? = null,
-    val timeZone: TimeZone? = null,
-    val timeZoneOffset: Duration? = null
+    @Contextual val timeZone: TimeZone? = null,
+    @Contextual val timeZoneOffset: Duration? = null
 ) {
     
     val location: Nothing
         get() = TODO("schema \"\" not implemented")
     
+    @Serializable
     enum class DataType(override val subclassType: KClass<out BaseData>) : ResultType<BaseData> {
         alert(BaseData::class),
         basal(BasalAutomatedData::class),
         bloodKetone(BaseData::class),
         bolus(BolusData::class),
         
-        @SerializedName("wizard")
+        @SerialName("wizard")
         calculator(BaseData::class),
         cbg(ContinuousGlucoseData::class),
         cgmSettings(BaseData::class),

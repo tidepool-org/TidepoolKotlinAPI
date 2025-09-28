@@ -1,14 +1,17 @@
 package org.tidepool.sdk.model.metadata.users
 
-import com.google.gson.JsonObject
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonObject
 import java.util.Collections
 import java.util.EnumSet
 
 /**
  * Marker class so that deserialization will work properly
  */
+@Serializable
 open class TrustUser : User() {
     
+    @Serializable
     enum class Permission {
         custodian,
         view,
@@ -16,6 +19,7 @@ open class TrustUser : User() {
         upload
     }
     
+    @Serializable
     data class JsonPermissions(
         private val custodian: JsonObject? = null,
         private val view: JsonObject? = null,
@@ -24,20 +28,12 @@ open class TrustUser : User() {
     ) {
         
         val permissionsSet: Set<Permission> by lazy {
-            val permissions = EnumSet.noneOf(Permission::class.java)
-            if (custodian != null) {
-                permissions.add(Permission.custodian)
-            }
-            if (view != null) {
-                permissions.add(Permission.view)
-            }
-            if (note != null) {
-                permissions.add(Permission.note)
-            }
-            if (upload != null) {
-                permissions.add(Permission.upload)
-            }
-            Collections.unmodifiableSet(permissions)
+            setOfNotNull(
+                Permission.custodian.takeUnless { custodian == null },
+                Permission.view.takeUnless { view == null },
+                Permission.note.takeUnless { note == null },
+                Permission.upload.takeUnless { upload == null },
+            )
         }
     }
     

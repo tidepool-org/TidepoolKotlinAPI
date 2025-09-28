@@ -7,7 +7,8 @@
 
 plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    kotlin("jvm") version "2.0.0"
+    kotlin("jvm") version "2.2.0"
+    kotlin("plugin.serialization") version "2.2.0"
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 }
@@ -18,10 +19,19 @@ repositories {
 }
 
 dependencies {
-    implementation("com.squareup.retrofit2:retrofit:2.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0-RC")
-    // implementation("com.google.code.gson:gson:2.8.5")
-    api("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.retrofit2:retrofit:3.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    
+    // Kotlinx.serialization dependencies
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+    
+    // OkHttp for MediaType
+    implementation("com.squareup.okhttp3:okhttp:5.1.0")
+    
+    // Remove Gson converter - keeping commented for reference during migration
+    // api("com.squareup.retrofit2:converter-gson:2.11.0")
+    
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     

@@ -1,6 +1,9 @@
 package org.tidepool.sdk.model.data
 
+import kotlinx.serialization.Serializable
+
 // TODO: Finish implementing automated.v1
+@Serializable
 data class BasalAutomatedData(
     val deliveryType: DeliveryType,
     val duration: Int,
@@ -14,6 +17,7 @@ data class BasalAutomatedData(
     val suppressed: Nothing
         get() = TODO("schema \"scheduled.v1\" not implemented")
     
+    @Serializable
     enum class DeliveryType {
         automated,
         scheduled,

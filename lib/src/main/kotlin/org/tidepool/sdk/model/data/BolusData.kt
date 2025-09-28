@@ -1,9 +1,11 @@
 package org.tidepool.sdk.model.data
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
 // schema bolus.v1
 // line 2330
+@Serializable
 data class BolusData(
     val subType: BolusSubtype = BolusSubtype.normal,
     val deliveryContext: DeliveryContext,
@@ -13,15 +15,17 @@ data class BolusData(
         get() = TODO("schema \"formulation.v1\" not implemented")
 }
 
+@Serializable
 enum class BolusSubtype {
     automated,
     
-    @SerializedName("dual/square")
+    @SerialName("dual/square")
     dual_square,
     normal,
     square,
 }
 
+@Serializable
 enum class DeliveryContext {
     device,
     algorithm,

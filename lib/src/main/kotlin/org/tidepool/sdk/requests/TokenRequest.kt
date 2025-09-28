@@ -1,7 +1,9 @@
 package org.tidepool.sdk.requests;
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class TokenRequest(
     val grant_type: GrantType,
     val client_id: String,
@@ -92,27 +94,32 @@ data class TokenRequest(
     }
 }
 
+@Serializable
 enum class GrantType {
     authorization_code,
     refresh_token,
     password,
     
-    @SerializedName("urn:ietf:params:oauth:grant-type:token-exchange")
+    @SerialName("urn:ietf:params:oauth:grant-type:token-exchange")
     tokenExchange
 }
 
+@Serializable
 enum class SubjectTokenType {
-    @SerializedName("urn:ietf:params:oauth:token-type:access_token")
+    
+    @SerialName("urn:ietf:params:oauth:token-type:access_token")
     access_token,
     
-    @SerializedName("urn:inetf:params:oauth:token-type:jwt")
+    @SerialName("urn:ietf:params:oauth:token-type:jwt")
     jwt
 }
 
+@Serializable
 enum class RequestedTokenType {
-    @SerializedName("urn:ietf:params:oauth:token-type:access_token")
+    
+    @SerialName("urn:ietf:params:oauth:token-type:access_token")
     access_token,
     
-    @SerializedName("urn:ietf:params:oauth:token-type:refresh_token")
+    @SerialName("urn:ietf:params:oauth:token-type:refresh_token")
     refresh_token
 }
