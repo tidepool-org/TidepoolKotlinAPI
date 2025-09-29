@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 data class InsulinData(
     val dose: Dose,
     val site: String?
-) : BaseData(DataType.insulin) {
+) : BaseData(DataType.Insulin) {
     
     val formulation: Nothing
         get() = TODO("schema \"formulation.v1\" not implemented")

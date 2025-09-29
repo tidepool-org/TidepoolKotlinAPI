@@ -1,14 +1,29 @@
 package org.tidepool.sdk.model.auth;
 
-@Suppress("EnumEntryName")
+import kotlinx.serialization.SerialName
+
 enum class Realm {
+    @SerialName("dev1")
+    Dev1,
     
-    dev1,
-    qa1,
-    qa2,
-    qa3,
-    qa4,
-    qa5,
-    integration,
-    tidepool
+    @SerialName("qa1")
+    Qa1,
+    
+    @SerialName("qa2")
+    Qa2,
+    
+    @SerialName("qa3")
+    Qa3,
+    
+    @SerialName("qa4")
+    Qa4,
+    
+    @SerialName("qa5")
+    Qa5,
+    
+    @SerialName("integration")
+    Integration,
+    
+    @SerialName("tidepool")
+    Tidepool
 }

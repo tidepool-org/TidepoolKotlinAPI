@@ -1,8 +1,7 @@
 package org.tidepool.sdk.deserialization
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import org.tidepool.sdk.CommunicationHelper
@@ -22,14 +21,17 @@ class DeserializationTest {
         @Serializable
         enum class SampleSubtype(override val subclassType: KClass<out Sample>) :
             ResultType<Sample> {
-            
-            testSubclass(TestSubclass::class),
-            nullSubclass(Sample::class)
+
+            @SerialName("testSubclass")
+            TestSubclassType(TestSubclass::class),
+
+            @SerialName("nullSubclass")
+            NullSubclass(Sample::class)
         }
     }
     
     @Serializable
-    data class TestSubclass(val name: String = "Test") : Sample(SampleSubtype.testSubclass, "id")
+    data class TestSubclass(val name: String = "Test") : Sample(SampleSubtype.TestSubclassType, "id")
     
     val json: Json by lazy {
         CommunicationHelper.jsonConfig

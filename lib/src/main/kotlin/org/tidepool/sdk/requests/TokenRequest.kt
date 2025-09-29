@@ -25,7 +25,7 @@ data class TokenRequest(
             code: String,
             initializer: Builder.() -> Unit = {}
         ): TokenRequest {
-            return Builder(GrantType.authorization_code, client_id).apply {
+            return Builder(GrantType.AuthorizationCode, client_id).apply {
                 this.code = code
                 initializer()
             }.build()
@@ -35,7 +35,7 @@ data class TokenRequest(
             client_id: String,
             initializer: Builder.() -> Unit = {}
         ): TokenRequest {
-            return Builder(GrantType.refresh_token, client_id).apply {
+            return Builder(GrantType.RefreshToken, client_id).apply {
                 initializer()
             }.build()
         }
@@ -46,7 +46,7 @@ data class TokenRequest(
             password: String,
             initializer: Builder.() -> Unit = {}
         ): TokenRequest {
-            return Builder(GrantType.password, client_id).apply {
+            return Builder(GrantType.Password, client_id).apply {
                 this.username = username
                 this.password = password
                 initializer()
@@ -58,7 +58,7 @@ data class TokenRequest(
             subject_token: String,
             initializer: Builder.() -> Unit = {}
         ): TokenRequest {
-            return Builder(GrantType.tokenExchange, client_id).apply {
+            return Builder(GrantType.TokenExchange, client_id).apply {
                 this.subject_token = subject_token
                 initializer()
             }.build()
@@ -96,22 +96,27 @@ data class TokenRequest(
 
 @Serializable
 enum class GrantType {
-    authorization_code,
-    refresh_token,
-    password,
+    @SerialName("authorization_code")
+    AuthorizationCode,
+
+    @SerialName("refresh_token")
+    RefreshToken,
+
+    @SerialName("password")
+    Password,
     
     @SerialName("urn:ietf:params:oauth:grant-type:token-exchange")
-    tokenExchange
+    TokenExchange
 }
 
 @Serializable
 enum class SubjectTokenType {
     
     @SerialName("urn:ietf:params:oauth:token-type:access_token")
-    access_token,
+    AccessToken,
     
     @SerialName("urn:ietf:params:oauth:token-type:jwt")
-    jwt
+    Jwt
 }
 
 @Serializable

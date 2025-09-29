@@ -17,7 +17,7 @@ data class DosingDecisionData(
     val requestedBolus: RequestedBolus? = null,
     val scheduleTimeZoneOffset: Int? = null,
     val units: Units = Units(),
-) : BaseData(DataType.dosingDecision) {
+) : BaseData(DataType.DosingDecision) {
     
     val originalFood: Nothing
         get() = TODO("backing object not implemented")
@@ -66,7 +66,7 @@ data class DosingDecisionData(
     
     @Serializable
     data class Units(
-        val bg: BloodGlucose.Units = BloodGlucose.Units.milligramsPerDeciliter,
+        val bg: BloodGlucose.Units = BloodGlucose.Units.MilligramsPerDeciliter,
         val carb: Carb = Carb.Exchanges,
         val insulin: Insulin = Insulin.Units,
     ) {

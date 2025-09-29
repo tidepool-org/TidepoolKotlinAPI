@@ -10,7 +10,7 @@ data class FoodData(
     val meal: Meal? = null,
     val mealOther: String? = null,
     val name: String? = null,
-) : BaseData(DataType.food) {
+) : BaseData(DataType.Food) {
     
     val amount: Nothing
         get() = TODO("schema \"amount.v1\" not implemented")

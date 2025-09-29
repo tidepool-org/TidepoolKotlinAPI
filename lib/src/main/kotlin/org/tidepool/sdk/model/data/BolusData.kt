@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 data class BolusData(
     val subType: BolusSubtype = BolusSubtype.normal,
     val deliveryContext: DeliveryContext,
-) : BaseData(DataType.bolus) {
+) : BaseData(DataType.Bolus) {
     
     val insulinFormulation: Nothing
         get() = TODO("schema \"formulation.v1\" not implemented")

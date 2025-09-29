@@ -9,6 +9,7 @@ plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     kotlin("jvm") version "2.2.0"
     kotlin("plugin.serialization") version "2.2.0"
+    id("com.google.devtools.ksp") version "2.2.20-2.0.3"
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
 }
@@ -16,6 +17,7 @@ plugins {
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    google()
 }
 
 dependencies {
@@ -28,10 +30,12 @@ dependencies {
     
     // OkHttp for MediaType
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
-    
-    // Remove Gson converter - keeping commented for reference during migration
-    // api("com.squareup.retrofit2:converter-gson:2.11.0")
-    
+
+    // Room KMP dependencies
+    implementation("androidx.room:room-runtime:2.8.1")
+    implementation("androidx.sqlite:sqlite-bundled:2.5.0")
+    add("ksp", "androidx.room:room-compiler:2.8.1")
+
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     

@@ -1,6 +1,7 @@
 package org.tidepool.sdk.model.metadata.users
 
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.JsonObject
 import java.util.Collections
 import java.util.EnumSet
@@ -13,10 +14,18 @@ open class TrustUser : User() {
     
     @Serializable
     enum class Permission {
-        custodian,
-        view,
-        note,
-        upload
+        
+        @SerialName("custodian")
+        Custodian,
+        
+        @SerialName("view")
+        View,
+        
+        @SerialName("note")
+        Note,
+        
+        @SerialName("upload")
+        Upload
     }
     
     @Serializable
@@ -29,10 +38,10 @@ open class TrustUser : User() {
         
         val permissionsSet: Set<Permission> by lazy {
             setOfNotNull(
-                Permission.custodian.takeUnless { custodian == null },
-                Permission.view.takeUnless { view == null },
-                Permission.note.takeUnless { note == null },
-                Permission.upload.takeUnless { upload == null },
+                Permission.Custodian.takeUnless { custodian == null },
+                Permission.View.takeUnless { view == null },
+                Permission.Note.takeUnless { note == null },
+                Permission.Upload.takeUnless { upload == null },
             )
         }
     }

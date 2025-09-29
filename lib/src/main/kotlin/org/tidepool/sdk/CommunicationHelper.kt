@@ -17,11 +17,11 @@ import org.tidepool.sdk.model.data.InsulinData
 import org.tidepool.sdk.model.metadata.users.TrustUser
 import org.tidepool.sdk.model.metadata.users.TrusteeUser
 import org.tidepool.sdk.model.metadata.users.TrustorUser
-import org.tidepool.sdk.requests.Auth
-import org.tidepool.sdk.requests.Confirmations
-import org.tidepool.sdk.requests.Data
-import org.tidepool.sdk.requests.Metadata
-import org.tidepool.sdk.requests.Users
+import org.tidepool.sdk.requests.AuthApi
+import org.tidepool.sdk.requests.ConfirmationsApi
+import org.tidepool.sdk.requests.DataApi
+import org.tidepool.sdk.requests.MetadataApi
+import org.tidepool.sdk.requests.UsersApi
 import retrofit2.Retrofit
 import java.time.Instant
 
@@ -71,23 +71,23 @@ public class CommunicationHelper(private val environment: Environment) {
         }
     }
     
-    public val auth: Auth by lazy {
-        authRetrofit.create(Auth::class.java)
+    public val authApi: AuthApi by lazy {
+        authRetrofit.create(AuthApi::class.java)
     }
     
-    public val data: Data by lazy {
-        retrofit.create(Data::class.java)
+    public val dataApi: DataApi by lazy {
+        retrofit.create(DataApi::class.java)
     }
     
-    public val users: Users by lazy {
-        retrofit.create(Users::class.java)
+    public val usersApi: UsersApi by lazy {
+        retrofit.create(UsersApi::class.java)
     }
     
-    public val metadata: Metadata by lazy {
-        retrofit.create(Metadata::class.java)
+    public val metadataApi: MetadataApi by lazy {
+        retrofit.create(MetadataApi::class.java)
     }
     
-    public val confirmations: Confirmations by lazy {
-        retrofit.create(Confirmations::class.java)
+    public val confirmationsApi: ConfirmationsApi by lazy {
+        retrofit.create(ConfirmationsApi::class.java)
     }
 }

@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Path
 
-interface Users {
+interface UsersApi {
     
     @GET("/auth/user")
     suspend fun getCurrentUserInfo(

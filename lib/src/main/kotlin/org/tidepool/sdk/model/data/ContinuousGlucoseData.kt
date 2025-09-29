@@ -10,7 +10,7 @@ public data class ContinuousGlucoseData(
     val units: BloodGlucose.Units? = null,
     val trend: BloodGlucose.Trend? = null,
     val trendRate: Double? = null
-) : BaseData(type = BaseData.DataType.cbg) {
+) : BaseData(type = DataType.Cbg) {
     
     public constructor(
         reading: GlucoseReading?,

@@ -2,6 +2,7 @@ package org.tidepool.sdk.requests
 
 import org.tidepool.sdk.auth.TokenResponse
 import org.tidepool.sdk.model.auth.Realm
+import kotlinx.serialization.SerialName
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -9,7 +10,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import java.net.URI
 
-public interface Auth {
+public interface AuthApi {
     
     @POST("/realms/{realm}/protocol/openid-connect/token")
     suspend fun obtainToken(
@@ -29,12 +30,18 @@ public interface Auth {
     )
     
     enum class PromptType {
-        none,
-        login
+        @SerialName("none")
+        None,
+
+        @SerialName("login")
+        Login
     }
     
     enum class ScopeType {
-        openid,
-        email
+        @SerialName("openid")
+        Openid,
+
+        @SerialName("email")
+        Email
     }
 }

@@ -9,7 +9,7 @@ import retrofit2.http.Header
 import retrofit2.http.PUT
 import retrofit2.http.Path
 
-interface Confirmations {
+interface ConfirmationsApi {
     
     @GET("/confirm/invite/{userId}")
     suspend fun getPendingCareTeamInvitations(
@@ -40,14 +40,14 @@ interface Confirmations {
     )
 }
 
-suspend fun Confirmations.pendingCareTeamInvitations(
+suspend fun ConfirmationsApi.pendingCareTeamInvitations(
     sessionToken: String,
     userId: String
 ): Array<Confirmation> {
     return getPendingCareTeamInvitations(sessionToken, userId).body() ?: arrayOf()
 }
 
-suspend fun Confirmations.receivedInvitations(
+suspend fun ConfirmationsApi.receivedInvitations(
     sessionToken: String,
     userId: String
 ): Array<Confirmation> {
@@ -62,7 +62,7 @@ private suspend fun Confirmation.perform(
     func(sessionToken, userId, creatorId, ConfirmationLookup(key))
 }
 
-suspend fun Confirmations.accept(
+suspend fun ConfirmationsApi.accept(
     sessionToken: String,
     userId: String,
     confirmation: Confirmation
@@ -70,7 +70,7 @@ suspend fun Confirmations.accept(
     confirmation.perform(sessionToken, userId, this::acceptCareTeamInvite)
 }
 
-suspend fun Confirmations.dismiss(
+suspend fun ConfirmationsApi.dismiss(
     sessionToken: String,
     userId: String,
     confirmation: Confirmation

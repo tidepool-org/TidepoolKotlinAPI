@@ -8,7 +8,7 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 import java.time.Instant
 
-interface Data {
+interface DataApi {
     
     @GET("/data/{userId}")
     suspend fun getDataForUser(
