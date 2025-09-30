@@ -21,6 +21,8 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":data"))
+    
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     
@@ -35,12 +37,20 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.1")
     implementation("androidx.sqlite:sqlite-bundled:2.5.0")
     add("ksp", "androidx.room:room-compiler:2.8.1")
-
+    
+    // Koin dependency injection
+    implementation("io.insert-koin:koin-core:4.1.0")
+    implementation("io.insert-koin:koin-annotations:2.1.0")
+    
     // Use the Kotlin JUnit 5 integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     
     // Use the JUnit 5 integration.
     testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
+    
+    // Koin testing
+    testImplementation("io.insert-koin:koin-test:4.1.0")
+    testImplementation("io.insert-koin:koin-test-junit5:4.1.0")
     
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

@@ -1,11 +1,6 @@
 package org.tidepool.sdk.auth
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
-import org.tidepool.sdk.CommunicationHelper
-import org.tidepool.sdk.requests.GrantType
-import org.tidepool.sdk.requests.TokenRequest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

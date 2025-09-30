@@ -1,18 +1,17 @@
 package org.tidepool.sdk.model.data
 
-import kotlinx.serialization.Serializable
+import org.tidepool.sdk.dto.data.DoseDto
+import org.tidepool.sdk.dto.data.InsulinDto
 
-@Serializable
 class Insulin {
     
-    @Serializable
     enum class Units {
+        
         Units
     }
 }
 
 // schema dose.v1
-@Serializable
 data class Dose(
     val units: Insulin.Units,
     val total: Double,
@@ -20,3 +19,15 @@ data class Dose(
     val correction: Double?,
     val active: Double?,
 )
+
+internal fun DoseDto.toDomain() = Dose(
+    units = units.toDomain(),
+    total = total,
+    food = food,
+    correction = correction,
+    active = active,
+)
+
+internal fun InsulinDto.UnitsDto.toDomain() = when (this) {
+    InsulinDto.UnitsDto.Units -> Insulin.Units.Units
+}

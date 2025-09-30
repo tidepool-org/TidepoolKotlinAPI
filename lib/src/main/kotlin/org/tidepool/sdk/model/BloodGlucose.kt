@@ -1,7 +1,5 @@
 package org.tidepool.sdk.model
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
 import org.tidepool.sdk.model.BloodGlucose.Units.MilligramsPerDeciliter
 import org.tidepool.sdk.model.BloodGlucose.Units.MillimolesPerLiter
@@ -9,13 +7,10 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration
 
 public class BloodGlucose {
-    @Serializable
     public enum class Units(private val value: Double, val shorthand: String) {
         
-        @SerialName("mg/dL")
         MilligramsPerDeciliter(18.018, "mg/dL"),
         
-        @SerialName("mmol/L")
         MillimolesPerLiter(1.0, "mmol/L");
         
         fun convert(amount: Double, units: Units): Double {
@@ -26,7 +21,6 @@ public class BloodGlucose {
         }
     }
     
-    @Serializable
     public class GlucoseReading(val amount: Double, val units: Units) : Comparable<GlucoseReading> {
         
         public fun inUnit(newUnit: Units): Double {
@@ -84,25 +78,16 @@ public class BloodGlucose {
         }
     }
     
-    @Serializable
     enum class Trend {
-        @SerialName("constant")
         Constant,
-        @SerialName("slowFall")
         SlowFall,
-        @SerialName("slowRise")
         SlowRise,
-        @SerialName("moderateFall")
         ModerateFall,
-        @SerialName("moderateRise")
         ModerateRise,
-        @SerialName("rapidFall")
         RapidFall,
-        @SerialName("rapidRise")
         RapidRise,
     }
     
-    @Serializable
     public data class Target(
         val target: Double?,
         val range: Double?,
@@ -110,7 +95,6 @@ public class BloodGlucose {
         val high: Double?
     )
     
-    @Serializable
     public data class StartTarget(
         val start: Duration?,
         val target: Double?,
@@ -121,16 +105,12 @@ public class BloodGlucose {
     
     companion object {
         
-        private fun Units.valueRange(): ClosedRange<Double> {
-            return when (this) {
-                MilligramsPerDeciliter -> 0.0..1000.0
-                MillimolesPerLiter     -> 0.0..55.0
-            }
+        private fun Units.valueRange() = when (this) {
+            MilligramsPerDeciliter -> 0.0..1000.0
+            MillimolesPerLiter     -> 0.0..55.0
         }
         
-        fun clamp(value: Double, units: Units): Double {
-            return value.coerceIn(units.valueRange())
-        }
+        fun clamp(value: Double, units: Units) = value.coerceIn(units.valueRange())
     }
 }
 

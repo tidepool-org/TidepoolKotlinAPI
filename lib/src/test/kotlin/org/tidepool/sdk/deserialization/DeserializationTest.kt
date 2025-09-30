@@ -4,7 +4,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
-import org.tidepool.sdk.CommunicationHelper
 import kotlin.reflect.KClass
 import kotlin.test.Test
 import kotlin.test.assertEquals

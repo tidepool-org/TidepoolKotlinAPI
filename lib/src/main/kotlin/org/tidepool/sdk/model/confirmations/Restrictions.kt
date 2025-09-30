@@ -1,9 +1,18 @@
 package org.tidepool.sdk.model.confirmations
 
-import kotlinx.serialization.Serializable
+import org.tidepool.sdk.dto.confirmation.RestrictionsDto
 
-@Serializable
 data class Restrictions(
     val canAccept: Boolean,
     val requiredIdp: String?
+)
+
+internal fun Restrictions.toDto() = RestrictionsDto(
+    canAccept = canAccept,
+    requiredIdp = requiredIdp,
+)
+
+internal fun RestrictionsDto.toDomain() = Restrictions(
+    canAccept = canAccept,
+    requiredIdp = requiredIdp,
 )
