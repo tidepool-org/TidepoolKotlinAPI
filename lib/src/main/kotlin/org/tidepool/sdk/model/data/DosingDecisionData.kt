@@ -1,13 +1,11 @@
 package org.tidepool.sdk.model.data
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.Contextual
+import org.tidepool.sdk.dto.BloodGlucoseDto
+import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.model.BloodGlucose
 import java.time.Instant
 
 // TODO: finish implementing dosingdecision.v1
-@Serializable
 data class DosingDecisionData(
     val reason: String,
     val carbsOnBoard: CarbsOnBoard? = null,
@@ -36,54 +34,99 @@ data class DosingDecisionData(
     val errors: Nothing
         get() = TODO("schema \"issue.v1\" not implemented")
     
-    @Serializable
     data class CarbsOnBoard(
-        @Contextual val time: Instant? = null,
+        val time: Instant? = null,
         val amount: Double = -1.0,
     )
     
-    @Serializable
     data class InsulinOnBoard(
-        @Contextual val time: Instant? = null,
+        val time: Instant? = null,
         val amount: Double = -1.0,
     )
     
-    @Serializable
     data class RecommendedBasal(
         val rate: Double = -1.0,
         val duration: Double? = null,
     )
     
-    @Serializable
     data class RecommendedBolus(
         val amount: Double = -1.0,
     )
     
-    @Serializable
     data class RequestedBolus(
         val amount: Double = -1.0,
     )
     
-    @Serializable
     data class Units(
         val bg: BloodGlucose.Units = BloodGlucose.Units.MilligramsPerDeciliter,
         val carb: Carb = Carb.Exchanges,
         val insulin: Insulin = Insulin.Units,
     ) {
         
-        @Serializable
         enum class Carb {
-            
-            @SerialName("exchanges")
             Exchanges,
-            
-            @SerialName("grams")
-            Grams
+            Grams,
+            ;
         }
         
-        @Serializable
         enum class Insulin {
             Units,
         }
     }
+}
+
+internal fun DosingDecisionDataDto.toDomain() = DosingDecisionData(
+    reason = reason,
+    carbsOnBoard = carbsOnBoard?.toDomain(),
+    insulinOnBoard = insulinOnBoard?.toDomain(),
+    recommendedBasal = recommendedBasal?.toDomain(),
+    recommendedBolus = recommendedBolus?.toDomain(),
+    requestedBolus = requestedBolus?.toDomain(),
+    scheduleTimeZoneOffset = scheduleTimeZoneOffset,
+    units = units.toDomain(),
+)
+
+internal fun DosingDecisionDataDto.CarbsOnBoardDto.toDomain() = DosingDecisionData.CarbsOnBoard(
+    time = time,
+    amount = amount,
+)
+
+internal fun DosingDecisionDataDto.InsulinOnBoardDto.toDomain() = DosingDecisionData.InsulinOnBoard(
+    time = time,
+    amount = amount,
+)
+
+internal fun DosingDecisionDataDto.RecommendedBasalDto.toDomain() =
+    DosingDecisionData.RecommendedBasal(
+    rate = rate,
+    duration = duration,
+)
+
+internal fun DosingDecisionDataDto.RecommendedBolusDto.toDomain() =
+    DosingDecisionData.RecommendedBolus(
+    amount = amount,
+)
+
+internal fun DosingDecisionDataDto.RequestedBolusDto.toDomain() = DosingDecisionData.RequestedBolus(
+    amount = amount,
+)
+
+internal fun DosingDecisionDataDto.UnitsDto.toDomain() = DosingDecisionData.Units(
+    bg = bg.toDomain(),
+    carb = carb.toDomain(),
+    insulin = insulin.toDomain(),
+)
+
+internal fun DosingDecisionDataDto.UnitsDto.InsulinDto.toDomain() = when (this) {
+    DosingDecisionDataDto.UnitsDto.InsulinDto.Units -> DosingDecisionData.Units.Insulin.Units
+}
+
+internal fun DosingDecisionDataDto.UnitsDto.CarbDto.toDomain() = when (this) {
+    DosingDecisionDataDto.UnitsDto.CarbDto.Exchanges -> DosingDecisionData.Units.Carb.Exchanges
+    DosingDecisionDataDto.UnitsDto.CarbDto.Grams     -> DosingDecisionData.Units.Carb.Grams
+}
+
+internal fun BloodGlucoseDto.UnitsDto.toDomain() = when (this) {
+    BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter -> BloodGlucose.Units.MilligramsPerDeciliter
+    BloodGlucoseDto.UnitsDto.MillimolesPerLiter     -> BloodGlucose.Units.MillimolesPerLiter
 }

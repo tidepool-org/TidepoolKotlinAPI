@@ -5,8 +5,6 @@ import kotlinx.coroutines.runBlocking
 import org.tidepool.sdk.model.auth.Realm
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.ContinuousGlucoseData
-import org.tidepool.sdk.requests.DataApi.CommaSeparatedArray
-import org.tidepool.sdk.requests.TokenRequest
 import java.time.Instant
 import kotlin.test.Test
 

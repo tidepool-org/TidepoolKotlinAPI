@@ -1,6 +1,15 @@
 package org.tidepool.sdk.model.metadata
 
-import kotlinx.serialization.Serializable
+import org.tidepool.sdk.dto.metadata.ProfileDto
 
-@Serializable
-open class Profile(val fullName: String? = null)
+data class Profile(
+    val fullName: String? = null,
+)
+
+internal fun Profile.toDto() = ProfileDto(
+    fullName = fullName,
+)
+
+internal fun ProfileDto.toDomain() = Profile(
+    fullName = fullName,
+)

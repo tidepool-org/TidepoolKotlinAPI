@@ -1,10 +1,12 @@
 package org.tidepool.sdk.model.data
 
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.dto.BloodGlucoseDto.TrendDto
+import org.tidepool.sdk.dto.BloodGlucoseDto.UnitsDto
+import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
 import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
 
-@Serializable
 public data class ContinuousGlucoseData(
     val value: Double? = null,
     val units: BloodGlucose.Units? = null,
@@ -12,11 +14,11 @@ public data class ContinuousGlucoseData(
     val trendRate: Double? = null
 ) : BaseData(type = DataType.Cbg) {
     
-    public constructor(
-        reading: GlucoseReading?,
-        trend: BloodGlucose.Trend?,
-        trendRate: Double?
-    ) : this(reading?.amount, reading?.units, trend, trendRate)
+    // public constructor(
+    //     reading: GlucoseReading?,
+    //     trend: BloodGlucose.Trend?,
+    //     trendRate: Double?
+    // ) : this(reading?.amount, reading?.units, trend, trendRate)
     
     val reading: GlucoseReading? by lazy {
         value?.let { value ->
@@ -32,3 +34,22 @@ public data class ContinuousGlucoseData(
         trendRate: Double? = this.trendRate
     ) = copy(reading?.amount, reading?.units, trend, trendRate)
 }
+
+internal fun ContinuousGlucoseDataDto.toDomain() = ContinuousGlucoseData(
+    value = this.value,
+    units = when (units) {
+        UnitsDto.MilligramsPerDeciliter -> BloodGlucose.Units.MilligramsPerDeciliter
+        UnitsDto.MillimolesPerLiter     -> BloodGlucose.Units.MillimolesPerLiter
+        null                            -> null
+    },
+    trend = when (trend) {
+        TrendDto.Constant     -> BloodGlucose.Trend.Constant
+        TrendDto.SlowFall     -> BloodGlucose.Trend.SlowFall
+        TrendDto.SlowRise     -> BloodGlucose.Trend.SlowRise
+        TrendDto.ModerateFall -> BloodGlucose.Trend.ModerateFall
+        TrendDto.ModerateRise -> BloodGlucose.Trend.ModerateRise
+        TrendDto.RapidFall    -> BloodGlucose.Trend.RapidFall
+        TrendDto.RapidRise    -> BloodGlucose.Trend.RapidRise
+        null                  -> null
+    }
+)

@@ -1,11 +1,26 @@
 package org.tidepool.sdk.model.confirmations
 
-import kotlinx.serialization.Serializable
+import org.tidepool.sdk.dto.confirmation.ConfirmationTypeDto
 
-@Serializable
 enum class ConfirmationType {
-    password_reset,
-    careteam_invitation,
-    signup_confirmation,
-    no_account
+    
+    PasswordReset,
+    CareteamInvitation,
+    SignupConfirmation,
+    NoAccount,
+    ;
+}
+
+internal fun ConfirmationType.toDto() = when (this) {
+    ConfirmationType.PasswordReset      -> ConfirmationTypeDto.PasswordReset
+    ConfirmationType.CareteamInvitation -> ConfirmationTypeDto.CareteamInvitation
+    ConfirmationType.SignupConfirmation -> ConfirmationTypeDto.SignupConfirmation
+    ConfirmationType.NoAccount          -> ConfirmationTypeDto.NoAccount
+}
+
+internal fun ConfirmationTypeDto.toDomain() = when (this) {
+    ConfirmationTypeDto.PasswordReset      -> ConfirmationType.PasswordReset
+    ConfirmationTypeDto.CareteamInvitation -> ConfirmationType.CareteamInvitation
+    ConfirmationTypeDto.SignupConfirmation -> ConfirmationType.SignupConfirmation
+    ConfirmationTypeDto.NoAccount          -> ConfirmationType.NoAccount
 }

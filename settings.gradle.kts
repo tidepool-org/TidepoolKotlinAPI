@@ -12,3 +12,4 @@ plugins {
 
 rootProject.name = "TidepoolKotlinAPI"
 include("lib")
+include("data")

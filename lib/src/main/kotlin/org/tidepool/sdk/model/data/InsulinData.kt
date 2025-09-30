@@ -1,9 +1,8 @@
 package org.tidepool.sdk.model.data
 
-import kotlinx.serialization.Serializable
+import org.tidepool.sdk.dto.data.InsulinDataDto
 
 // schema insulin.v1
-@Serializable
 data class InsulinData(
     val dose: Dose,
     val site: String?
@@ -12,3 +11,8 @@ data class InsulinData(
     val formulation: Nothing
         get() = TODO("schema \"formulation.v1\" not implemented")
 }
+
+internal fun InsulinDataDto.toDomain() = InsulinData(
+    dose = dose.toDomain(),
+    site = site,
+)
