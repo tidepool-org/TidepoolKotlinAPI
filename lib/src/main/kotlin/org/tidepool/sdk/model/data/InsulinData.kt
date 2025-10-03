@@ -1,6 +1,9 @@
 package org.tidepool.sdk.model.data
 
+import kotlinx.serialization.Serializable
+
 // schema insulin.v1
+@Serializable
 data class InsulinData(
     val dose: Dose,
     val site: String?

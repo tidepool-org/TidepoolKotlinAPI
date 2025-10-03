@@ -1,6 +1,8 @@
 package org.tidepool.sdk.auth
 
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.decodeFromString
 import org.tidepool.sdk.CommunicationHelper
 import org.tidepool.sdk.requests.GrantType
 import org.tidepool.sdk.requests.TokenRequest
@@ -9,7 +11,7 @@ import kotlin.test.assertEquals
 
 class AuthSerializationTest {
     
-    private val gson: Gson by CommunicationHelper.Companion::gsonConfig
+    private val json: Json by CommunicationHelper.Companion::jsonConfig
     
     @Test
     fun serializationTest() {
@@ -20,23 +22,21 @@ class AuthSerializationTest {
             password = "qwertyuiop1234",
             username = "user@example.com"
         )
-        val serialized = gson.toJson(req)
-        assertEquals(
-            "{\"grant_type\":\"password\",\"client_id\":\"cgm-monitor\",\"client_secret\":\"c50e6502-131c-47f0-b439-a43acb3b83d0\",\"username\":\"user@example.com\",\"password\":\"qwertyuiop1234\"}",
-            serialized
-        )
-        assertEquals(req, gson.fromJson(serialized, TokenRequest::class.java))
+        val serialized = json.encodeToString(req)
+        val expectedJson =
+            "{\"grant_type\":\"password\",\"client_id\":\"cgm-monitor\",\"client_secret\":\"c50e6502-131c-47f0-b439-a43acb3b83d0\",\"subject_token\":null,\"subject_token_type\":null,\"requested_token_type\":null,\"subject_issuer\":null,\"username\":\"user@example.com\",\"password\":\"qwertyuiop1234\",\"code\":null,\"code_verifier\":null}"
+        assertEquals(expectedJson, serialized)
+        assertEquals(req, json.decodeFromString<TokenRequest>(serialized))
     }
     
     
     @Test
     fun serializationAnnotationTest() {
         val req = TokenRequest(GrantType.tokenExchange, "cgm-monitor")
-        val serialized = gson.toJson(req)
-        assertEquals(
-            "{\"grant_type\":\"urn:ietf:params:oauth:grant-type:token-exchange\",\"client_id\":\"cgm-monitor\"}",
-            serialized
-        )
-        assertEquals(req, gson.fromJson(serialized, TokenRequest::class.java))
+        val serialized = json.encodeToString(req)
+        val expectedJson =
+            "{\"grant_type\":\"urn:ietf:params:oauth:grant-type:token-exchange\",\"client_id\":\"cgm-monitor\",\"client_secret\":null,\"subject_token\":null,\"subject_token_type\":null,\"requested_token_type\":null,\"subject_issuer\":null,\"username\":null,\"password\":null,\"code\":null,\"code_verifier\":null}"
+        assertEquals(expectedJson, serialized)
+        assertEquals(req, json.decodeFromString<TokenRequest>(serialized))
     }
 }

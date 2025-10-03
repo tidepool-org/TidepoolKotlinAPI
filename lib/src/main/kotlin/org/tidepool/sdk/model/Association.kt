@@ -1,7 +1,9 @@
 package org.tidepool.sdk.model
 
+import kotlinx.serialization.Serializable
 import kotlin.reflect.KClass
 
+@Serializable
 public data class Association(
     val type: AssociationType?,
     val id: String?,
@@ -9,6 +11,7 @@ public data class Association(
     val reason: String?
 ) {
     
+    @Serializable
     enum class AssociationType(val subclassType: KClass<Association>) {
         blob(Association::class),
         datum(Association::class),

@@ -1,10 +1,13 @@
 package org.tidepool.sdk.model.data
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Contextual
 import org.tidepool.sdk.model.BloodGlucose
 import java.time.Instant
 
 // TODO: finish implementing dosingdecision.v1
+@Serializable
 data class DosingDecisionData(
     val reason: String,
     val carbsOnBoard: CarbsOnBoard? = null,
@@ -33,43 +36,52 @@ data class DosingDecisionData(
     val errors: Nothing
         get() = TODO("schema \"issue.v1\" not implemented")
     
+    @Serializable
     data class CarbsOnBoard(
-        val time: Instant? = null,
+        @Contextual val time: Instant? = null,
         val amount: Double = -1.0,
     )
     
+    @Serializable
     data class InsulinOnBoard(
-        val time: Instant? = null,
+        @Contextual val time: Instant? = null,
         val amount: Double = -1.0,
     )
     
+    @Serializable
     data class RecommendedBasal(
         val rate: Double = -1.0,
         val duration: Double? = null,
     )
     
+    @Serializable
     data class RecommendedBolus(
         val amount: Double = -1.0,
     )
     
+    @Serializable
     data class RequestedBolus(
         val amount: Double = -1.0,
     )
     
+    @Serializable
     data class Units(
         val bg: BloodGlucose.Units = BloodGlucose.Units.milligramsPerDeciliter,
         val carb: Carb = Carb.Exchanges,
         val insulin: Insulin = Insulin.Units,
     ) {
         
+        @Serializable
         enum class Carb {
-            @SerializedName("exchanges")
+            
+            @SerialName("exchanges")
             Exchanges,
             
-            @SerializedName("grams")
+            @SerialName("grams")
             Grams
         }
         
+        @Serializable
         enum class Insulin {
             Units,
         }

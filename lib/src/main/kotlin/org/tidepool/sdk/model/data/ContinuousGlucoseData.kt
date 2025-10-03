@@ -1,8 +1,10 @@
 package org.tidepool.sdk.model.data
 
+import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
 
+@Serializable
 public data class ContinuousGlucoseData(
     val value: Double? = null,
     val units: BloodGlucose.Units? = null,

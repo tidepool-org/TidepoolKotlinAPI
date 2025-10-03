@@ -1,8 +1,12 @@
-package org.tidepool.sdk.auth;
+package org.tidepool.sdk.requests
 
+import org.tidepool.sdk.auth.TokenResponse
 import org.tidepool.sdk.model.auth.Realm
-import org.tidepool.sdk.requests.TokenRequest
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
 import java.net.URI
 
 public interface Auth {
