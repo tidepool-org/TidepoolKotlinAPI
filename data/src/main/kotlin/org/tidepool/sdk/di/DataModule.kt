@@ -80,12 +80,14 @@ public val dataModule = module {
             .build()
     }
     
+    single { get<Retrofit>(qualifier = named("main")).create(AlertApi::class.java) }
     single { get<Retrofit>(qualifier = named("auth")).create(AuthApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(ConfirmationApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(DataApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(MetadataApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(UserApi::class.java) }
     
+    singleOf(::AlertRepositoryImpl) bind AlertRepository::class
     singleOf(::AuthRepositoryImpl) bind AuthRepository::class
     singleOf(::ConfirmationRepositoryImpl) bind ConfirmationRepository::class
     singleOf(::DataRepositoryImpl) bind DataRepository::class
