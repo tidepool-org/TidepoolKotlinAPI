@@ -6,6 +6,8 @@ import kotlinx.serialization.json.JsonObject
 
 @Serializable
 enum class PermissionDto {
+    @SerialName("root")
+    Root,
     @SerialName("custodian")
     Custodian,
     @SerialName("view")
@@ -20,9 +22,10 @@ enum class PermissionDto {
 @Serializable
 data class PermissionsDto(
     val custodian: JsonObject? = null,
+    val root: JsonObject? = null,
     val view: JsonObject? = null,
     val note: JsonObject? = null,
-    val upload: JsonObject? = null
+    val upload: JsonObject? = null,
 ) {
     
     val permissionsSet: Set<PermissionDto> by lazy {

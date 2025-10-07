@@ -1,9 +1,19 @@
-package org.tidepool.sdk.auth;
+package org.tidepool.sdk.model.auth
+
+import org.tidepool.sdk.dto.auth.TokenResponseDto
 
 data class TokenResponse(
-    val expires_in: Int,
-    val access_token: String,
-    val id_token: String,
-    val token_type: String,
-    val refresh_token: String?
+    val expiresIn: Int,
+    val accessToken: String,
+    val idToken: String,
+    val tokenType: String,
+    val refreshToken: String?
+)
+
+internal fun TokenResponseDto.toDomain() = TokenResponse(
+    expiresIn = expires_in,
+    accessToken = access_token,
+    idToken = id_token,
+    tokenType = token_type,
+    refreshToken = refresh_token
 )

@@ -4,7 +4,7 @@ import org.tidepool.sdk.dto.auth.TokenRequestDto
 import org.tidepool.sdk.dto.auth.TokenResponseDto
 import org.tidepool.sdk.dto.auth.RealmDto
 
-interface AuthRepository {
+interface AuthenticationRepository {
 
     suspend fun obtainToken(
         realm: RealmDto,

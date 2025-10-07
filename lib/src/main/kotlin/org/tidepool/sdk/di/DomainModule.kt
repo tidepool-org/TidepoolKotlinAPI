@@ -2,12 +2,16 @@ package org.tidepool.sdk.di
 
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
+import org.tidepool.sdk.service.AuthenticationService
+import org.tidepool.sdk.service.AuthorizationService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.MetadataService
 import org.tidepool.sdk.service.UserService
 
 val domainModule = module {
+    singleOf(::AuthenticationService)
+    singleOf(::AuthorizationService)
     singleOf(::ConfirmationService)
     singleOf(::DataService)
     singleOf(::MetadataService)

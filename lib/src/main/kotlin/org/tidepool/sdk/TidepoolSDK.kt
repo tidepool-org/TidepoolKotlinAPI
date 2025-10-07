@@ -6,6 +6,8 @@ import org.koin.core.context.stopKoin
 import org.koin.dsl.module
 import org.tidepool.sdk.di.dataModule
 import org.tidepool.sdk.di.domainModule
+import org.tidepool.sdk.service.AuthenticationService
+import org.tidepool.sdk.service.AuthorizationService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.MetadataService
@@ -36,6 +38,8 @@ class TidepoolSDK(
         }.koin
     }
     
+    val authentication: AuthenticationService by lazy { koin.get() }
+    val authorization: AuthorizationService by lazy { koin.get() }
     val confirmations: ConfirmationService by lazy { koin.get() }
     val data: DataService by lazy { koin.get() }
     val metadata: MetadataService by lazy { koin.get() }
