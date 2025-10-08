@@ -31,3 +31,15 @@ internal fun DoseDto.toDomain() = Dose(
 internal fun InsulinDto.UnitsDto.toDomain() = when (this) {
     InsulinDto.UnitsDto.Units -> Insulin.Units.Units
 }
+
+internal fun Dose.toDto() = DoseDto(
+    units = units.toDto(),
+    total = total,
+    food = food,
+    correction = correction,
+    active = active,
+)
+
+internal fun Insulin.Units.toDto() = when (this) {
+    Insulin.Units.Units -> InsulinDto.UnitsDto.Units
+}

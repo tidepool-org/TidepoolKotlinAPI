@@ -24,18 +24,18 @@ data class FoodDataDto(
     enum class MealDto {
         
         @SerialName("breakfast")
-        breakfast,
+        Breakfast,
         
         @SerialName("lunch")
-        lunch,
+        Lunch,
         
         @SerialName("dinner")
-        dinner,
+        Dinner,
         
         @SerialName("snack")
-        snack,
+        Snack,
         
         @SerialName("other")
-        other,
+        Other,
     }
 }

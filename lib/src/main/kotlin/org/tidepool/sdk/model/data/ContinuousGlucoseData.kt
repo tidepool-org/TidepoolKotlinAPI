@@ -53,3 +53,22 @@ internal fun ContinuousGlucoseDataDto.toDomain() = ContinuousGlucoseData(
         null                  -> null
     }
 )
+
+internal fun ContinuousGlucoseData.toDto() = ContinuousGlucoseDataDto(
+    value = this.value,
+    units = when (units) {
+        BloodGlucose.Units.MilligramsPerDeciliter -> UnitsDto.MilligramsPerDeciliter
+        BloodGlucose.Units.MillimolesPerLiter     -> UnitsDto.MillimolesPerLiter
+        null                                      -> null
+    },
+    trend = when (trend) {
+        BloodGlucose.Trend.Constant     -> TrendDto.Constant
+        BloodGlucose.Trend.SlowFall     -> TrendDto.SlowFall
+        BloodGlucose.Trend.SlowRise     -> TrendDto.SlowRise
+        BloodGlucose.Trend.ModerateFall -> TrendDto.ModerateFall
+        BloodGlucose.Trend.ModerateRise -> TrendDto.ModerateRise
+        BloodGlucose.Trend.RapidFall    -> TrendDto.RapidFall
+        BloodGlucose.Trend.RapidRise    -> TrendDto.RapidRise
+        null                            -> null
+    }
+)

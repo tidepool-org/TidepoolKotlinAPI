@@ -10,7 +10,6 @@ import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.MetadataService
 import org.tidepool.sdk.service.UserService
-import java.time.Instant
 
 interface TokenProvider {
     suspend fun getToken(): String

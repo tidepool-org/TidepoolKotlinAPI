@@ -39,3 +39,18 @@ internal fun DeliveryTypeDto.toDomain(): BasalAutomatedData.DeliveryType = when 
     DeliveryTypeDto.Suspend   -> BasalAutomatedData.DeliveryType.Suspend
     DeliveryTypeDto.Temp      -> BasalAutomatedData.DeliveryType.Temp
 }
+
+internal fun BasalAutomatedData.toDto() = BasalAutomatedDataDto(
+    deliveryType = deliveryType.toDto(),
+    duration = duration,
+    expectedDuration = expectedDuration,
+    rate = rate,
+    scheduleName = scheduleName,
+)
+
+internal fun BasalAutomatedData.DeliveryType.toDto(): DeliveryTypeDto = when (this) {
+    BasalAutomatedData.DeliveryType.Automated -> DeliveryTypeDto.Automated
+    BasalAutomatedData.DeliveryType.Scheduled -> DeliveryTypeDto.Scheduled
+    BasalAutomatedData.DeliveryType.Suspend   -> DeliveryTypeDto.Suspend
+    BasalAutomatedData.DeliveryType.Temp      -> DeliveryTypeDto.Temp
+}

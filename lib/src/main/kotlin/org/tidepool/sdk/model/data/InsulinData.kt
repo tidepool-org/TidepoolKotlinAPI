@@ -16,3 +16,8 @@ internal fun InsulinDataDto.toDomain() = InsulinData(
     dose = dose.toDomain(),
     site = site,
 )
+
+internal fun InsulinData.toDto() = InsulinDataDto(
+    dose = dose.toDto(),
+    site = site,
+)

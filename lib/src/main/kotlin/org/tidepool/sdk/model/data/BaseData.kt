@@ -57,3 +57,33 @@ internal fun BaseDataDto.toDomain() = when (this) {
     is FoodDataDto              -> toDomain()
     is InsulinDataDto           -> toDomain()
 }
+
+internal fun BaseData.toDto(): BaseDataDto = when (this) {
+    is BasalAutomatedData    -> toDto()
+    is BolusData             -> toDto()
+    is ContinuousGlucoseData -> toDto()
+    is DosingDecisionData    -> toDto()
+    is FoodData              -> toDto()
+    is InsulinData           -> toDto()
+}
+
+internal fun BaseData.DataType.toDto(): BaseDataDto.DataTypeDto = when (this) {
+    BaseData.DataType.Alert              -> BaseDataDto.DataTypeDto.Alert
+    BaseData.DataType.Basal              -> BaseDataDto.DataTypeDto.Basal
+    BaseData.DataType.BloodKetone        -> BaseDataDto.DataTypeDto.BloodKetone
+    BaseData.DataType.Bolus              -> BaseDataDto.DataTypeDto.Bolus
+    BaseData.DataType.Calculator         -> BaseDataDto.DataTypeDto.Calculator
+    BaseData.DataType.Cbg                -> BaseDataDto.DataTypeDto.Cbg
+    BaseData.DataType.CgmSettings        -> BaseDataDto.DataTypeDto.CgmSettings
+    BaseData.DataType.ControllerSettings -> BaseDataDto.DataTypeDto.ControllerSettings
+    BaseData.DataType.ControllerStatus   -> BaseDataDto.DataTypeDto.ControllerStatus
+    BaseData.DataType.DeviceEvent        -> BaseDataDto.DataTypeDto.DeviceEvent
+    BaseData.DataType.DosingDecision     -> BaseDataDto.DataTypeDto.DosingDecision
+    BaseData.DataType.Food               -> BaseDataDto.DataTypeDto.Food
+    BaseData.DataType.Insulin            -> BaseDataDto.DataTypeDto.Insulin
+    BaseData.DataType.PhysicalActivity   -> BaseDataDto.DataTypeDto.PhysicalActivity
+    BaseData.DataType.PumpSettings       -> BaseDataDto.DataTypeDto.PumpSettings
+    BaseData.DataType.PumpStatus         -> BaseDataDto.DataTypeDto.PumpStatus
+    BaseData.DataType.ReportedState      -> BaseDataDto.DataTypeDto.ReportedState
+    BaseData.DataType.Smbg               -> BaseDataDto.DataTypeDto.Smbg
+}

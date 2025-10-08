@@ -47,3 +47,22 @@ internal fun BolusSubtypeDto.toDomain(): BolusSubtype = when (this) {
     BolusSubtypeDto.Normal     -> BolusSubtype.Normal
     BolusSubtypeDto.Square     -> BolusSubtype.Square
 }
+
+internal fun BolusData.toDto() = BolusDataDto(
+    subType = subType.toDto(),
+    deliveryContext = deliveryContext.toDto()
+)
+
+internal fun DeliveryContext.toDto(): DeliveryContextDto = when (this) {
+    DeliveryContext.Device       -> DeliveryContextDto.Device
+    DeliveryContext.Algorithm    -> DeliveryContextDto.Algorithm
+    DeliveryContext.Remote       -> DeliveryContextDto.Remote
+    DeliveryContext.Undetermined -> DeliveryContextDto.Undetermined
+}
+
+internal fun BolusSubtype.toDto(): BolusSubtypeDto = when (this) {
+    BolusSubtype.Automated  -> BolusSubtypeDto.Automated
+    BolusSubtype.DualSquare -> BolusSubtypeDto.DualSquare
+    BolusSubtype.Normal     -> BolusSubtypeDto.Normal
+    BolusSubtype.Square     -> BolusSubtypeDto.Square
+}
