@@ -6,6 +6,7 @@ import org.tidepool.sdk.service.BlobService
 import org.tidepool.sdk.service.AlertService
 import org.tidepool.sdk.service.AuthenticationService
 import org.tidepool.sdk.service.AuthorizationService
+import org.tidepool.sdk.service.ClinicService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.MetadataService
@@ -16,6 +17,7 @@ val domainModule = module {
     singleOf(::AuthenticationService)
     singleOf(::AuthorizationService)
     singleOf(::BlobService)
+    singleOf(::ClinicService)
     singleOf(::ConfirmationService)
     singleOf(::DataService)
     singleOf(::MetadataService)

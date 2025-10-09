@@ -10,11 +10,11 @@ import org.tidepool.sdk.service.AlertService
 import org.tidepool.sdk.service.AuthenticationService
 import org.tidepool.sdk.service.AuthorizationService
 import org.tidepool.sdk.service.BlobService
+import org.tidepool.sdk.service.ClinicService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.MetadataService
 import org.tidepool.sdk.service.UserService
-import java.time.Instant
 
 interface TokenProvider {
     suspend fun getToken(): String
@@ -45,6 +45,7 @@ class TidepoolSDK(
     val authorization: AuthorizationService by lazy { koin.get() }
     val blobs: BlobService by lazy { koin.get() }
     val confirmations: ConfirmationService by lazy { koin.get() }
+    val clinics: ClinicService by lazy { koin.get() }
     val data: DataService by lazy { koin.get() }
     val metadata: MetadataService by lazy { koin.get() }
     val users: UserService by lazy { koin.get() }
