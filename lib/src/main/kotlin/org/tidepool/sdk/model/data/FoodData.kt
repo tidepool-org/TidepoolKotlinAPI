@@ -36,9 +36,25 @@ internal fun FoodDataDto.toDomain(): FoodData = FoodData(
 )
 
 internal fun FoodDataDto.MealDto.toDomain(): FoodData.Meal = when (this) {
-    FoodDataDto.MealDto.breakfast -> FoodData.Meal.Breakfast
-    FoodDataDto.MealDto.lunch     -> FoodData.Meal.Lunch
-    FoodDataDto.MealDto.dinner    -> FoodData.Meal.Dinner
-    FoodDataDto.MealDto.snack     -> FoodData.Meal.Snack
-    FoodDataDto.MealDto.other     -> FoodData.Meal.Other
+    FoodDataDto.MealDto.Breakfast -> FoodData.Meal.Breakfast
+    FoodDataDto.MealDto.Lunch  -> FoodData.Meal.Lunch
+    FoodDataDto.MealDto.Dinner -> FoodData.Meal.Dinner
+    FoodDataDto.MealDto.Snack -> FoodData.Meal.Snack
+    FoodDataDto.MealDto.Other -> FoodData.Meal.Other
+}
+
+internal fun FoodData.toDto(): FoodDataDto = FoodDataDto(
+    brand = brand,
+    code = code,
+    meal = meal?.toDto(),
+    mealOther = mealOther,
+    name = name,
+)
+
+internal fun FoodData.Meal.toDto(): FoodDataDto.MealDto = when (this) {
+    FoodData.Meal.Breakfast -> FoodDataDto.MealDto.Breakfast
+    FoodData.Meal.Lunch     -> FoodDataDto.MealDto.Lunch
+    FoodData.Meal.Dinner    -> FoodDataDto.MealDto.Dinner
+    FoodData.Meal.Snack     -> FoodDataDto.MealDto.Snack
+    FoodData.Meal.Other     -> FoodDataDto.MealDto.Other
 }

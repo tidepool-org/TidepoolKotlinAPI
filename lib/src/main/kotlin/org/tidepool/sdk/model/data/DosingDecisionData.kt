@@ -130,3 +130,57 @@ internal fun BloodGlucoseDto.UnitsDto.toDomain() = when (this) {
     BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter -> BloodGlucose.Units.MilligramsPerDeciliter
     BloodGlucoseDto.UnitsDto.MillimolesPerLiter     -> BloodGlucose.Units.MillimolesPerLiter
 }
+
+internal fun DosingDecisionData.toDto() = DosingDecisionDataDto(
+    reason = reason,
+    carbsOnBoard = carbsOnBoard?.toDto(),
+    insulinOnBoard = insulinOnBoard?.toDto(),
+    recommendedBasal = recommendedBasal?.toDto(),
+    recommendedBolus = recommendedBolus?.toDto(),
+    requestedBolus = requestedBolus?.toDto(),
+    scheduleTimeZoneOffset = scheduleTimeZoneOffset,
+    units = units.toDto(),
+)
+
+internal fun DosingDecisionData.CarbsOnBoard.toDto() = DosingDecisionDataDto.CarbsOnBoardDto(
+    time = time,
+    amount = amount,
+)
+
+internal fun DosingDecisionData.InsulinOnBoard.toDto() = DosingDecisionDataDto.InsulinOnBoardDto(
+    time = time,
+    amount = amount,
+)
+
+internal fun DosingDecisionData.RecommendedBasal.toDto() = DosingDecisionDataDto.RecommendedBasalDto(
+    rate = rate,
+    duration = duration,
+)
+
+internal fun DosingDecisionData.RecommendedBolus.toDto() = DosingDecisionDataDto.RecommendedBolusDto(
+    amount = amount,
+)
+
+internal fun DosingDecisionData.RequestedBolus.toDto() = DosingDecisionDataDto.RequestedBolusDto(
+    amount = amount,
+)
+
+internal fun DosingDecisionData.Units.toDto() = DosingDecisionDataDto.UnitsDto(
+    bg = bg.toDto(),
+    carb = carb.toDto(),
+    insulin = insulin.toDto(),
+)
+
+internal fun DosingDecisionData.Units.Insulin.toDto() = when (this) {
+    DosingDecisionData.Units.Insulin.Units -> DosingDecisionDataDto.UnitsDto.InsulinDto.Units
+}
+
+internal fun DosingDecisionData.Units.Carb.toDto() = when (this) {
+    DosingDecisionData.Units.Carb.Exchanges -> DosingDecisionDataDto.UnitsDto.CarbDto.Exchanges
+    DosingDecisionData.Units.Carb.Grams     -> DosingDecisionDataDto.UnitsDto.CarbDto.Grams
+}
+
+internal fun BloodGlucose.Units.toDto() = when (this) {
+    BloodGlucose.Units.MilligramsPerDeciliter -> BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter
+    BloodGlucose.Units.MillimolesPerLiter     -> BloodGlucoseDto.UnitsDto.MillimolesPerLiter
+}
