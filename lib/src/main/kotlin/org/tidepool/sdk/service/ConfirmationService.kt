@@ -12,7 +12,6 @@ import org.tidepool.sdk.repository.UserRepository
 
 class ConfirmationService internal constructor(
     private val confirmationRepository: ConfirmationRepository,
-    private val userRepository: UserRepository,
     private val tokenProvider: TokenProvider,
     private val userRepository: UserRepository,
 ) {

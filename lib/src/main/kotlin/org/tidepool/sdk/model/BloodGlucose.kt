@@ -1,5 +1,6 @@
 package org.tidepool.sdk.model
 
+import org.tidepool.sdk.dto.BloodGlucoseDto
 import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
 import org.tidepool.sdk.model.BloodGlucose.Units.MilligramsPerDeciliter
 import org.tidepool.sdk.model.BloodGlucose.Units.MillimolesPerLiter
@@ -65,7 +66,7 @@ public class BloodGlucose {
         
         fun toSignString(unit: Units): String {
             return when (unit) {
-                MillimolesPerLiter -> inUnit(unit).let {
+                MillimolesPerLiter     -> inUnit(unit).let {
                     if (it == 0.0) "0" else "%+.1f".format(
                         it.roundMillimolesPerLiter()
                     )
@@ -123,3 +124,8 @@ public val Int.mmoll: GlucoseReading get() = GlucoseReading(toDouble(), Millimol
 public val Long.mmoll: GlucoseReading get() = GlucoseReading(toDouble(), MillimolesPerLiter)
 public val Float.mmoll: GlucoseReading get() = GlucoseReading(toDouble(), MillimolesPerLiter)
 public val Double.mmoll: GlucoseReading get() = GlucoseReading(this, MillimolesPerLiter)
+
+internal fun BloodGlucose.Units.toDto() = when (this) {
+    MilligramsPerDeciliter -> BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter
+    MillimolesPerLiter     -> BloodGlucoseDto.UnitsDto.MillimolesPerLiter
+}

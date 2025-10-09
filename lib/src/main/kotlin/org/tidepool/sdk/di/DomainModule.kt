@@ -9,7 +9,9 @@ import org.tidepool.sdk.service.AuthorizationService
 import org.tidepool.sdk.service.ClinicService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
+import org.tidepool.sdk.service.ExportService
 import org.tidepool.sdk.service.MetadataService
+import org.tidepool.sdk.service.SummaryService
 import org.tidepool.sdk.service.UserService
 
 val domainModule = module {
@@ -20,6 +22,8 @@ val domainModule = module {
     singleOf(::ClinicService)
     singleOf(::ConfirmationService)
     singleOf(::DataService)
+    singleOf(::ExportService)
     singleOf(::MetadataService)
+    singleOf(::SummaryService)
     singleOf(::UserService)
 }
