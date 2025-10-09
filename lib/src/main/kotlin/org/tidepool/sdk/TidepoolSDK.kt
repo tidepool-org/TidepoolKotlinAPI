@@ -9,6 +9,7 @@ import org.tidepool.sdk.di.domainModule
 import org.tidepool.sdk.service.AlertService
 import org.tidepool.sdk.service.AuthenticationService
 import org.tidepool.sdk.service.AuthorizationService
+import org.tidepool.sdk.service.BlobService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.MetadataService
@@ -42,6 +43,7 @@ class TidepoolSDK(
     val alerts: AlertService by lazy { koin.get() }
     val authentication: AuthenticationService by lazy { koin.get() }
     val authorization: AuthorizationService by lazy { koin.get() }
+    val blobs: BlobService by lazy { koin.get() }
     val confirmations: ConfirmationService by lazy { koin.get() }
     val data: DataService by lazy { koin.get() }
     val metadata: MetadataService by lazy { koin.get() }

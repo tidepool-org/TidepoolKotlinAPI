@@ -83,6 +83,7 @@ public val dataModule = module {
     single { get<Retrofit>(qualifier = named("main")).create(AlertApi::class.java) }
     single { get<Retrofit>(qualifier = named("auth")).create(AuthenticationApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(AuthorizationApi::class.java) }
+    single { get<Retrofit>(qualifier = named("main")).create(BlobApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(ConfirmationApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(DataApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(MetadataApi::class.java) }
@@ -91,6 +92,7 @@ public val dataModule = module {
     singleOf(::AlertRepositoryImpl) bind AlertRepository::class
     singleOf(::AuthenticationRepositoryImpl) bind AuthenticationRepository::class
     singleOf(::AuthorizationRepositoryImpl) bind AuthorizationRepository::class
+    singleOf(::BlobRepositoryImpl) bind BlobRepository::class
     singleOf(::ConfirmationRepositoryImpl) bind ConfirmationRepository::class
     singleOf(::DataRepositoryImpl) bind DataRepository::class
     singleOf(::MetadataRepositoryImpl) bind MetadataRepository::class
