@@ -14,6 +14,7 @@ import org.tidepool.sdk.service.ClinicService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.ExportService
+import org.tidepool.sdk.service.GeneralService
 import org.tidepool.sdk.service.MetadataService
 import org.tidepool.sdk.service.SummaryService
 import org.tidepool.sdk.service.UserService
@@ -50,6 +51,7 @@ class TidepoolSDK(
     val clinics: ClinicService by lazy { koin.get() }
     val data: DataService by lazy { koin.get() }
     val export: ExportService by lazy { koin.get() }
+    val general: GeneralService by lazy { koin.get() }
     val metadata: MetadataService by lazy { koin.get() }
     val summaries: SummaryService by lazy { koin.get() }
     val users: UserService by lazy { koin.get() }

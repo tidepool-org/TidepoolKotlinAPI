@@ -21,6 +21,7 @@ import org.tidepool.sdk.api.ClinicApi
 import org.tidepool.sdk.api.ConfirmationApi
 import org.tidepool.sdk.api.DataApi
 import org.tidepool.sdk.api.ExportApi
+import org.tidepool.sdk.api.GeneralApi
 import org.tidepool.sdk.api.MetadataApi
 import org.tidepool.sdk.api.SummaryApi
 import org.tidepool.sdk.api.UserApi
@@ -44,6 +45,7 @@ import org.tidepool.sdk.repository.ClinicRepository
 import org.tidepool.sdk.repository.ConfirmationRepository
 import org.tidepool.sdk.repository.DataRepository
 import org.tidepool.sdk.repository.ExportRepository
+import org.tidepool.sdk.repository.GeneralRepository
 import org.tidepool.sdk.repository.MetadataRepository
 import org.tidepool.sdk.repository.SummaryRepository
 import org.tidepool.sdk.repository.UserRepository
@@ -55,6 +57,7 @@ import org.tidepool.sdk.repository.impl.ClinicRepositoryImpl
 import org.tidepool.sdk.repository.impl.ConfirmationRepositoryImpl
 import org.tidepool.sdk.repository.impl.DataRepositoryImpl
 import org.tidepool.sdk.repository.impl.ExportRepositoryImpl
+import org.tidepool.sdk.repository.impl.GeneralRepositoryImpl
 import org.tidepool.sdk.repository.impl.MetadataRepositoryImpl
 import org.tidepool.sdk.repository.impl.SummaryRepositoryImpl
 import org.tidepool.sdk.repository.impl.UserRepositoryImpl
@@ -134,6 +137,7 @@ public val dataModule = module {
     single { get<Retrofit>(qualifier = named("main")).create(ConfirmationApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(DataApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(ExportApi::class.java) }
+    single { get<Retrofit>(qualifier = named("main")).create(GeneralApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(MetadataApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(SummaryApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(UserApi::class.java) }
@@ -146,6 +150,7 @@ public val dataModule = module {
     singleOf(::ConfirmationRepositoryImpl) bind ConfirmationRepository::class
     singleOf(::DataRepositoryImpl) bind DataRepository::class
     singleOf(::ExportRepositoryImpl) bind ExportRepository::class
+    singleOf(::GeneralRepositoryImpl) bind GeneralRepository::class
     singleOf(::MetadataRepositoryImpl) bind MetadataRepository::class
     singleOf(::SummaryRepositoryImpl) bind SummaryRepository::class
     singleOf(::UserRepositoryImpl) bind UserRepository::class
