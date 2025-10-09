@@ -1,11 +1,15 @@
 package org.tidepool.sdk.model.data
 
-import org.tidepool.sdk.deserialization.ResultType
-import org.tidepool.sdk.dto.data.*
+import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
+import org.tidepool.sdk.dto.data.BaseDataDto
+import org.tidepool.sdk.dto.data.BolusDataDto
+import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
+import org.tidepool.sdk.dto.data.DosingDecisionDataDto
+import org.tidepool.sdk.dto.data.FoodDataDto
+import org.tidepool.sdk.dto.data.InsulinDataDto
 import org.tidepool.sdk.model.Association
 import java.time.Instant
 import java.util.TimeZone
-import kotlin.reflect.KClass
 import kotlin.time.Duration
 
 // TODO: finish implementing base.v1
@@ -26,27 +30,6 @@ sealed class BaseData(
     
     val location: Nothing
         get() = TODO("schema \"\" not implemented")
-    
-    enum class DataType() {
-        Alert,
-        Basal,
-        BloodKetone,
-        Bolus,
-        Calculator,
-        Cbg,
-        CgmSettings,
-        ControllerSettings,
-        ControllerStatus,
-        DeviceEvent,
-        DosingDecision,
-        Food,
-        Insulin,
-        PhysicalActivity,
-        PumpSettings,
-        PumpStatus,
-        ReportedState,
-        Smbg
-    }
 }
 
 internal fun BaseDataDto.toDomain() = when (this) {
