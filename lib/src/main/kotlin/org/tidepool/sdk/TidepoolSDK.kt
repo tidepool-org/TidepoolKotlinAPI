@@ -9,6 +9,7 @@ import org.tidepool.sdk.di.domainModule
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.MetadataService
+import org.tidepool.sdk.service.SummaryService
 import org.tidepool.sdk.service.UserService
 import java.time.Instant
 
@@ -39,6 +40,7 @@ class TidepoolSDK(
     val confirmations: ConfirmationService by lazy { koin.get() }
     val data: DataService by lazy { koin.get() }
     val metadata: MetadataService by lazy { koin.get() }
+    val summaries: SummaryService by lazy { koin.get() }
     val users: UserService by lazy { koin.get() }
     
     public fun shutdown() {
