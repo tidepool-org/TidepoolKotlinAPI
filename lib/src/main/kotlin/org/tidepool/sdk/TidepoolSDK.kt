@@ -20,6 +20,7 @@ import org.tidepool.sdk.service.MetadataService
 import org.tidepool.sdk.service.MetricsService
 import org.tidepool.sdk.service.PrescriptionService
 import org.tidepool.sdk.service.SummaryService
+import org.tidepool.sdk.service.TaskService
 import org.tidepool.sdk.service.UserService
 
 interface TokenProvider {
@@ -60,6 +61,7 @@ class TidepoolSDK(
     val metrics: MetricsService by lazy { koin.get() }
     val prescriptions: PrescriptionService by lazy { koin.get() }
     val summaries: SummaryService by lazy { koin.get() }
+    val tasks: TaskService by lazy { koin.get() }
     val users: UserService by lazy { koin.get() }
     
     public fun shutdown() {
