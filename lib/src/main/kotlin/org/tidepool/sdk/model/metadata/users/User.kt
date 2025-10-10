@@ -1,7 +1,8 @@
 package org.tidepool.sdk.model.metadata.users
 
 import org.tidepool.sdk.dto.user.UserDto
-import org.tidepool.sdk.model.metadata.Profile
+import org.tidepool.sdk.model.metadata.UserProfile
+import org.tidepool.sdk.model.metadata.toDomain
 import java.time.Instant
 
 open class User(
@@ -17,7 +18,7 @@ open class User(
     open val modifiedUserId: String? = null,
     open val deletedTime: Instant? = null,
     open val deletedUserId: String? = null,
-    open val profile: Profile? = null,
+    open val profile: UserProfile? = null,
 )
 
 internal fun UserDto.toDomain() = User(
@@ -33,7 +34,4 @@ internal fun UserDto.toDomain() = User(
     modifiedUserId = modifiedUserId,
     deletedTime = deletedTime,
     deletedUserId = deletedUserId,
-    profile = profile?.let {
-        Profile(it.fullName)
-    }
-)
+    profile = profile?.toDomain())

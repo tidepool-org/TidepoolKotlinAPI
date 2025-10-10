@@ -2,7 +2,7 @@ package org.tidepool.sdk.dto.metadata.users
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
-import org.tidepool.sdk.dto.metadata.ProfileDto
+import org.tidepool.sdk.dto.metadata.UserProfileDto
 import java.time.Instant
 
 @Serializable
@@ -19,5 +19,5 @@ open class UserDto(
     val modifiedUserId: String? = null,
     @Contextual val deletedTime: Instant? = null,
     val deletedUserId: String? = null,
-    val profile: ProfileDto? = null,
+    val profile: UserProfileDto? = null,
 )

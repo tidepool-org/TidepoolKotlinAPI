@@ -1,7 +1,8 @@
 package org.tidepool.sdk.model.metadata.users
 
 import org.tidepool.sdk.dto.metadata.users.TrustUserDto
-import org.tidepool.sdk.model.metadata.Profile
+import org.tidepool.sdk.model.metadata.UserProfile
+import org.tidepool.sdk.model.metadata.toDomain
 import java.time.Instant
 import kotlin.collections.map
 
@@ -18,7 +19,7 @@ sealed class TrustUser(
     override val modifiedUserId: String? = null,
     override val deletedTime: Instant? = null,
     override val deletedUserId: String? = null,
-    override val profile: Profile? = null,
+    override val profile: UserProfile? = null,
 ) : User(
     emailVerified = emailVerified,
     emails = emails,
@@ -49,7 +50,7 @@ sealed class TrustUser(
         override val modifiedUserId: String? = null,
         override val deletedTime: Instant? = null,
         override val deletedUserId: String? = null,
-        override val profile: Profile? = null,
+        override val profile: UserProfile? = null,
     ) : TrustUser(
         emailVerified = emailVerified,
         emails = emails,
@@ -80,7 +81,7 @@ sealed class TrustUser(
         override val modifiedUserId: String? = null,
         override val deletedTime: Instant? = null,
         override val deletedUserId: String? = null,
-        override val profile: Profile? = null,
+        override val profile: UserProfile? = null,
     ) : TrustUser(
         emailVerified = emailVerified,
         emails = emails,
@@ -113,9 +114,7 @@ internal fun TrustUserDto.toDomain(): TrustUser = when {
         modifiedUserId = modifiedUserId,
         deletedTime = deletedTime,
         deletedUserId = deletedUserId,
-        profile = profile?.let {
-            Profile(it.fullName)
-        }
+        profile = profile?.toDomain()
     )
     
     isTrustee -> TrustUser.TrusteeUser(
@@ -132,10 +131,8 @@ internal fun TrustUserDto.toDomain(): TrustUser = when {
         modifiedUserId = modifiedUserId,
         deletedTime = deletedTime,
         deletedUserId = deletedUserId,
-        profile = profile?.let {
-            Profile(it.fullName)
-        }
+        profile = profile?.toDomain()
     )
     
-    else -> throw IllegalStateException("TrustUserDto must be either trustor or trustee")
+    else      -> throw IllegalStateException("TrustUserDto must be either trustor or trustee")
 }

@@ -2,7 +2,7 @@ package org.tidepool.sdk.model.confirmations
 
 import kotlinx.serialization.json.JsonObject
 import org.tidepool.sdk.dto.confirmation.ConfirmationDto
-import org.tidepool.sdk.model.metadata.Profile
+import org.tidepool.sdk.model.metadata.UserProfile
 import org.tidepool.sdk.model.metadata.toDomain
 import org.tidepool.sdk.model.metadata.toDto
 import java.time.Instant
@@ -23,7 +23,7 @@ data class Confirmation(
     
     data class Creator(
         val userId: String = "",
-        val profile: Profile = Profile(),
+        val profile: UserProfile = UserProfile(),
     )
 }
 

@@ -3,7 +3,7 @@ package org.tidepool.sdk.dto.confirmation
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import org.tidepool.sdk.dto.metadata.ProfileDto
+import org.tidepool.sdk.dto.metadata.UserProfileDto
 import java.time.Instant
 
 @Serializable
@@ -24,6 +24,6 @@ data class ConfirmationDto(
     @Serializable
     data class CreatorDto(
         val userId: String = "",
-        val profile: ProfileDto = ProfileDto(),
+        val profile: UserProfileDto = UserProfileDto(),
     )
 }
