@@ -14,6 +14,7 @@ import org.tidepool.sdk.service.GeneralService
 import org.tidepool.sdk.service.MessageService
 import org.tidepool.sdk.service.MetadataService
 import org.tidepool.sdk.service.MetricsService
+import org.tidepool.sdk.service.PrescriptionService
 import org.tidepool.sdk.service.SummaryService
 import org.tidepool.sdk.service.UserService
 
@@ -30,6 +31,7 @@ val domainModule = module {
     singleOf(::MessageService)
     singleOf(::MetadataService)
     singleOf(::MetricsService)
+    singleOf(::PrescriptionService)
     singleOf(::SummaryService)
     singleOf(::UserService)
 }

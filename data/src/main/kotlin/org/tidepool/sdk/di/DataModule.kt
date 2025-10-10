@@ -25,6 +25,7 @@ import org.tidepool.sdk.api.GeneralApi
 import org.tidepool.sdk.api.MessageApi
 import org.tidepool.sdk.api.MetadataApi
 import org.tidepool.sdk.api.MetricsApi
+import org.tidepool.sdk.api.PrescriptionApi
 import org.tidepool.sdk.api.SummaryApi
 import org.tidepool.sdk.api.UserApi
 import org.tidepool.sdk.deserialization.InstantSerializer
@@ -51,6 +52,7 @@ import org.tidepool.sdk.repository.GeneralRepository
 import org.tidepool.sdk.repository.MessageRepository
 import org.tidepool.sdk.repository.MetadataRepository
 import org.tidepool.sdk.repository.MetricsRepository
+import org.tidepool.sdk.repository.PrescriptionRepository
 import org.tidepool.sdk.repository.SummaryRepository
 import org.tidepool.sdk.repository.UserRepository
 import org.tidepool.sdk.repository.impl.AlertRepositoryImpl
@@ -65,6 +67,7 @@ import org.tidepool.sdk.repository.impl.GeneralRepositoryImpl
 import org.tidepool.sdk.repository.impl.MessageRepositoryImpl
 import org.tidepool.sdk.repository.impl.MetadataRepositoryImpl
 import org.tidepool.sdk.repository.impl.MetricsRepositoryImpl
+import org.tidepool.sdk.repository.impl.PrescriptionRepositoryImpl
 import org.tidepool.sdk.repository.impl.SummaryRepositoryImpl
 import org.tidepool.sdk.repository.impl.UserRepositoryImpl
 import retrofit2.Retrofit
@@ -147,6 +150,7 @@ public val dataModule = module {
     single { get<Retrofit>(qualifier = named("main")).create(MessageApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(MetadataApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(MetricsApi::class.java) }
+    single { get<Retrofit>(qualifier = named("main")).create(PrescriptionApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(SummaryApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(UserApi::class.java) }
     
@@ -162,6 +166,7 @@ public val dataModule = module {
     singleOf(::MessageRepositoryImpl) bind MessageRepository::class
     singleOf(::MetadataRepositoryImpl) bind MetadataRepository::class
     singleOf(::MetricsRepositoryImpl) bind MetricsRepository::class
+    singleOf(::PrescriptionRepositoryImpl) bind PrescriptionRepository::class
     singleOf(::SummaryRepositoryImpl) bind SummaryRepository::class
     singleOf(::UserRepositoryImpl) bind UserRepository::class
 }
