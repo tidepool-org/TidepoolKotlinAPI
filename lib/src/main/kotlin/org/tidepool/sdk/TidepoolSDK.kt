@@ -17,6 +17,7 @@ import org.tidepool.sdk.service.ExportService
 import org.tidepool.sdk.service.GeneralService
 import org.tidepool.sdk.service.MessageService
 import org.tidepool.sdk.service.MetadataService
+import org.tidepool.sdk.service.MetricsService
 import org.tidepool.sdk.service.SummaryService
 import org.tidepool.sdk.service.UserService
 
@@ -55,6 +56,7 @@ class TidepoolSDK(
     val general: GeneralService by lazy { koin.get() }
     val messages: MessageService by lazy { koin.get() }
     val metadata: MetadataService by lazy { koin.get() }
+    val metrics: MetricsService by lazy { koin.get() }
     val summaries: SummaryService by lazy { koin.get() }
     val users: UserService by lazy { koin.get() }
     
