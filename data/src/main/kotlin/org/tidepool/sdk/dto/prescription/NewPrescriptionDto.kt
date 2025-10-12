@@ -1,7 +1,9 @@
 package org.tidepool.sdk.dto.prescription
 
+import io.mcarle.konvert.api.KonvertFrom
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.prescription.NewPrescription
 
 @Serializable
 data class NewPrescriptionDto(
@@ -23,4 +25,7 @@ data class NewPrescriptionDto(
     val endDate: String? = null,
     @SerialName("notes")
     val notes: String? = null,
-)
+) {
+    @KonvertFrom(NewPrescription::class, mapFunctionName = "fromDomain")
+    companion object {}
+}

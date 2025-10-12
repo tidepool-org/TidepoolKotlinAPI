@@ -21,6 +21,7 @@ repositories {
 }
 
 dependencies {
+    api(project(":domain"))
     implementation(project(":data"))
     
     implementation("com.squareup.retrofit2:retrofit:3.0.0")

@@ -12,6 +12,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.tidepool.sdk.Environment
 import org.tidepool.sdk.EnvironmentInternal
 import org.tidepool.sdk.api.AlertApi
 import org.tidepool.sdk.api.AuthenticationApi
@@ -57,22 +58,23 @@ import org.tidepool.sdk.repository.PrescriptionRepository
 import org.tidepool.sdk.repository.SummaryRepository
 import org.tidepool.sdk.repository.TaskRepository
 import org.tidepool.sdk.repository.UserRepository
-import org.tidepool.sdk.repository.impl.AlertRepositoryImpl
-import org.tidepool.sdk.repository.impl.AuthenticationRepositoryImpl
-import org.tidepool.sdk.repository.impl.AuthorizationRepositoryImpl
-import org.tidepool.sdk.repository.impl.BlobRepositoryImpl
-import org.tidepool.sdk.repository.impl.ClinicRepositoryImpl
-import org.tidepool.sdk.repository.impl.ConfirmationRepositoryImpl
-import org.tidepool.sdk.repository.impl.DataRepositoryImpl
-import org.tidepool.sdk.repository.impl.ExportRepositoryImpl
-import org.tidepool.sdk.repository.impl.GeneralRepositoryImpl
-import org.tidepool.sdk.repository.impl.MessageRepositoryImpl
-import org.tidepool.sdk.repository.impl.MetadataRepositoryImpl
-import org.tidepool.sdk.repository.impl.MetricsRepositoryImpl
-import org.tidepool.sdk.repository.impl.PrescriptionRepositoryImpl
-import org.tidepool.sdk.repository.impl.SummaryRepositoryImpl
-import org.tidepool.sdk.repository.impl.TaskRepositoryImpl
-import org.tidepool.sdk.repository.impl.UserRepositoryImpl
+import org.tidepool.sdk.repository.AlertRepositoryImpl
+import org.tidepool.sdk.repository.AuthenticationRepositoryImpl
+import org.tidepool.sdk.repository.BlobRepositoryImpl
+import org.tidepool.sdk.repository.ClinicRepositoryImpl
+import org.tidepool.sdk.repository.ConfirmationRepositoryImpl
+import org.tidepool.sdk.repository.DataRepositoryImpl
+import org.tidepool.sdk.repository.ExportRepositoryImpl
+import org.tidepool.sdk.repository.GeneralRepositoryImpl
+import org.tidepool.sdk.repository.MessageRepositoryImpl
+import org.tidepool.sdk.repository.MetadataRepositoryImpl
+import org.tidepool.sdk.repository.MetricsRepositoryImpl
+import org.tidepool.sdk.repository.PrescriptionRepositoryImpl
+import org.tidepool.sdk.repository.SummaryRepositoryImpl
+import org.tidepool.sdk.repository.TaskRepositoryImpl
+import org.tidepool.sdk.repository.UserRepositoryImpl
+import org.tidepool.sdk.repository.AuthorizationRepositoryImpl
+import org.tidepool.sdk.toInternal
 import retrofit2.Retrofit
 import java.time.Instant
 
@@ -121,7 +123,7 @@ public val dataModule = module {
     // TODO: Retrofit configuration will need Environment class or base URL configuration
     // Main API Retrofit instance
     single<Retrofit>(qualifier = named("main")) {
-        val environment: EnvironmentInternal = get()
+        val environment: EnvironmentInternal = get<Environment>().toInternal()
         val json: Json = get()
         
         Retrofit.Builder()
@@ -133,7 +135,7 @@ public val dataModule = module {
     
     // Auth API Retrofit instance
     single<Retrofit>(qualifier = named("auth")) {
-        val environment: EnvironmentInternal = get()
+        val environment: EnvironmentInternal = get<Environment>().toInternal()
         val json: Json = get()
         Retrofit.Builder()
             .baseUrl(environment.auth.url)

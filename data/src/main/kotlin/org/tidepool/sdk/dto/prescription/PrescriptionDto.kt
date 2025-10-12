@@ -2,6 +2,8 @@ package org.tidepool.sdk.dto.prescription
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.prescription.Prescription
+import java.time.Instant
 
 @Serializable
 data class PrescriptionDto(
@@ -35,4 +37,41 @@ data class PrescriptionDto(
     val modifiedTime: String? = null,
     @SerialName("notes")
     val notes: String? = null,
+)
+
+// Manual mapping functions
+internal fun PrescriptionDto.toDomain(): Prescription = Prescription(
+    id = id!!,
+    userId = userId!!,
+    clinicId = clinicId,
+    prescriberId = prescriberId!!,
+    patientId = patientId!!,
+    medicationName = medicationName!!,
+    dosage = dosage!!,
+    frequency = frequency!!,
+    instructions = instructions,
+    startDate = Instant.parse(startDate!!),
+    endDate = endDate?.let { Instant.parse(it) },
+    status = status!!.toDomain(),
+    createdTime = Instant.parse(createdTime!!),
+    modifiedTime = Instant.parse(modifiedTime!!),
+    notes = notes
+)
+
+internal fun Prescription.toDto(): PrescriptionDto = PrescriptionDto(
+    id = id,
+    userId = userId,
+    clinicId = clinicId,
+    prescriberId = prescriberId,
+    patientId = patientId,
+    medicationName = medicationName,
+    dosage = dosage,
+    frequency = frequency,
+    instructions = instructions,
+    startDate = startDate.toString(),
+    endDate = endDate?.toString(),
+    status = status.toDto(),
+    createdTime = createdTime.toString(),
+    modifiedTime = modifiedTime.toString(),
+    notes = notes
 )

@@ -16,3 +16,13 @@ enum class EnvironmentInternal(
     Qa1("https://qa1.development.tidepool.org", "qa1", AuthenticationServerInternal.QA),
     Qa2("https://qa2.development.tidepool.org", "qa2", AuthenticationServerInternal.QA);
 }
+
+internal fun Environment.toInternal() = when (this) {
+    Environments.Production  -> EnvironmentInternal.Production
+    Environments.Integration -> EnvironmentInternal.Integration
+    Environments.Dev1        -> EnvironmentInternal.Dev1
+    Environments.Qa1         -> EnvironmentInternal.Qa1
+    Environments.Qa2         -> EnvironmentInternal.Qa2
+    
+    else                     -> EnvironmentInternal.Qa1 // TODO
+}

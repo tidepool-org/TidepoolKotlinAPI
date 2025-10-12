@@ -18,6 +18,7 @@ repositories {
 }
 
 dependencies {
+    implementation(project(":domain"))
     // Networking
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
@@ -28,6 +29,9 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+    
+    implementation("io.mcarle:konvert-api:4.3.2")
+    ksp("io.mcarle:konvert:4.3.2")
 
     // Room KMP dependencies for local storage
     implementation("androidx.room:room-runtime:2.8.1")

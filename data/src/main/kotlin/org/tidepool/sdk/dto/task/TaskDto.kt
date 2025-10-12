@@ -1,8 +1,14 @@
 package org.tidepool.sdk.dto.task
 
+import io.mcarle.konvert.api.KonvertTo
+import io.mcarle.konvert.api.Mapping
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import org.tidepool.sdk.model.task.Task
+import org.tidepool.sdk.model.task.TaskState
+import java.time.Instant
 
 @Serializable
 data class TaskDto(
@@ -33,3 +39,36 @@ data class TaskDto(
     @SerialName("modifiedTime")
     val modifiedTime: String? = null,
 )
+
+// Manual mapping functions
+internal fun TaskDto.toDomain(): Task = Task(
+    id = id,
+    name = name,
+    type = type,
+    priority = priority,
+    data = data.entries.associate { (key, value) ->
+        key to when (value) {
+            is JsonPrimitive -> when {
+                value.isString -> value.content
+                else           -> value.content
+            }
+            
+            else             -> value.toString()
+        }
+    },
+    availableTime = Instant.parse(availableTime),
+    expirationTime = Instant.parse(expirationTime),
+    state = state.toDomain(),
+    error = error,
+    runTime = runTime?.let { Instant.parse(it) },
+    duration = duration,
+    createdTime = createdTime?.let { Instant.parse(it) },
+    modifiedTime = modifiedTime?.let { Instant.parse(it) }
+)
+
+internal fun TaskStateDto.toDomain(): TaskState = when (this) {
+    TaskStateDto.Pending -> TaskState.Pending
+    TaskStateDto.Running -> TaskState.Running
+    TaskStateDto.Failed -> TaskState.Failed
+    TaskStateDto.Completed -> TaskState.Completed
+}

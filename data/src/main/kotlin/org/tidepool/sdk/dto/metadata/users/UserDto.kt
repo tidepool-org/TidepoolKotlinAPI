@@ -2,22 +2,40 @@ package org.tidepool.sdk.dto.metadata.users
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
 import org.tidepool.sdk.dto.metadata.UserProfileDto
 import java.time.Instant
 
 @Serializable
 open class UserDto(
+    @SerialName("emailVerified")
     val emailVerified: Boolean = false,
+    @SerialName("emails")
     val emails: List<String>? = null,
-    @Contextual val termsAccepted: Instant? = null,
-    val userid: String = "",
+    @Contextual
+    @SerialName("termsAccepted")
+    val termsAccepted: Instant? = null,
+    @SerialName("userid")
+    val userId: String = "",
+    @SerialName("username")
     val username: String? = null,
+    @SerialName("roles")
     val roles: List<String>? = null,
-    @Contextual val createdTime: Instant? = null,
+    @Contextual
+    @SerialName("createdTime")
+    val createdTime: Instant? = null,
+    @SerialName("createdUserId")
     val createdUserId: String? = null,
-    @Contextual val modifiedTime: Instant? = null,
+    @Contextual
+    @SerialName("modifiedTime")
+    val modifiedTime: Instant? = null,
+    @SerialName("modifiedUserId")
     val modifiedUserId: String? = null,
-    @Contextual val deletedTime: Instant? = null,
+    @Contextual
+    @SerialName("deletedTime")
+    val deletedTime: Instant? = null,
+    @SerialName("deletedUserId")
     val deletedUserId: String? = null,
+    @SerialName("profile")
     val profile: UserProfileDto? = null,
 )
