@@ -3,6 +3,7 @@ package org.tidepool.sdk
 import org.koin.core.Koin
 import org.koin.core.context.startKoin
 import org.koin.core.context.stopKoin
+import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.tidepool.sdk.di.dataModule
 import org.tidepool.sdk.di.domainModule
@@ -22,19 +23,19 @@ class TidepoolSDK(
 ) {
     
     // Internal DI container - not exposed
-    private val koin: Koin by lazy {
-        startKoin {
-            modules(
-                // Environment module
-                module {
-                    single<EnvironmentInternal> { environment.toInternal() }
-                    single<TokenProvider> { tokenProvider }
-                },
-                domainModule,
-                dataModule,
-            )
-        }.koin
+    
+    private val koinApp = koinApplication {
+        modules(
+            // Environment module
+            module {
+                single<EnvironmentInternal> { environment.toInternal() }
+                single<TokenProvider> { tokenProvider }
+            },
+            domainModule,
+            dataModule,
+        )
     }
+    private val koin: Koin = koinApp.koin
     
     val confirmations: ConfirmationService by lazy { koin.get() }
     val data: DataService by lazy { koin.get() }
@@ -42,6 +43,6 @@ class TidepoolSDK(
     val users: UserService by lazy { koin.get() }
     
     public fun shutdown() {
-        stopKoin()
+        koinApp.close()
     }
 }

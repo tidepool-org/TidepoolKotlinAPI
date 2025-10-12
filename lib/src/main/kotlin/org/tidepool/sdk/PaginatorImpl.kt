@@ -4,6 +4,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlin.collections.orEmpty
 import kotlin.collections.plus
 
@@ -30,7 +32,7 @@ internal class PaginatorImpl<Key, Item>(
     onSuccess: suspend (result: Item, isEndReached: Boolean) -> Unit,
     onFailure: suspend (result: Throwable) -> Unit,
     private val endReached: (result: Item, currentKey: Key) -> Boolean,
-): Paginator<Key, Item>(onSuccess, onFailure) {
+) : Paginator<Key, Item>(onSuccess, onFailure) {
     
     /** Internal state flow holding the accumulated list of items */
     private val _items = MutableStateFlow<List<Item>?>(null)
@@ -39,7 +41,7 @@ internal class PaginatorImpl<Key, Item>(
     private var currentKey = initialKey
     
     /** Flag to prevent concurrent requests */
-    private var isMakingRequest = false
+    private var requestMutex = Mutex()
     
     /** Flag indicating if pagination has reached the end */
     private var isEndReached = false
@@ -50,31 +52,29 @@ internal class PaginatorImpl<Key, Item>(
     override val items: Flow<List<Item>> = _items.filterNotNull()
     
     override suspend fun loadNextItems() {
-        println("Paginator: loadNextItems() called with key: $currentKey, $isMakingRequest $isEndReached")
-        if (isMakingRequest || isEndReached) {
+        println("Paginator: loadNextItems() called with key: $currentKey, ${requestMutex.isLocked} $isEndReached")
+        if (requestMutex.isLocked || isEndReached) {
             return
         }
         
-        isMakingRequest = true
-        
-        val result = onRequest(currentKey)
-        isMakingRequest = false
-        
-        result.onFailure {
-            onLoadPageFailure(it)
-        }.onSuccess { item ->
-            currentKey = getNextKey(item, currentKey)
-            isEndReached = endReached(item, currentKey)
-            onLoadPageSuccess(item, isEndReached)
-            _items.update { list ->
-                if (isReseting) {
-                    listOf(item)
-                } else {
-                    list.orEmpty() + item
+        requestMutex
+            .withLock {
+                onRequest(currentKey)
+            }.onFailure {
+                onLoadPageFailure(it)
+            }.onSuccess { item ->
+                currentKey = getNextKey(item, currentKey)
+                isEndReached = endReached(item, currentKey)
+                onLoadPageSuccess(item, isEndReached)
+                _items.update { list ->
+                    if (isReseting) {
+                        listOf(item)
+                    } else {
+                        list.orEmpty() + item
+                    }
                 }
+                isReseting = false
             }
-            isReseting = false
-        }
     }
     
     override fun reset(clearItems: Boolean) {
