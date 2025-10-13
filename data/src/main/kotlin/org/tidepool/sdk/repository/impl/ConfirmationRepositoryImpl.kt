@@ -5,21 +5,22 @@ import org.tidepool.sdk.dto.confirmation.ConfirmationDto
 import org.tidepool.sdk.dto.confirmation.ConfirmationLookupDto
 import org.tidepool.sdk.repository.ConfirmationRepository
 import org.tidepool.sdk.runCatchingNetworkExceptions
+import org.tidepool.sdk.runWithRetry
 
 class ConfirmationRepositoryImpl(
     private val confirmationApi: ConfirmationApi,
 ) : ConfirmationRepository {
-
+    
     override suspend fun getReceivedInvitations(
         sessionToken: String,
         userId: String,
-    ): Result<List<ConfirmationDto>> = runCatchingNetworkExceptions {
+    ): Result<List<ConfirmationDto>> = runWithRetry {
         confirmationApi.getReceivedInvitations(
             sessionToken = sessionToken,
             userId = userId,
         )
     }
-
+    
     override suspend fun acceptConfirmation(
         sessionToken: String,
         userId: String,
