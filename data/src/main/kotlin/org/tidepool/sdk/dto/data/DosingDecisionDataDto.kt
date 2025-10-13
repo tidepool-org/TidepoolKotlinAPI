@@ -1,13 +1,17 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
 import org.tidepool.sdk.dto.BloodGlucoseDto
+import org.tidepool.sdk.model.data.BasalAutomatedData
+import org.tidepool.sdk.model.data.DosingDecisionData
 import java.time.Instant
 
 // TODO: finish implementing dosingdecision.v1
 @Serializable
+@KonvertTo(DosingDecisionData::class, mapFunctionName = "toDomain")
 data class DosingDecisionDataDto(
     @SerialName("reason")
     val reason: String,
@@ -45,6 +49,7 @@ data class DosingDecisionDataDto(
         get() = TODO("schema \"issue.v1\" not implemented")
     
     @Serializable
+    @KonvertTo(DosingDecisionData.CarbsOnBoard::class, mapFunctionName = "toDomain")
     data class CarbsOnBoardDto(
         @Contextual
         @SerialName("time")
@@ -54,6 +59,7 @@ data class DosingDecisionDataDto(
     )
     
     @Serializable
+    @KonvertTo(DosingDecisionData.InsulinOnBoard::class, mapFunctionName = "toDomain")
     data class InsulinOnBoardDto(
         @Contextual
         @SerialName("time")
@@ -63,6 +69,7 @@ data class DosingDecisionDataDto(
     )
     
     @Serializable
+    @KonvertTo(DosingDecisionData.RecommendedBasal::class, mapFunctionName = "toDomain")
     data class RecommendedBasalDto(
         @SerialName("rate")
         val rate: Double = -1.0,
@@ -71,18 +78,21 @@ data class DosingDecisionDataDto(
     )
     
     @Serializable
+    @KonvertTo(DosingDecisionData.RecommendedBolus::class, mapFunctionName = "toDomain")
     data class RecommendedBolusDto(
         @SerialName("amount")
         val amount: Double = -1.0,
     )
     
     @Serializable
+    @KonvertTo(DosingDecisionData.RequestedBolus::class, mapFunctionName = "toDomain")
     data class RequestedBolusDto(
         @SerialName("amount")
         val amount: Double = -1.0,
     )
     
     @Serializable
+    @KonvertTo(DosingDecisionData.Units::class, mapFunctionName = "toDomain")
     data class UnitsDto(
         @SerialName("bg")
         val bg: BloodGlucoseDto.UnitsDto = BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter,

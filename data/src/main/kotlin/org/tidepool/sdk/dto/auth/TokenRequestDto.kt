@@ -1,5 +1,6 @@
 package org.tidepool.sdk.dto.auth
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

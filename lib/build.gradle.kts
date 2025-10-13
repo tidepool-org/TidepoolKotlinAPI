@@ -21,6 +21,7 @@ repositories {
 }
 
 dependencies {
+    api(project(":domain"))
     implementation(project(":data"))
     
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
@@ -37,9 +38,6 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.1")
     implementation("androidx.sqlite:sqlite-bundled:2.5.0")
     add("ksp", "androidx.room:room-compiler:2.8.1")
-    
-    implementation("io.mcarle:konvert-api:4.3.2")
-    ksp("io.mcarle:konvert:4.3.2")
     
     // Koin dependency injection
     implementation("io.insert-koin:koin-core:4.1.0")

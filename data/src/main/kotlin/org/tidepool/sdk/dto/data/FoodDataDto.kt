@@ -1,10 +1,14 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.data.BasalAutomatedData
+import org.tidepool.sdk.model.data.FoodData
 
 // schema food.v1
 @Serializable
+@KonvertTo(FoodData::class, mapFunctionName = "toDomain")
 data class FoodDataDto(
     @SerialName("brand")
     val brand: String? = null,

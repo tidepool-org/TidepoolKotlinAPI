@@ -1,10 +1,13 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.data.BasalAutomatedData
 
 // TODO: Finish implementing automated.v1
 @Serializable
+@KonvertTo(BasalAutomatedData::class, mapFunctionName = "toDomain")
 data class BasalAutomatedDataDto(
     @SerialName("deliveryType")
     val deliveryType: DeliveryTypeDto,

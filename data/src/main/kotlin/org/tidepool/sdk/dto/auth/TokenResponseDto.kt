@@ -1,9 +1,12 @@
 package org.tidepool.sdk.dto.auth
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.auth.TokenResponse
 
 @Serializable
+@KonvertTo(TokenResponse::class, mapFunctionName = "toDomain")
 data class TokenResponseDto(
     @SerialName("expires_in")
     val expiresIn: Int,

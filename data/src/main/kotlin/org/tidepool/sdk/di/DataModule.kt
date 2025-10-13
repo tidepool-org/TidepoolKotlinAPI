@@ -12,12 +12,18 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
+import org.tidepool.sdk.Environment
 import org.tidepool.sdk.EnvironmentInternal
 import org.tidepool.sdk.api.*
 import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.dto.data.*
+import org.tidepool.sdk.repository.AuthRepositoryImpl
+import org.tidepool.sdk.repository.ConfirmationRepositoryImpl
+import org.tidepool.sdk.repository.DataRepositoryImpl
+import org.tidepool.sdk.repository.MetadataRepositoryImpl
+import org.tidepool.sdk.repository.UserRepositoryImpl
 import org.tidepool.sdk.repository.*
-import org.tidepool.sdk.repository.impl.*
+import org.tidepool.sdk.toInternal
 import retrofit2.Retrofit
 import java.time.Instant
 
@@ -60,7 +66,7 @@ public val dataModule = module {
     // TODO: Retrofit configuration will need Environment class or base URL configuration
     // Main API Retrofit instance
     single<Retrofit>(qualifier = named("main")) {
-        val environment: EnvironmentInternal = get()
+        val environment: EnvironmentInternal = get<Environment>().toInternal()
         val json: Json = get()
         
         Retrofit.Builder()
@@ -72,7 +78,7 @@ public val dataModule = module {
     
     // Auth API Retrofit instance
     single<Retrofit>(qualifier = named("auth")) {
-        val environment: EnvironmentInternal = get()
+        val environment: EnvironmentInternal = get<Environment>().toInternal()
         val json: Json = get()
         Retrofit.Builder()
             .baseUrl(environment.auth.url)

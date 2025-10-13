@@ -1,11 +1,15 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.dto.BloodGlucoseDto
 import org.tidepool.sdk.dto.BloodGlucoseDto.GlucoseReadingDto
+import org.tidepool.sdk.model.data.BasalAutomatedData
+import org.tidepool.sdk.model.data.ContinuousGlucoseData
 
 @Serializable
+@KonvertTo(ContinuousGlucoseData::class, mapFunctionName = "toDomain")
 data class ContinuousGlucoseDataDto(
     @SerialName("value")
     val value: Double? = null,

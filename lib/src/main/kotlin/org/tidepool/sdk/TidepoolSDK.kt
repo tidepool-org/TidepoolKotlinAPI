@@ -1,8 +1,6 @@
 package org.tidepool.sdk
 
 import org.koin.core.Koin
-import org.koin.core.context.startKoin
-import org.koin.core.context.stopKoin
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.tidepool.sdk.di.dataModule
@@ -11,11 +9,6 @@ import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
 import org.tidepool.sdk.service.MetadataService
 import org.tidepool.sdk.service.UserService
-import java.time.Instant
-
-interface TokenProvider {
-    suspend fun getToken(): String
-}
 
 class TidepoolSDK(
     environment: Environment,
@@ -28,7 +21,7 @@ class TidepoolSDK(
         modules(
             // Environment module
             module {
-                single<EnvironmentInternal> { environment.toInternal() }
+                single<Environment> { environment }
                 single<TokenProvider> { tokenProvider }
             },
             domainModule,

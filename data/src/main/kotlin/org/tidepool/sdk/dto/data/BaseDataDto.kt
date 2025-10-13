@@ -5,6 +5,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
 import org.tidepool.sdk.deserialization.ResultType
 import org.tidepool.sdk.dto.AssociationDto
+import org.tidepool.sdk.model.data.BasalAutomatedData
+import org.tidepool.sdk.model.data.BaseData
+import org.tidepool.sdk.model.data.BolusData
+import org.tidepool.sdk.model.data.ContinuousGlucoseData
+import org.tidepool.sdk.model.data.DataType
+import org.tidepool.sdk.model.data.DosingDecisionData
+import org.tidepool.sdk.model.data.FoodData
+import org.tidepool.sdk.model.data.InsulinData
 import java.time.Instant
 import java.util.TimeZone
 import kotlin.reflect.KClass
@@ -105,4 +113,34 @@ sealed class BaseDataDto(
         @SerialName("smbg")
         Smbg(BaseDataDto::class)
     }
+}
+
+internal fun BaseDataDto.toDomain(): BaseData = when (this) {
+    is BasalAutomatedDataDto    -> toDomain()
+    is BolusDataDto             -> toDomain()
+    is ContinuousGlucoseDataDto -> toDomain()
+    is DosingDecisionDataDto    -> toDomain()
+    is FoodDataDto              -> toDomain()
+    is InsulinDataDto           -> toDomain()
+}
+
+internal fun DataType.toDto(): BaseDataDto.DataTypeDto = when (this) {
+    DataType.Alert              -> BaseDataDto.DataTypeDto.Alert
+    DataType.Basal              -> BaseDataDto.DataTypeDto.Basal
+    DataType.BloodKetone        -> BaseDataDto.DataTypeDto.BloodKetone
+    DataType.Bolus              -> BaseDataDto.DataTypeDto.Bolus
+    DataType.Calculator         -> BaseDataDto.DataTypeDto.Calculator
+    DataType.Cbg                -> BaseDataDto.DataTypeDto.Cbg
+    DataType.CgmSettings        -> BaseDataDto.DataTypeDto.CgmSettings
+    DataType.ControllerSettings -> BaseDataDto.DataTypeDto.ControllerSettings
+    DataType.ControllerStatus   -> BaseDataDto.DataTypeDto.ControllerStatus
+    DataType.DeviceEvent        -> BaseDataDto.DataTypeDto.DeviceEvent
+    DataType.DosingDecision     -> BaseDataDto.DataTypeDto.DosingDecision
+    DataType.Food               -> BaseDataDto.DataTypeDto.Food
+    DataType.Insulin            -> BaseDataDto.DataTypeDto.Insulin
+    DataType.PhysicalActivity   -> BaseDataDto.DataTypeDto.PhysicalActivity
+    DataType.PumpSettings       -> BaseDataDto.DataTypeDto.PumpSettings
+    DataType.PumpStatus         -> BaseDataDto.DataTypeDto.PumpStatus
+    DataType.ReportedState      -> BaseDataDto.DataTypeDto.ReportedState
+    DataType.Smbg               -> BaseDataDto.DataTypeDto.Smbg
 }

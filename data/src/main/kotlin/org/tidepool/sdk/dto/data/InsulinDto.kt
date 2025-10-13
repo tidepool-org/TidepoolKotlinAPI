@@ -1,7 +1,9 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.data.Dose
 
 @Serializable
 class InsulinDto {
@@ -16,6 +18,7 @@ class InsulinDto {
 
 // schema dose.v1
 @Serializable
+@KonvertTo(Dose::class, mapFunctionName = "toDomain")
 data class DoseDto(
     @SerialName("units")
     val units: InsulinDto.UnitsDto,

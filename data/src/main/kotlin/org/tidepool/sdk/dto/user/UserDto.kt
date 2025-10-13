@@ -1,12 +1,15 @@
 package org.tidepool.sdk.dto.user
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import org.tidepool.sdk.dto.metadata.ProfileDto
+import org.tidepool.sdk.model.metadata.users.User
 import java.time.Instant
 
 @Serializable
+@KonvertTo(User::class, mapFunctionName = "toDomain")
 open class UserDto(
     @SerialName("emailVerified")
     val emailVerified: Boolean = false,
