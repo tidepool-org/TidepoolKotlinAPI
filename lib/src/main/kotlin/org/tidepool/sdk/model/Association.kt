@@ -1,7 +1,7 @@
 package org.tidepool.sdk.model
 
-import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
+import io.mcarle.konvert.api.KonvertFrom
+import org.tidepool.sdk.dto.AssociationDto
 
 public data class Association(
     val type: AssociationType?,
@@ -10,10 +10,14 @@ public data class Association(
     val reason: String?
 ) {
     
-    enum class AssociationType(val subclassType: KClass<Association>) {
-        blob(Association::class),
-        datum(Association::class),
-        image(Association::class),
-        url(Association::class)
+    @KonvertFrom(AssociationDto::class, mapFunctionName = "fromDto")
+    companion object {}
+    
+    enum class AssociationType {
+        Blob,
+        Datum,
+        Image,
+        Url,
+        ;
     }
 }

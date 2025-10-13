@@ -1,5 +1,6 @@
 package org.tidepool.sdk.dto.metadata.users
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.dto.user.UserDto
 
@@ -8,7 +9,9 @@ import org.tidepool.sdk.dto.user.UserDto
  */
 @Serializable
 data class TrustUserDto(
+    @SerialName("trustorPermissions")
     val trustorPermissions: PermissionsDto? = null,
+    @SerialName("trusteePermissions")
     val trusteePermissions: PermissionsDto? = null
 ) : UserDto() {
     

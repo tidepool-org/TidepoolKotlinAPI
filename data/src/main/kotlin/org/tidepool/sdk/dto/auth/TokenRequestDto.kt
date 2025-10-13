@@ -5,95 +5,29 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class TokenRequestDto(
-    val grant_type: GrantTypeDto,
-    val client_id: String,
-    val client_secret: String? = null,
-    val subject_token: String? = null,
-    val subject_token_type: SubjectTokenTypeDto? = null,
-    val requested_token_type: RequestedTokenTypeDto? = null,
-    val subject_issuer: String? = null,
+    @SerialName("grant_type")
+    val grantType: GrantTypeDto,
+    @SerialName("client_id")
+    val clientId: String,
+    @SerialName("client_secret")
+    val clientSecret: String? = null,
+    @SerialName("subject_token")
+    val subjectToken: String? = null,
+    @SerialName("subject_token_type")
+    val subjectTokenType: SubjectTokenTypeDto? = null,
+    @SerialName("requested_token_type")
+    val requestedTokenType: RequestedTokenTypeDto? = null,
+    @SerialName("subject_issuer")
+    val subjectIssuer: String? = null,
+    @SerialName("username")
     val username: String? = null,
+    @SerialName("password")
     val password: String? = null,
+    @SerialName("code")
     val code: String? = null,
-    val code_verifier: String? = null,
-) {
-
-    companion object {
-
-        fun createWithAuthorizationCode(
-            client_id: String,
-            code: String,
-            initializer: Builder.() -> Unit = {},
-        ): TokenRequestDto {
-            return Builder(GrantTypeDto.AuthorizationCode, client_id).apply {
-                this.code = code
-                initializer()
-            }.build()
-        }
-
-        fun createWithRefreshToken(
-            client_id: String,
-            initializer: Builder.() -> Unit = {},
-        ): TokenRequestDto {
-            return Builder(GrantTypeDto.RefreshToken, client_id).apply {
-                initializer()
-            }.build()
-        }
-
-        fun createWithPassword(
-            client_id: String,
-            username: String,
-            password: String,
-            initializer: Builder.() -> Unit = {},
-        ): TokenRequestDto {
-            return Builder(GrantTypeDto.Password, client_id).apply {
-                this.username = username
-                this.password = password
-                initializer()
-            }.build()
-        }
-
-        fun createWithTokenExchange(
-            client_id: String,
-            subject_token: String,
-            initializer: Builder.() -> Unit = {},
-        ): TokenRequestDto {
-            return Builder(GrantTypeDto.TokenExchange, client_id).apply {
-                this.subject_token = subject_token
-                initializer()
-            }.build()
-        }
-    }
-    
-    class Builder(val grant_type: GrantTypeDto, val client_id: String) {
-
-        var client_secret: String? = null
-        var subject_token: String? = null
-        var subject_token_type: SubjectTokenTypeDto? = null
-        var requested_token_type: RequestedTokenTypeDto? = null
-        var subject_issuer: String? = null
-        var username: String? = null
-        var password: String? = null
-        var code: String? = null
-        var code_verifier: String? = null
-
-        fun build(): TokenRequestDto {
-            return TokenRequestDto(
-                grant_type,
-                client_id,
-                client_secret,
-                subject_token,
-                subject_token_type,
-                requested_token_type,
-                subject_issuer,
-                username,
-                password,
-                code,
-                code_verifier
-            )
-        }
-    }
-}
+    @SerialName("code_verifier")
+    val codeVerifier: String? = null,
+)
 
 @Serializable
 enum class GrantTypeDto {
@@ -107,7 +41,8 @@ enum class GrantTypeDto {
     Password,
 
     @SerialName("urn:ietf:params:oauth:grant-type:token-exchange")
-    TokenExchange
+    TokenExchange,
+    ;
 }
 
 @Serializable
@@ -117,15 +52,17 @@ enum class SubjectTokenTypeDto {
     AccessToken,
 
     @SerialName("urn:ietf:params:oauth:token-type:jwt")
-    Jwt
+    Jwt,
+    ;
 }
 
 @Serializable
 enum class RequestedTokenTypeDto {
 
     @SerialName("urn:ietf:params:oauth:token-type:access_token")
-    access_token,
+    AccessToken,
 
     @SerialName("urn:ietf:params:oauth:token-type:refresh_token")
-    refresh_token
+    RefreshToken,
+    ;
 }

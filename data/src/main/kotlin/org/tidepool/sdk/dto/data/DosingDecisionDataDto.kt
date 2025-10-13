@@ -9,13 +9,21 @@ import java.time.Instant
 // TODO: finish implementing dosingdecision.v1
 @Serializable
 data class DosingDecisionDataDto(
+    @SerialName("reason")
     val reason: String,
+    @SerialName("carbsOnBoard")
     val carbsOnBoard: CarbsOnBoardDto? = null,
+    @SerialName("insulinOnBoard")
     val insulinOnBoard: InsulinOnBoardDto? = null,
+    @SerialName("recommendedBasal")
     val recommendedBasal: RecommendedBasalDto? = null,
+    @SerialName("recommendedBolus")
     val recommendedBolus: RecommendedBolusDto? = null,
+    @SerialName("requestedBolus")
     val requestedBolus: RequestedBolusDto? = null,
+    @SerialName("scheduleTimeZoneOffset")
     val scheduleTimeZoneOffset: Int? = null,
+    @SerialName("units")
     val units: UnitsDto = UnitsDto(),
 ) : BaseDataDto(DataTypeDto.DosingDecision) {
     
@@ -38,36 +46,49 @@ data class DosingDecisionDataDto(
     
     @Serializable
     data class CarbsOnBoardDto(
-        @Contextual val time: Instant? = null,
+        @Contextual
+        @SerialName("time")
+        val time: Instant? = null,
+        @SerialName("amount")
         val amount: Double = -1.0,
     )
     
     @Serializable
     data class InsulinOnBoardDto(
-        @Contextual val time: Instant? = null,
+        @Contextual
+        @SerialName("time")
+        val time: Instant? = null,
+        @SerialName("amount")
         val amount: Double = -1.0,
     )
     
     @Serializable
     data class RecommendedBasalDto(
+        @SerialName("rate")
         val rate: Double = -1.0,
+        @SerialName("duration")
         val duration: Double? = null,
     )
     
     @Serializable
     data class RecommendedBolusDto(
+        @SerialName("amount")
         val amount: Double = -1.0,
     )
     
     @Serializable
     data class RequestedBolusDto(
+        @SerialName("amount")
         val amount: Double = -1.0,
     )
     
     @Serializable
     data class UnitsDto(
+        @SerialName("bg")
         val bg: BloodGlucoseDto.UnitsDto = BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter,
+        @SerialName("carb")
         val carb: CarbDto = CarbDto.Exchanges,
+        @SerialName("insulin")
         val insulin: InsulinDto = InsulinDto.Units,
     ) {
         
@@ -84,6 +105,7 @@ data class DosingDecisionDataDto(
         @Serializable
         enum class InsulinDto {
             
+            @SerialName("units")
             Units,
         }
     }

@@ -13,18 +13,35 @@ import kotlin.time.Duration
 // TODO: finish implementing base.v1
 @Serializable
 sealed class BaseDataDto(
+    @SerialName("type")
     val type: DataTypeDto = DataTypeDto.Alert,
-    @Contextual val time: Instant? = null,
+    @Contextual
+    @SerialName("time")
+    val time: Instant? = null,
+    @SerialName("annotations")
     val annotations: Array<Map<String, String>>? = null,
+    @SerialName("associations")
     val associations: Array<AssociationDto>? = null,
-    @Contextual val clockDriftOffset: Duration? = null,
-    @Contextual val conversionOffset: Duration? = null,
+    @Contextual
+    @SerialName("clockDriftOffset")
+    val clockDriftOffset: Duration? = null,
+    @Contextual
+    @SerialName("conversionOffset")
+    val conversionOffset: Duration? = null,
+    @SerialName("dataSetId")
     val dataSetId: String? = null,
+    @SerialName("deviceTime")
     val deviceTime: String? = null,
+    @SerialName("id")
     val id: String? = null,
+    @SerialName("notes")
     val notes: Array<String>? = null,
-    @Contextual val timeZone: TimeZone? = null,
-    @Contextual val timeZoneOffset: Duration? = null
+    @Contextual
+    @SerialName("timeZone")
+    val timeZone: TimeZone? = null,
+    @Contextual
+    @SerialName("timeZoneOffset")
+    val timeZoneOffset: Duration? = null
 ) {
     
     val location: Nothing

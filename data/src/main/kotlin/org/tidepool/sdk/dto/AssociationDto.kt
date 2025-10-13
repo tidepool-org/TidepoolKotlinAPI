@@ -1,22 +1,34 @@
 package org.tidepool.sdk.dto
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlin.reflect.KClass
 
 @Serializable
 data class AssociationDto(
+    @SerialName("type")
     val type: AssociationTypeDto?,
+    @SerialName("id")
     val id: String?,
+    @SerialName("url")
     val url: String?,
+    @SerialName("reason")
     val reason: String?
 ) {
     
     @Serializable
-    enum class AssociationTypeDto(val subclassType: KClass<AssociationDto>) {
+    enum class AssociationTypeDto {
         
-        blob(AssociationDto::class),
-        datum(AssociationDto::class),
-        image(AssociationDto::class),
-        url(AssociationDto::class)
+        @SerialName("blob")
+        Blob,
+        
+        @SerialName("datum")
+        Datum,
+        
+        @SerialName("image")
+        Image,
+        
+        @SerialName("url")
+        Url,
+        ;
     }
 }

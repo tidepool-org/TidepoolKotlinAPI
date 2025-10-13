@@ -1,11 +1,9 @@
 package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
-import org.tidepool.sdk.dto.data.BaseDataDto
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataType
-import org.tidepool.sdk.model.data.toDomain
 import org.tidepool.sdk.model.data.toDto
 import org.tidepool.sdk.repository.DataRepository
 import java.time.Instant
@@ -38,5 +36,5 @@ class DataService internal constructor(
         carelink = carelink,
         medtronic = medtronic,
         sessionToken = tokenProvider.getToken()
-    ).mapList(BaseDataDto::toDomain)
+    ).mapList { BaseData.fromDto(it) }
 }

@@ -1,5 +1,6 @@
 package org.tidepool.sdk.model.data
 
+import io.mcarle.konvert.api.KonvertFrom
 import org.tidepool.sdk.dto.BloodGlucoseDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.model.BloodGlucose
@@ -16,6 +17,9 @@ data class DosingDecisionData(
     val scheduleTimeZoneOffset: Int? = null,
     val units: Units = Units(),
 ) : BaseData(DataType.DosingDecision) {
+    
+    @KonvertFrom(DosingDecisionDataDto::class, mapFunctionName = "fromDto")
+    companion object {}
     
     val originalFood: Nothing
         get() = TODO("backing object not implemented")
@@ -37,31 +41,54 @@ data class DosingDecisionData(
     data class CarbsOnBoard(
         val time: Instant? = null,
         val amount: Double = -1.0,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionDataDto.CarbsOnBoardDto::class, mapFunctionName = "fromDto")
+        companion object {}
+    }
     
     data class InsulinOnBoard(
         val time: Instant? = null,
         val amount: Double = -1.0,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionDataDto.InsulinOnBoardDto::class, mapFunctionName = "fromDto")
+        companion object {}
+    }
     
     data class RecommendedBasal(
         val rate: Double = -1.0,
         val duration: Double? = null,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionDataDto.RecommendedBasalDto::class, mapFunctionName = "fromDto")
+        companion object {}
+    }
     
     data class RecommendedBolus(
         val amount: Double = -1.0,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionDataDto.RecommendedBolusDto::class, mapFunctionName = "fromDto")
+        companion object {}
+    }
     
     data class RequestedBolus(
         val amount: Double = -1.0,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionDataDto.RequestedBolusDto::class, mapFunctionName = "fromDto")
+        companion object {}
+    }
     
     data class Units(
         val bg: BloodGlucose.Units = BloodGlucose.Units.MilligramsPerDeciliter,
         val carb: Carb = Carb.Exchanges,
         val insulin: Insulin = Insulin.Units,
     ) {
+        
+        @KonvertFrom(DosingDecisionDataDto.UnitsDto::class, mapFunctionName = "fromDto")
+        companion object {}
         
         enum class Carb {
             Exchanges,
@@ -73,60 +100,4 @@ data class DosingDecisionData(
             Units,
         }
     }
-}
-
-internal fun DosingDecisionDataDto.toDomain() = DosingDecisionData(
-    reason = reason,
-    carbsOnBoard = carbsOnBoard?.toDomain(),
-    insulinOnBoard = insulinOnBoard?.toDomain(),
-    recommendedBasal = recommendedBasal?.toDomain(),
-    recommendedBolus = recommendedBolus?.toDomain(),
-    requestedBolus = requestedBolus?.toDomain(),
-    scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-    units = units.toDomain(),
-)
-
-internal fun DosingDecisionDataDto.CarbsOnBoardDto.toDomain() = DosingDecisionData.CarbsOnBoard(
-    time = time,
-    amount = amount,
-)
-
-internal fun DosingDecisionDataDto.InsulinOnBoardDto.toDomain() = DosingDecisionData.InsulinOnBoard(
-    time = time,
-    amount = amount,
-)
-
-internal fun DosingDecisionDataDto.RecommendedBasalDto.toDomain() =
-    DosingDecisionData.RecommendedBasal(
-    rate = rate,
-    duration = duration,
-)
-
-internal fun DosingDecisionDataDto.RecommendedBolusDto.toDomain() =
-    DosingDecisionData.RecommendedBolus(
-    amount = amount,
-)
-
-internal fun DosingDecisionDataDto.RequestedBolusDto.toDomain() = DosingDecisionData.RequestedBolus(
-    amount = amount,
-)
-
-internal fun DosingDecisionDataDto.UnitsDto.toDomain() = DosingDecisionData.Units(
-    bg = bg.toDomain(),
-    carb = carb.toDomain(),
-    insulin = insulin.toDomain(),
-)
-
-internal fun DosingDecisionDataDto.UnitsDto.InsulinDto.toDomain() = when (this) {
-    DosingDecisionDataDto.UnitsDto.InsulinDto.Units -> DosingDecisionData.Units.Insulin.Units
-}
-
-internal fun DosingDecisionDataDto.UnitsDto.CarbDto.toDomain() = when (this) {
-    DosingDecisionDataDto.UnitsDto.CarbDto.Exchanges -> DosingDecisionData.Units.Carb.Exchanges
-    DosingDecisionDataDto.UnitsDto.CarbDto.Grams     -> DosingDecisionData.Units.Carb.Grams
-}
-
-internal fun BloodGlucoseDto.UnitsDto.toDomain() = when (this) {
-    BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter -> BloodGlucose.Units.MilligramsPerDeciliter
-    BloodGlucoseDto.UnitsDto.MillimolesPerLiter     -> BloodGlucose.Units.MillimolesPerLiter
 }

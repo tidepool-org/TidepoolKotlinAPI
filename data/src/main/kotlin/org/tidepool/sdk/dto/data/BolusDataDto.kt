@@ -7,7 +7,9 @@ import kotlinx.serialization.Serializable
 // line 2330
 @Serializable
 data class BolusDataDto(
+    @SerialName("subType")
     val subType: BolusSubtypeDto = BolusSubtypeDto.Normal,
+    @SerialName("deliveryContext")
     val deliveryContext: DeliveryContextDto,
 ) : BaseDataDto(DataTypeDto.Bolus) {
     
@@ -30,9 +32,17 @@ enum class BolusSubtypeDto {
 
 @Serializable
 enum class DeliveryContextDto {
+    
+    @SerialName("device")
     Device,
+    
+    @SerialName("algorithm")
     Algorithm,
+    
+    @SerialName("remote")
     Remote,
+    
+    @SerialName("undetermined")
     Undetermined,
     ;
 }

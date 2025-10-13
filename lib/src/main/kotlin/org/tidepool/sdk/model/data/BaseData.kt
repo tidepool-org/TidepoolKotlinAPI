@@ -1,5 +1,6 @@
 package org.tidepool.sdk.model.data
 
+import io.mcarle.konvert.api.KonvertFrom
 import org.tidepool.sdk.deserialization.ResultType
 import org.tidepool.sdk.dto.data.*
 import org.tidepool.sdk.model.Association
@@ -47,13 +48,16 @@ sealed class BaseData(
         ReportedState,
         Smbg
     }
-}
-
-internal fun BaseDataDto.toDomain() = when (this) {
-    is BasalAutomatedDataDto    -> toDomain()
-    is BolusDataDto             -> toDomain()
-    is ContinuousGlucoseDataDto -> toDomain()
-    is DosingDecisionDataDto    -> toDomain()
-    is FoodDataDto              -> toDomain()
-    is InsulinDataDto           -> toDomain()
+    
+    companion object {
+        
+        internal fun fromDto(dto: BaseDataDto) = when (dto) {
+            is BasalAutomatedDataDto    -> BasalAutomatedData.fromDto(dto)
+            is BolusDataDto             -> BolusData.fromDto(dto)
+            is ContinuousGlucoseDataDto -> ContinuousGlucoseData.fromDto(dto)
+            is DosingDecisionDataDto    -> DosingDecisionData.fromDto(dto)
+            is FoodDataDto              -> FoodData.fromDto(dto)
+            is InsulinDataDto           -> InsulinData.fromDto(dto)
+        }
+    }
 }

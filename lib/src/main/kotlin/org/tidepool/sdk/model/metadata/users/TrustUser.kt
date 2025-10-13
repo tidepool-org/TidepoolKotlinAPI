@@ -35,6 +35,50 @@ sealed class TrustUser(
     profile = profile,
 ) {
     
+    companion object {
+        internal fun fromDto(dto: TrustUserDto): TrustUser = when {
+            dto.isTrustor -> TrustorUser(
+                permissions = dto.permissions.map { Permission.fromDto(it) }.toSet(),
+                emailVerified = dto.emailVerified,
+                emails = dto.emails,
+                termsAccepted = dto.termsAccepted,
+                userId = dto.userId,
+                username = dto.userName,
+                roles = dto.roles,
+                createdTime = dto.createdTime,
+                createdUserId = dto.createdUserId,
+                modifiedTime = dto.modifiedTime,
+                modifiedUserId = dto.modifiedUserId,
+                deletedTime = dto.deletedTime,
+                deletedUserId = dto.deletedUserId,
+                profile = dto.profile?.let {
+                    Profile(it.fullName)
+                }
+            )
+            
+            dto.isTrustee -> TrusteeUser(
+                permissions = dto.permissions.map { Permission.fromDto(it) }.toSet(),
+                emailVerified = dto.emailVerified,
+                emails = dto.emails,
+                termsAccepted = dto.termsAccepted,
+                userId = dto.userId,
+                username = dto.userName,
+                roles = dto.roles,
+                createdTime = dto.createdTime,
+                createdUserId = dto.createdUserId,
+                modifiedTime = dto.modifiedTime,
+                modifiedUserId = dto.modifiedUserId,
+                deletedTime = dto.deletedTime,
+                deletedUserId = dto.deletedUserId,
+                profile = dto.profile?.let {
+                    Profile(it.fullName)
+                }
+            )
+            
+            else -> throw IllegalStateException("TrustUserDto must be either trustor or trustee")
+        }
+    }
+    
     data class TrustorUser(
         val permissions: Set<Permission>,
         override val emailVerified: Boolean = false,
@@ -96,46 +140,4 @@ sealed class TrustUser(
         deletedUserId = deletedUserId,
         profile = profile,
     )
-}
-
-internal fun TrustUserDto.toDomain(): TrustUser = when {
-    isTrustor -> TrustUser.TrustorUser(
-        permissions = permissions.map { it.toDomain() }.toSet(),
-        emailVerified = emailVerified,
-        emails = emails,
-        termsAccepted = termsAccepted,
-        userId = userId,
-        username = userName,
-        roles = roles,
-        createdTime = createdTime,
-        createdUserId = createdUserId,
-        modifiedTime = modifiedTime,
-        modifiedUserId = modifiedUserId,
-        deletedTime = deletedTime,
-        deletedUserId = deletedUserId,
-        profile = profile?.let {
-            Profile(it.fullName)
-        }
-    )
-    
-    isTrustee -> TrustUser.TrusteeUser(
-        permissions = permissions.map { it.toDomain() }.toSet(),
-        emailVerified = emailVerified,
-        emails = emails,
-        termsAccepted = termsAccepted,
-        userId = userId,
-        username = userName,
-        roles = roles,
-        createdTime = createdTime,
-        createdUserId = createdUserId,
-        modifiedTime = modifiedTime,
-        modifiedUserId = modifiedUserId,
-        deletedTime = deletedTime,
-        deletedUserId = deletedUserId,
-        profile = profile?.let {
-            Profile(it.fullName)
-        }
-    )
-    
-    else -> throw IllegalStateException("TrustUserDto must be either trustor or trustee")
 }

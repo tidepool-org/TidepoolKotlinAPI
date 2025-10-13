@@ -6,10 +6,15 @@ import kotlinx.serialization.Serializable
 // TODO: Finish implementing automated.v1
 @Serializable
 data class BasalAutomatedDataDto(
+    @SerialName("deliveryType")
     val deliveryType: DeliveryTypeDto,
+    @SerialName("duration")
     val duration: Int,
+    @SerialName("expectedDuration")
     val expectedDuration: Int? = null,
+    @SerialName("rate")
     val rate: Double = -1.0,
+    @SerialName("scheduleName")
     val scheduleName: String? = null,
 ) : BaseDataDto(DataTypeDto.Basal) {
     

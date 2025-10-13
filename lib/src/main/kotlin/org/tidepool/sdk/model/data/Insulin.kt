@@ -1,5 +1,6 @@
 package org.tidepool.sdk.model.data
 
+import io.mcarle.konvert.api.KonvertFrom
 import org.tidepool.sdk.dto.data.DoseDto
 import org.tidepool.sdk.dto.data.InsulinDto
 
@@ -11,23 +12,14 @@ class Insulin {
     }
 }
 
-// schema dose.v1
 data class Dose(
     val units: Insulin.Units,
     val total: Double,
     val food: Double?,
     val correction: Double?,
     val active: Double?,
-)
-
-internal fun DoseDto.toDomain() = Dose(
-    units = units.toDomain(),
-    total = total,
-    food = food,
-    correction = correction,
-    active = active,
-)
-
-internal fun InsulinDto.UnitsDto.toDomain() = when (this) {
-    InsulinDto.UnitsDto.Units -> Insulin.Units.Units
+) {
+    
+    @KonvertFrom(DoseDto::class, mapFunctionName = "fromDto")
+    companion object {}
 }

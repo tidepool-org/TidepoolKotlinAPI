@@ -1,5 +1,6 @@
 package org.tidepool.sdk.model.metadata.users
 
+import io.mcarle.konvert.api.KonvertFrom
 import org.tidepool.sdk.dto.user.UserDto
 import org.tidepool.sdk.model.metadata.Profile
 import java.time.Instant
@@ -18,22 +19,8 @@ open class User(
     open val deletedTime: Instant? = null,
     open val deletedUserId: String? = null,
     open val profile: Profile? = null,
-)
-
-internal fun UserDto.toDomain() = User(
-    emailVerified = emailVerified,
-    emails = emails ?: emptyList(),
-    termsAccepted = termsAccepted,
-    userId = userId,
-    username = userName,
-    roles = roles ?: emptyList(),
-    createdTime = createdTime,
-    createdUserId = createdUserId,
-    modifiedTime = modifiedTime,
-    modifiedUserId = modifiedUserId,
-    deletedTime = deletedTime,
-    deletedUserId = deletedUserId,
-    profile = profile?.let {
-        Profile(it.fullName)
-    }
-)
+) {
+    
+    @KonvertFrom(UserDto::class, mapFunctionName = "fromDto")
+    companion object {}
+}

@@ -1,9 +1,8 @@
 package org.tidepool.sdk.model.data
 
+import io.mcarle.konvert.api.KonvertFrom
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
-import org.tidepool.sdk.dto.data.BasalAutomatedDataDto.DeliveryTypeDto
 
-// TODO: Finish implementing automated.v1
 data class BasalAutomatedData(
     val deliveryType: DeliveryType,
     val duration: Int,
@@ -11,6 +10,9 @@ data class BasalAutomatedData(
     val rate: Double = -1.0,
     val scheduleName: String? = null,
 ) : BaseData(DataType.Basal) {
+    
+    @KonvertFrom(BasalAutomatedDataDto::class, mapFunctionName = "fromDto")
+    companion object {}
     
     val insulinFormulation: Nothing
         get() = TODO("schema \"formulation.v1\" not implemented")
@@ -23,19 +25,4 @@ data class BasalAutomatedData(
         Suspend,
         Temp,
     }
-}
-
-internal fun BasalAutomatedDataDto.toDomain() = BasalAutomatedData(
-    deliveryType = deliveryType.toDomain(),
-    duration = duration,
-    expectedDuration = expectedDuration,
-    rate = rate,
-    scheduleName = scheduleName,
-)
-
-internal fun DeliveryTypeDto.toDomain(): BasalAutomatedData.DeliveryType = when (this) {
-    DeliveryTypeDto.Automated -> BasalAutomatedData.DeliveryType.Automated
-    DeliveryTypeDto.Scheduled -> BasalAutomatedData.DeliveryType.Scheduled
-    DeliveryTypeDto.Suspend   -> BasalAutomatedData.DeliveryType.Suspend
-    DeliveryTypeDto.Temp      -> BasalAutomatedData.DeliveryType.Temp
 }

@@ -1,14 +1,19 @@
 package org.tidepool.sdk.dto.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.dto.BloodGlucoseDto
 import org.tidepool.sdk.dto.BloodGlucoseDto.GlucoseReadingDto
 
 @Serializable
 data class ContinuousGlucoseDataDto(
+    @SerialName("value")
     val value: Double? = null,
+    @SerialName("units")
     val units: BloodGlucoseDto.UnitsDto? = null,
+    @SerialName("trend")
     val trend: BloodGlucoseDto.TrendDto? = null,
+    @SerialName("trendRate")
     val trendRate: Double? = null
 ) : BaseDataDto(type = DataTypeDto.Cbg) {
     

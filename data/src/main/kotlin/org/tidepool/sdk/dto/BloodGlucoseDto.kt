@@ -27,8 +27,12 @@ class BloodGlucoseDto {
     }
     
     @Serializable
-    class GlucoseReadingDto(val amount: Double, val units: UnitsDto) :
-        Comparable<GlucoseReadingDto> {
+    class GlucoseReadingDto(
+        @SerialName("amount")
+        val amount: Double,
+        @SerialName("units")
+        val units: UnitsDto
+    ) : Comparable<GlucoseReadingDto> {
         
         fun inUnit(newUnit: UnitsDto) = units.convert(amount, newUnit)
         
@@ -49,36 +53,26 @@ class BloodGlucoseDto {
             return amount.equals(other.inUnit(units))
         }
         
-        override fun hashCode(): Int {
-            return inUnit(MilligramsPerDeciliter).hashCode()
+        override fun hashCode() = inUnit(MilligramsPerDeciliter).hashCode()
+        
+        override fun compareTo(other: GlucoseReadingDto) = amount.compareTo(other.inUnit(units))
+        
+        private fun Double.roundMillimolesPerLiter() = (this * 10).roundToInt() / 10.0
+        
+        fun toString(unit: UnitsDto) = when (unit) {
+            MillimolesPerLiter     -> inUnit(unit).roundMillimolesPerLiter().toString()
+            MilligramsPerDeciliter -> inUnit(unit).roundToInt().toString()
         }
         
-        override fun compareTo(other: GlucoseReadingDto): Int {
-            return amount.compareTo(other.inUnit(units))
-        }
-        
-        private fun Double.roundMillimolesPerLiter(): Double {
-            return (this * 10).roundToInt() / 10.0
-        }
-        
-        fun toString(unit: UnitsDto): String {
-            return when (unit) {
-                MillimolesPerLiter     -> inUnit(unit).roundMillimolesPerLiter().toString()
-                MilligramsPerDeciliter -> inUnit(unit).roundToInt().toString()
+        fun toSignString(unit: UnitsDto) = when (unit) {
+            MillimolesPerLiter     -> inUnit(unit).let {
+                if (it == 0.0) "0" else "%+.1f".format(
+                    it.roundMillimolesPerLiter()
+                )
             }
-        }
-        
-        fun toSignString(unit: UnitsDto): String {
-            return when (unit) {
-                MillimolesPerLiter     -> inUnit(unit).let {
-                    if (it == 0.0) "0" else "%+.1f".format(
-                        it.roundMillimolesPerLiter()
-                    )
-                }
-                
-                MilligramsPerDeciliter -> inUnit(unit).let { amount ->
-                    amount.roundToInt().let { if (it == 0) "0" else "%+d".format(it) }
-                }
+            
+            MilligramsPerDeciliter -> inUnit(unit).let { amount ->
+                amount.roundToInt().let { if (it == 0) "0" else "%+d".format(it) }
             }
         }
     }
@@ -110,18 +104,27 @@ class BloodGlucoseDto {
     
     @Serializable
     data class TargetDto(
+        @SerialName("target")
         val target: Double?,
+        @SerialName("range")
         val range: Double?,
+        @SerialName("low")
         val low: Double?,
+        @SerialName("high")
         val high: Double?
     )
     
     @Serializable
     data class StartTargetDto(
+        @SerialName("start")
         val start: Duration?,
+        @SerialName("target")
         val target: Double?,
+        @SerialName("range")
         val range: Double?,
+        @SerialName("low")
         val low: Double?,
+        @SerialName("high")
         val high: Double?
     )
     

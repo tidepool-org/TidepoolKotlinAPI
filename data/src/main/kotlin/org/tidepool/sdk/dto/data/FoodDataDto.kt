@@ -6,10 +6,15 @@ import kotlinx.serialization.Serializable
 // schema food.v1
 @Serializable
 data class FoodDataDto(
+    @SerialName("brand")
     val brand: String? = null,
+    @SerialName("code")
     val code: String? = null,
+    @SerialName("meal")
     val meal: MealDto? = null,
+    @SerialName("mealOther")
     val mealOther: String? = null,
+    @SerialName("name")
     val name: String? = null,
 ) : BaseDataDto(DataTypeDto.Food) {
     
@@ -24,18 +29,18 @@ data class FoodDataDto(
     enum class MealDto {
         
         @SerialName("breakfast")
-        breakfast,
+        Breakfast,
         
         @SerialName("lunch")
-        lunch,
+        Lunch,
         
         @SerialName("dinner")
-        dinner,
+        Dinner,
         
         @SerialName("snack")
-        snack,
+        Snack,
         
         @SerialName("other")
-        other,
+        Other,
     }
 }

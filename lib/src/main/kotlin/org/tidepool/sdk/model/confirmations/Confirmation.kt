@@ -1,10 +1,9 @@
 package org.tidepool.sdk.model.confirmations
 
+import io.mcarle.konvert.api.KonvertFrom
 import kotlinx.serialization.json.JsonObject
 import org.tidepool.sdk.dto.confirmation.ConfirmationDto
 import org.tidepool.sdk.model.metadata.Profile
-import org.tidepool.sdk.model.metadata.toDomain
-import org.tidepool.sdk.model.metadata.toDto
 import java.time.Instant
 
 data class Confirmation(
@@ -21,45 +20,14 @@ data class Confirmation(
     val expiresAt: Instant? = null,
 ) {
     
+    @KonvertFrom(ConfirmationDto::class, mapFunctionName = "fromDto")
+    companion object {}
+    
     data class Creator(
         val userId: String = "",
         val profile: Profile = Profile(),
-    )
+    ) {
+        @KonvertFrom(ConfirmationDto.CreatorDto::class, mapFunctionName = "fromDto")
+        companion object
+    }
 }
-
-internal fun Confirmation.toDto(): ConfirmationDto = ConfirmationDto(
-    key = key,
-    type = type.toDto(),
-    status = status.toDto(),
-    email = email,
-    creatorId = creatorId,
-    created = created,
-    modified = modified,
-    creator = creator?.toDto(),
-    context = context,
-    restrictions = restrictions?.toDto(),
-    expiresAt = expiresAt
-)
-
-internal fun ConfirmationDto.toDomain(): Confirmation = Confirmation(
-    key = key,
-    type = type.toDomain(),
-    status = status.toDomain(),
-    email = email,
-    creatorId = creatorId,
-    created = created,
-    modified = modified,
-    creator = creator?.toDomain(),
-    context = context,
-    restrictions = restrictions?.toDomain(),
-    expiresAt = expiresAt
-)
-internal fun Confirmation.Creator.toDto() = ConfirmationDto.CreatorDto(
-    userId = userId,
-    profile = profile.toDto()
-)
-
-internal fun ConfirmationDto.CreatorDto.toDomain() = Confirmation.Creator(
-    userId = userId,
-    profile = profile.toDomain()
-)

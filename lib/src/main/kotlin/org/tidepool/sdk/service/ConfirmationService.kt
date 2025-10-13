@@ -1,11 +1,10 @@
 package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
-import org.tidepool.sdk.dto.confirmation.ConfirmationDto
 import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.confirmations.Confirmation
-import org.tidepool.sdk.model.confirmations.toDomain
+import org.tidepool.sdk.model.confirmations.fromDto
 import org.tidepool.sdk.repository.ConfirmationRepository
 import org.tidepool.sdk.repository.UserRepository
 
@@ -23,7 +22,7 @@ class ConfirmationService internal constructor(
                     userId = user.userId,
                 )
             }
-        }.mapList(ConfirmationDto::toDomain)
+        }.mapList { Confirmation.fromDto(it) }
     
     suspend fun acceptConfirmation(
         confirmationKey: String,
