@@ -23,7 +23,7 @@ import java.time.Instant
 import kotlin.collections.toTypedArray
 
 class DataRepositoryImpl(
-    val dataApi: DataApi,
+    private val dataApi: DataApi,
 ) : DataRepository {
     
     override suspend fun getDataForUser(

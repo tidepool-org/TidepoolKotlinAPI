@@ -3,6 +3,7 @@ package org.tidepool.sdk.service
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
+import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource

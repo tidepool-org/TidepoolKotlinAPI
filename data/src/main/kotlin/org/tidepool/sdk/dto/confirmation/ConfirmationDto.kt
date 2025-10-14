@@ -14,6 +14,7 @@ import org.tidepool.sdk.model.metadata.UserProfile
 import java.time.Instant
 
 @Serializable
+@KonvertTo(value = Confirmation::class, mapFunctionName = "toDomain")
 data class ConfirmationDto(
     @SerialName("key")
     val key: String = "",
@@ -43,6 +44,7 @@ data class ConfirmationDto(
 ) {
     
     @Serializable
+    @KonvertTo(value = Confirmation.Creator::class, mapFunctionName = "toDomain")
     data class CreatorDto(
         @SerialName("userId")
         val userId: String = "",

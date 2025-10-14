@@ -2,6 +2,7 @@ package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.flatMap
+import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.confirmation.Confirmation
 import org.tidepool.sdk.model.metadata.users.Permission
 import org.tidepool.sdk.repository.ConfirmationRepository
