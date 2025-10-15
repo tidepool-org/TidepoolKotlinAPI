@@ -1,11 +1,6 @@
 package org.tidepool.sdk.auth
 
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
-import org.tidepool.sdk.CommunicationHelper
-import org.tidepool.sdk.requests.GrantType
-import org.tidepool.sdk.requests.TokenRequest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -16,7 +11,7 @@ class AuthSerializationTest {
     @Test
     fun serializationTest() {
         val req = TokenRequest(
-            GrantType.password,
+            GrantType.Password,
             "cgm-monitor",
             client_secret = "c50e6502-131c-47f0-b439-a43acb3b83d0",
             password = "qwertyuiop1234",
@@ -32,7 +27,7 @@ class AuthSerializationTest {
     
     @Test
     fun serializationAnnotationTest() {
-        val req = TokenRequest(GrantType.tokenExchange, "cgm-monitor")
+        val req = TokenRequest(GrantType.TokenExchange, "cgm-monitor")
         val serialized = json.encodeToString(req)
         val expectedJson =
             "{\"grant_type\":\"urn:ietf:params:oauth:grant-type:token-exchange\",\"client_id\":\"cgm-monitor\",\"client_secret\":null,\"subject_token\":null,\"subject_token_type\":null,\"requested_token_type\":null,\"subject_issuer\":null,\"username\":null,\"password\":null,\"code\":null,\"code_verifier\":null}"

@@ -1,0 +1,41 @@
+package org.tidepool.sdk
+
+import org.koin.core.Koin
+import org.koin.dsl.koinApplication
+import org.koin.dsl.module
+import org.tidepool.sdk.di.dataModule
+import org.tidepool.sdk.di.domainModule
+import org.tidepool.sdk.service.ConfirmationService
+import org.tidepool.sdk.service.DataService
+import org.tidepool.sdk.service.MetadataService
+import org.tidepool.sdk.service.UserService
+
+class TidepoolSDK(
+    environment: Environment,
+    private val tokenProvider: TokenProvider,
+) {
+    
+    // Internal DI container - not exposed
+    
+    private val koinApp = koinApplication {
+        modules(
+            // Environment module
+            module {
+                single<Environment> { environment }
+                single<TokenProvider> { tokenProvider }
+            },
+            domainModule,
+            dataModule,
+        )
+    }
+    private val koin: Koin = koinApp.koin
+    
+    val confirmations: ConfirmationService by lazy { koin.get() }
+    val data: DataService by lazy { koin.get() }
+    val metadata: MetadataService by lazy { koin.get() }
+    val users: UserService by lazy { koin.get() }
+    
+    public fun shutdown() {
+        koinApp.close()
+    }
+}

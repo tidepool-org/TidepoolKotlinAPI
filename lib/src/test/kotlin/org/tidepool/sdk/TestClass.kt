@@ -5,8 +5,6 @@ import kotlinx.coroutines.runBlocking
 import org.tidepool.sdk.model.auth.Realm
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.ContinuousGlucoseData
-import org.tidepool.sdk.requests.Data.CommaSeparatedArray
-import org.tidepool.sdk.requests.TokenRequest
 import java.time.Instant
 import kotlin.test.Test
 
@@ -15,15 +13,15 @@ class TestClass {
     fun THE_test() = runBlocking {
         val helper = CommunicationHelper(Environments.Qa2)
         launch {
-            val connectionResponse = helper.auth.obtainToken(
-                Realm.qa2,
+            val connectionResponse = helper.authApi.obtainToken(
+                Realm.Qa2,
                 TokenRequest.createWithPassword("client_id", "username", "password")
             )
-            val user = helper.users.getCurrentUserInfo(connectionResponse.access_token)
-            val allData = helper.data.getDataForUser(
+            val user = helper.usersApi.getCurrentUserInfo(connectionResponse.access_token)
+            val allData = helper.dataApi.getDataForUser(
                 connectionResponse.access_token,
                 user.userid,
-                types = CommaSeparatedArray(BaseData.DataType.cbg)
+                types = CommaSeparatedArray(BaseData.DataType.Cbg)
             )
             for (data in allData) {
                 (data as? ContinuousGlucoseData)?.run {
