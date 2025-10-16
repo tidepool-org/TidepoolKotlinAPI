@@ -19,28 +19,28 @@ class AuthorizationService internal constructor(
     suspend fun getGroupsForUser(userId: String): Result<Map<String, Set<Permission>>> =
         repository.getGroupsForUser(
             sessionToken = tokenProvider.getToken(),
-            userId = userId
+            userId = userId,
         )
     
     /**
      * Retrieve all users that have access to a group
      */
-    suspend fun getUsersInGroup(sharerId: String): Result<Map<String, Set<Permission>>> =
+    suspend fun getUsersInGroup(groupId: String): Result<Map<String, Set<Permission>>> =
         repository.getUsersInGroup(
             sessionToken = tokenProvider.getToken(),
-            sharerId = sharerId
+            groupId = groupId,
         )
     
     /**
      * Retrieve permissions of an individual user in a group
      */
     suspend fun getPermissionsForUser(
-        sharerId: String,
-        userId: String
+        groupId: String,
+        userId: String,
     ): Result<Set<Permission>> = repository.getPermissionsForUser(
         sessionToken = tokenProvider.getToken(),
-        sharerId = sharerId,
-        userId = userId
+        groupId = groupId,
+        userId = userId,
     )
     
     /**
@@ -49,13 +49,13 @@ class AuthorizationService internal constructor(
      * To delete a permission, don't include it in the permissions set.
      */
     suspend fun grantPermissionsInGroup(
-        sharerId: String,
+        groupId: String,
         userId: String,
-        permissions: Set<Permission>
+        permissions: Set<Permission>,
     ): Result<Set<Permission>> = repository.grantPermissionsInGroup(
         sessionToken = tokenProvider.getToken(),
-        sharerId = sharerId,
+        groupId = groupId,
         userId = userId,
-        permissions = ModifyUserPermissionsRequest(permissions)
+        permissions = ModifyUserPermissionsRequest(permissions),
     )
 }

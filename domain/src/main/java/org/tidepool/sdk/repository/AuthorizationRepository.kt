@@ -21,7 +21,7 @@ interface AuthorizationRepository {
      */
     suspend fun getUsersInGroup(
         sessionToken: String,
-        sharerId: String
+        groupId: String
     ): Result<Map<String, Set<Permission>>>
     
     /**
@@ -29,7 +29,7 @@ interface AuthorizationRepository {
      */
     suspend fun getPermissionsForUser(
         sessionToken: String,
-        sharerId: String,
+        groupId: String,
         userId: String
     ): Result<Set<Permission>>
     
@@ -38,7 +38,7 @@ interface AuthorizationRepository {
      */
     suspend fun grantPermissionsInGroup(
         sessionToken: String,
-        sharerId: String,
+        groupId: String,
         userId: String,
         permissions: ModifyUserPermissionsRequest,
     ): Result<Set<Permission>>

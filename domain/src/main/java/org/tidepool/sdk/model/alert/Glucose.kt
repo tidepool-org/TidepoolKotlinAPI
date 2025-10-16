@@ -6,11 +6,11 @@ sealed class Glucose {
     
     data class MgDLGlucose(
         override val units: String = "mg/dL",
-        val value: Int
+        val value: Int,
     ) : Glucose()
     
     data class MmolGlucose(
         override val units: String = "mmol/L",
-        val value: Float
+        val value: Float,
     ) : Glucose()
 }

@@ -140,6 +140,7 @@ public val dataModule = module {
         Retrofit.Builder()
             .baseUrl(environment.auth.url)
             .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .client(get())
             .build()
     }
     

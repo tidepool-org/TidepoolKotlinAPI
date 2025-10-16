@@ -15,25 +15,26 @@ data class MessageDto(
 ) {
     
     @Serializable
+    @KonvertTo(Message::class, mapFunctionName = "toDomain")
     data class MessageContentDto(
         @SerialName("id")
         val id: String = "",
         @SerialName("guid")
         val guid: String = "",
         @SerialName("parentmessage")
-        val parentmessage: String? = null,
+        val parentMessage: String? = null,
         @SerialName("userid")
-        val userid: String = "",
+        val userId: String = "",
         @SerialName("groupid")
-        val groupid: String = "",
+        val groupId: String = "",
         @SerialName("timestamp")
         @Contextual val timestamp: Instant = Instant.now(),
         @SerialName("createdtime")
-        @Contextual val createdtime: Instant = Instant.now(),
+        @Contextual val createdTime: Instant = Instant.now(),
         @SerialName("modifiedtime")
-        @Contextual val modifiedtime: Instant? = null,
+        @Contextual val modifiedTime: Instant? = null,
         @SerialName("messagetext")
-        val messagetext: String = "",
+        val messageText: String = "",
         @SerialName("user")
         val user: MessageUserDto? = null,
     )

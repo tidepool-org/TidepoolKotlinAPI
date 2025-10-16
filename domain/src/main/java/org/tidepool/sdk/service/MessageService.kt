@@ -23,7 +23,7 @@ class MessageService internal constructor(
         sessionToken = tokenProvider.getToken(),
         userId = userId,
         startTime = startTime,
-        endTime = endTime
+        endTime = endTime,
     )
     
     suspend fun listTopLevelMessages(
@@ -34,7 +34,7 @@ class MessageService internal constructor(
         sessionToken = tokenProvider.getToken(),
         userId = userId,
         startTime = startTime,
-        endTime = endTime
+        endTime = endTime,
     )
     
     suspend fun createMessage(
@@ -47,7 +47,7 @@ class MessageService internal constructor(
         userId = userId,
         messageText = messageText,
         timestamp = timestamp,
-        guid = guid
+        guid = guid,
     )
     
     suspend fun replyToMessage(
@@ -60,21 +60,21 @@ class MessageService internal constructor(
         messageId = messageId,
         messageText = messageText,
         timestamp = timestamp,
-        guid = guid
+        guid = guid,
     )
     
     suspend fun findMessageById(
         messageId: String,
     ): Result<Message> = messageRepository.findMessageById(
         sessionToken = tokenProvider.getToken(),
-        messageId = messageId
+        messageId = messageId,
     )
     
     suspend fun getMessageThread(
         messageId: String,
     ): Result<List<Message>> = messageRepository.getMessageThread(
         sessionToken = tokenProvider.getToken(),
-        messageId = messageId
+        messageId = messageId,
     )
     
     suspend fun updateMessage(
@@ -85,14 +85,14 @@ class MessageService internal constructor(
         sessionToken = tokenProvider.getToken(),
         messageId = messageId,
         messageText = messageText,
-        timestamp = timestamp
+        timestamp = timestamp,
     )
     
     suspend fun deleteMessage(
         messageId: String,
     ): Result<Unit> = messageRepository.deleteMessage(
         sessionToken = tokenProvider.getToken(),
-        messageId = messageId
+        messageId = messageId,
     )
     
     suspend fun getCurrentUserMessages(
@@ -104,7 +104,7 @@ class MessageService internal constructor(
                 sessionToken = token,
                 userId = user.userId,
                 startTime = startTime,
-                endTime = endTime
+                endTime = endTime,
             )
         }
     }
@@ -118,7 +118,7 @@ class MessageService internal constructor(
                 sessionToken = token,
                 userId = user.userId,
                 startTime = startTime,
-                endTime = endTime
+                endTime = endTime,
             )
         }
     }
@@ -134,7 +134,7 @@ class MessageService internal constructor(
                 userId = user.userId,
                 messageText = messageText,
                 timestamp = timestamp,
-                guid = guid
+                guid = guid,
             )
         }
     }

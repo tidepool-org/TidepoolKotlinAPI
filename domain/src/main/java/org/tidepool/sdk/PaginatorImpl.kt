@@ -56,24 +56,23 @@ internal class PaginatorImpl<Key, Item>(
             return
         }
         
-        requestMutex
-            .withLock {
-                onRequest(currentKey)
-            }.onFailure {
-                onLoadPageFailure(it)
-            }.onSuccess { item ->
-                currentKey = getNextKey(item, currentKey)
-                isEndReached = endReached(item, currentKey)
-                onLoadPageSuccess(item, isEndReached)
-                _items.update { list ->
-                    if (isReseting) {
-                        listOf(item)
-                    } else {
-                        list.orEmpty() + item
-                    }
+        requestMutex.withLock {
+            onRequest(currentKey)
+        }.onFailure {
+            onLoadPageFailure(it)
+        }.onSuccess { item ->
+            currentKey = getNextKey(item, currentKey)
+            isEndReached = endReached(item, currentKey)
+            onLoadPageSuccess(item, isEndReached)
+            _items.update { list ->
+                if (isReseting) {
+                    listOf(item)
+                } else {
+                    list.orEmpty() + item
                 }
-                isReseting = false
             }
+            isReseting = false
+        }
     }
     
     override fun reset(clearItems: Boolean) {

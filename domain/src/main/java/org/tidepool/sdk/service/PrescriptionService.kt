@@ -1,8 +1,6 @@
 package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
-import org.tidepool.sdk.flatMap
-import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
 import org.tidepool.sdk.model.prescription.PrescriptionStatus
@@ -126,38 +124,4 @@ class PrescriptionService internal constructor(
         limit = limit,
         offset = offset,
     )
-    
-    // Get my prescriptions (as a patient)
-    suspend fun getMyPrescriptions(
-        status: PrescriptionStatus? = null,
-        limit: Int? = null,
-        offset: Int? = null,
-    ): Result<List<Prescription>> = tokenProvider.getToken().let { token ->
-        userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
-            prescriptionRepository.getPrescriptionsForPatient(
-                sessionToken = token,
-                patientId = user.userId,
-                status = status?.name?.lowercase(),
-                limit = limit,
-                offset = offset,
-            )
-        }
-    }
-    
-    // Get prescriptions I've prescribed (as a prescriber)
-    suspend fun getMyPrescribedPrescriptions(
-        status: PrescriptionStatus? = null,
-        limit: Int? = null,
-        offset: Int? = null,
-    ): Result<List<Prescription>> = tokenProvider.getToken().let { token ->
-        userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
-            prescriptionRepository.getPrescriptionsByPrescriber(
-                sessionToken = token,
-                prescriberId = user.userId,
-                status = status?.name?.lowercase(),
-                limit = limit,
-                offset = offset,
-            )
-        }
-    }
 }

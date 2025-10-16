@@ -1,5 +1,7 @@
 package org.tidepool.sdk.service
 
+import org.tidepool.sdk.Paginator
+import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.model.task.NewTask
 import org.tidepool.sdk.model.task.Task
@@ -12,19 +14,29 @@ class TaskService internal constructor(
     private val tokenProvider: TokenProvider,
 ) {
     
-    suspend fun getTasks(
+    suspend fun getTasksPaginator(
         name: String? = null,
         type: String? = null,
         state: TaskState? = null,
-        page: Int? = null,
-        size: Int? = null
-    ): Result<List<Task>> = taskRepository.getTasks(
-        sessionToken = tokenProvider.getToken(),
-        name = name,
-        type = type,
-        state = state,
-        page = page,
-        size = size
+        pageSize: Int = 42,
+        onPageLoadSuccess: suspend (tasks: List<Task>, endReached: Boolean) -> Unit,
+        onPageLoadFailure: suspend (Throwable) -> Unit,
+    ): Paginator<Int, List<Task>> = PaginatorImpl(
+        initialKey = 0,
+        onRequest = { pageIndex: Int ->
+            taskRepository.getTasks(
+                sessionToken = tokenProvider.getToken(),
+                name = name,
+                type = type,
+                state = state,
+                page = pageIndex,
+                size = pageSize,
+            )
+        },
+        getNextKey = { page, offset -> offset + 1 },
+        onSuccess = onPageLoadSuccess,
+        onFailure = onPageLoadFailure,
+        endReached = { page, _ -> page.size < pageSize },
     )
     
     suspend fun createTask(

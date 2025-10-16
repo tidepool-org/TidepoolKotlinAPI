@@ -14,13 +14,13 @@ interface AuthenticationApi {
 
     @POST("/realms/{realm}/protocol/openid-connect/token")
     suspend fun obtainToken(
-        @Path("realm") realm: RealmDto,
+        @Path("realm") realm: String,
         @Body grantType: TokenRequestDto,
     ): TokenResponseDto
     
     @GET("/realms/{realm}/protocol/openid-connect/auth")
     suspend fun authorize(
-        @Path("realm") realm: RealmDto,
+        @Path("realm") realm: String,
         @Query("client_id") clientId: String,
         @Query("scope") scope: String,
         @Query("response_type") responseType: String = "code",

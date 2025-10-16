@@ -19,33 +19,33 @@ interface AuthorizationApi {
     ): Map<String, PermissionsDto>
     
     /**
-     * Retrieve all users that have access to group `sharerId`
+     * Retrieve all users that have access to group `groupId`
      */
-    @GET("/access/{sharerId}")
+    @GET("/access/{groupId}")
     suspend fun getUsersInGroup(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("sharerId") sharerId: String
+        @Path("groupId") groupId: String
     ): Map<String, PermissionsDto>
     
     /**
-     * Retrieve permissions of individual user `userId` in group `sharerId`
+     * Retrieve permissions of individual user `userId` in group `groupId`
      */
-    @GET("/access/{sharerId}/{userId}")
+    @GET("/access/{groupId}/{userId}")
     suspend fun getPermissionsForUser(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("sharerId") sharerId: String,
+        @Path("groupId") groupId: String,
         @Path("userId") userId: String
     ): PermissionsDto
     
     /**
-     * Update permissions of individual user `userId` in group `sharerId`.
+     * Update permissions of individual user `userId` in group `groupId`.
      * The permissions provided in the request body replace all existing permissions for that user.
      * Therefore to delete a permission, submit the request body without that permission.
      */
-    @POST("/access/{sharerId}/{userId}")
+    @POST("/access/{groupId}/{userId}")
     suspend fun grantPermissionsInGroup(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("sharerId") sharerId: String,
+        @Path("groupId") groupId: String,
         @Path("userId") userId: String,
         @Body permissions: ModifyUserPermissionsDto
     ): PermissionsDto

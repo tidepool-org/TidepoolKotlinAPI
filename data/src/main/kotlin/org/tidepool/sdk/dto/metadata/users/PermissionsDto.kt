@@ -53,6 +53,7 @@ data class PermissionsDto(
             PermissionDto.View.takeUnless { view == null },
             PermissionDto.Note.takeUnless { note == null },
             PermissionDto.Upload.takeUnless { upload == null },
+            PermissionDto.Root.takeUnless { root == null },
         )
     }
 }

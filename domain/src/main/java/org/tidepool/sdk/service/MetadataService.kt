@@ -88,15 +88,6 @@ class MetadataService internal constructor(
             sessionToken = tokenProvider.getToken(),
         )
     
-    suspend fun getCurrentUserTrustUsers(): Result<List<TrustUser>> =
-        tokenProvider.getToken().let { token ->
-            userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
-                metadataRepository.getTrustUsers(
-                    sessionToken = token,
-                )
-            }
-        }
-    
     suspend fun getUserProfile(userId: String): Result<UserProfile> =
         metadataRepository.getUserProfile(
             sessionToken = tokenProvider.getToken(),

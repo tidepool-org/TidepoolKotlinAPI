@@ -1,6 +1,6 @@
 package org.tidepool.sdk.dto.auth
 
-import io.mcarle.konvert.api.KonvertTo
+import io.mcarle.konvert.api.KonvertFrom
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.auth.GrantType
@@ -32,7 +32,10 @@ data class TokenRequestDto(
     val code: String? = null,
     @SerialName("code_verifier")
     val codeVerifier: String? = null,
-)
+) {
+    @KonvertFrom(TokenRequest::class, mapFunctionName = "fromDomain")
+    companion object {}
+}
 
 @Serializable
 enum class GrantTypeDto {
@@ -78,14 +81,6 @@ internal fun GrantType.toDto() = when (this) {
     GrantType.Password          -> GrantTypeDto.Password
     GrantType.TokenExchange     -> GrantTypeDto.TokenExchange
 }
-
-internal fun TokenRequest.toDto() = TokenRequestDto(
-    grantType = grantType.toDto(),
-    clientId = clientId,
-    clientSecret = clientSecret,
-    subjectToken = subjectToken,
-    subjectTokenType = subjectTokenType?.toDto(),
-)
 
 internal fun SubjectTokenType.toDto() = when (this) {
     SubjectTokenType.AccessToken -> SubjectTokenTypeDto.AccessToken

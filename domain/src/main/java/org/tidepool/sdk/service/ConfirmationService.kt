@@ -24,7 +24,7 @@ class ConfirmationService internal constructor(
         sessionToken = tokenProvider.getToken(),
         userId = userId,
         clinicId = clinicId,
-        invitedBy = invitedBy
+        invitedBy = invitedBy,
     )
     
     suspend fun resendAccountSignup(
@@ -38,7 +38,7 @@ class ConfirmationService internal constructor(
     ): Result<Unit> = confirmationRepository.confirmAccountSignup(
         key = key,
         password = password,
-        birthday = birthday
+        birthday = birthday,
     )
     
     suspend fun dismissAccountSignup(
@@ -46,14 +46,14 @@ class ConfirmationService internal constructor(
         confirmationKey: String,
     ): Result<Unit> = confirmationRepository.dismissAccountSignup(
         userId = userId,
-        confirmationKey = confirmationKey
+        confirmationKey = confirmationKey,
     )
     
     suspend fun getAccountSignupConfirmation(
         userId: String,
     ): Result<Confirmation> = confirmationRepository.getAccountSignupConfirmation(
         sessionToken = tokenProvider.getToken(),
-        userId = userId
+        userId = userId,
     )
     
     suspend fun upsertAccountSignupConfirmation(
@@ -64,7 +64,7 @@ class ConfirmationService internal constructor(
         sessionToken = tokenProvider.getToken(),
         userId = userId,
         clinicId = clinicId,
-        invitedBy = invitedBy
+        invitedBy = invitedBy,
     )
     
     suspend fun cancelAccountSignupConfirmation(
@@ -72,7 +72,7 @@ class ConfirmationService internal constructor(
         confirmationKey: String,
     ): Result<Unit> = confirmationRepository.cancelAccountSignupConfirmation(
         userId = userId,
-        confirmationKey = confirmationKey
+        confirmationKey = confirmationKey,
     )
     
     // Password Reset
@@ -88,7 +88,7 @@ class ConfirmationService internal constructor(
     ): Result<Unit> = confirmationRepository.acceptPasswordChange(
         key = key,
         password = password,
-        email = email
+        email = email,
     )
     
     // Care Team Invitations
@@ -103,14 +103,14 @@ class ConfirmationService internal constructor(
         userId = userId,
         email = email,
         permissions = permissions,
-        nickname = nickname
+        nickname = nickname,
     )
     
     suspend fun getPendingCareTeamInvitations(
         userId: String,
     ): Result<List<Confirmation>> = confirmationRepository.getPendingCareTeamInvitations(
         sessionToken = tokenProvider.getToken(),
-        userId = userId
+        userId = userId,
     )
     
     suspend fun getReceivedInvitations(

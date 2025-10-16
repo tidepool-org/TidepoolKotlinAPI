@@ -1,20 +1,16 @@
 package org.tidepool.sdk.dto.confirmation
 
-import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.jsonPrimitive
 import org.tidepool.sdk.model.confirmation.Confirmation
-import org.tidepool.sdk.model.confirmation.ConfirmationStatus
 import org.tidepool.sdk.dto.metadata.UserProfileDto
 import org.tidepool.sdk.model.metadata.UserProfile
 import java.time.Instant
 
 @Serializable
-@KonvertTo(value = Confirmation::class, mapFunctionName = "toDomain")
 data class ConfirmationDto(
     @SerialName("key")
     val key: String = "",
@@ -44,7 +40,6 @@ data class ConfirmationDto(
 ) {
     
     @Serializable
-    @KonvertTo(value = Confirmation.Creator::class, mapFunctionName = "toDomain")
     data class CreatorDto(
         @SerialName("userId")
         val userId: String = "",

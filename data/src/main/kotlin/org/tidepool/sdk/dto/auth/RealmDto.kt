@@ -5,31 +5,31 @@ import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.auth.Realm
 
 @Serializable
-enum class RealmDto {
+enum class RealmDto(val code: String) {
     
     @SerialName("dev1")
-    Dev1,
+    Dev1("dev1"),
     
     @SerialName("qa1")
-    Qa1,
+    Qa1("qa1"),
     
     @SerialName("qa2")
-    Qa2,
+    Qa2("qa2"),
     
     @SerialName("qa3")
-    Qa3,
+    Qa3("qa3"),
     
     @SerialName("qa4")
-    Qa4,
+    Qa4("qa4"),
     
     @SerialName("qa5")
-    Qa5,
+    Qa5("qa5"),
     
     @SerialName("integration")
-    Integration,
+    Integration("integration"),
     
     @SerialName("tidepool")
-    Tidepool
+    Tidepool("tidepool"),
 }
 
 internal fun Realm.toDto() = when (this) {

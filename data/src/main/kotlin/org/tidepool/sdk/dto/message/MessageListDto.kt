@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class MessageListDto(
     @SerialName("messages")
-    val messages: List<MessageDto> = emptyList()
+    val messages: List<MessageDto.MessageContentDto> = emptyList()
 )

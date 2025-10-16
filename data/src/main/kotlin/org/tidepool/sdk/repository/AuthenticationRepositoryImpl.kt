@@ -4,6 +4,7 @@ import org.tidepool.sdk.api.AuthenticationApi
 import org.tidepool.sdk.dto.auth.TokenRequestDto
 import org.tidepool.sdk.dto.auth.TokenResponseDto
 import org.tidepool.sdk.dto.auth.RealmDto
+import org.tidepool.sdk.dto.auth.fromDomain
 import org.tidepool.sdk.dto.auth.toDomain
 import org.tidepool.sdk.dto.auth.toDto
 import org.tidepool.sdk.model.auth.Realm
@@ -20,8 +21,8 @@ class AuthenticationRepositoryImpl(
         tokenRequest: TokenRequest
     ) = runCatchingNetworkExceptions {
         authenticationApi.obtainToken(
-            realm = realm.toDto(),
-            grantType = tokenRequest.toDto(),
+            realm = realm.toDto().code,
+            grantType = TokenRequestDto.fromDomain(tokenRequest),
         )
     }.map { it.toDomain() }
     
@@ -37,7 +38,7 @@ class AuthenticationRepositoryImpl(
         val scopeString = scopes.joinToString(" ")
         
         authenticationApi.authorize(
-            realm = realm.toDto(),
+            realm = realm.toDto().code,
             clientId = clientId,
             scope = scopeString,
             responseType = "code",

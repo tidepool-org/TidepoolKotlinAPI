@@ -31,11 +31,11 @@ class AuthorizationRepositoryImpl(
     
     override suspend fun getUsersInGroup(
         sessionToken: String,
-        sharerId: String
+        groupId: String
     ): Result<Map<String, Set<Permission>>> = runCatchingNetworkExceptions {
         authorizationApi.getUsersInGroup(
             sessionToken = sessionToken,
-            sharerId = sharerId,
+            groupId = groupId,
         )
     }.map { map ->
         map.mapValues {
@@ -45,25 +45,25 @@ class AuthorizationRepositoryImpl(
     
     override suspend fun getPermissionsForUser(
         sessionToken: String,
-        sharerId: String,
+        groupId: String,
         userId: String
     ): Result<Set<Permission>> = runCatchingNetworkExceptions {
         authorizationApi.getPermissionsForUser(
             sessionToken = sessionToken,
-            sharerId = sharerId,
+            groupId = groupId,
             userId = userId,
         )
     }.map { it.permissionsSet.map { it.toDomain() }.toSet() }
     
     override suspend fun grantPermissionsInGroup(
         sessionToken: String,
-        sharerId: String,
+        groupId: String,
         userId: String,
         permissions: ModifyUserPermissionsRequest
     ): Result<Set<Permission>> = runCatchingNetworkExceptions {
         authorizationApi.grantPermissionsInGroup(
             sessionToken = sessionToken,
-            sharerId = sharerId,
+            groupId = groupId,
             userId = userId,
             permissions = permissions.toDto(),
         )
