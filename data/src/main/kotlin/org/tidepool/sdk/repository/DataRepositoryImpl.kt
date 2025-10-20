@@ -1,8 +1,12 @@
 package org.tidepool.sdk.repository
 
 import org.tidepool.sdk.api.DataApi
-import org.tidepool.sdk.dto.clinic.fromDomain
+import org.tidepool.sdk.database.DataDao
+import org.tidepool.sdk.database.entity.data.toEntity
+import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
+import org.tidepool.sdk.dto.data.BolusDataDto
+import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
 import org.tidepool.sdk.dto.data.toDomain
 import org.tidepool.sdk.dto.data.toDto
 import org.tidepool.sdk.mapList
@@ -10,6 +14,9 @@ import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataType
 import org.tidepool.sdk.dto.data.DataSetDto
 import org.tidepool.sdk.dto.data.DataSourceDto
+import org.tidepool.sdk.dto.data.DosingDecisionDataDto
+import org.tidepool.sdk.dto.data.FoodDataDto
+import org.tidepool.sdk.dto.data.InsulinDataDto
 import org.tidepool.sdk.dto.data.NewDataSetDto
 import org.tidepool.sdk.dto.data.NewDataSourceDto
 import org.tidepool.sdk.dto.data.fromDomain
@@ -17,13 +24,13 @@ import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.NewDataSet
 import org.tidepool.sdk.model.data.NewDataSource
-import org.tidepool.sdk.repository.DataRepository
 import org.tidepool.sdk.runCatchingNetworkExceptions
 import java.time.Instant
 import kotlin.collections.toTypedArray
 
 class DataRepositoryImpl(
     private val dataApi: DataApi,
+    private val dataDao: DataDao,
 ) : DataRepository {
     
     override suspend fun getDataForUser(
@@ -111,13 +118,32 @@ class DataRepositoryImpl(
         dataSetId: String,
         data: List<BaseData>,
         sessionToken: String
-    ) = runCatchingNetworkExceptions {
-        dataApi.uploadDataToDataSet(
-            sessionToken = sessionToken,
-            dataSetId = dataSetId,
-            data = data.map { BaseDataDto.fromDomain(it) },
-        )
-    }.mapList { it.toDomain() }
+    ): Result<List<BaseData>> {
+        val dtos = data.map { BaseDataDto.fromDomain(it) }
+        return runCatchingNetworkExceptions {
+            dataApi.uploadDataToDataSet(
+                sessionToken = sessionToken,
+                dataSetId = dataSetId,
+                data = dtos,
+            )
+        }.fold(
+            onSuccess = { Result.success(it) },
+            onFailure = {
+                // TODO
+                dtos.forEach {
+                    when (it) {
+                        is BasalAutomatedDataDto -> dataDao.insertBasalAutomatedData(it.toEntity())
+                        is BolusDataDto -> dataDao.insertBolusData(it.toEntity())
+                        is ContinuousGlucoseDataDto -> dataDao.insertContinuousGlucoseData(it.toEntity())
+                        is DosingDecisionDataDto -> dataDao.insertDosingDecisionData(it.toEntity())
+                        is FoodDataDto -> dataDao.insertFoodData(it.toEntity())
+                        is InsulinDataDto -> dataDao.insertInsulinData(it.toEntity())
+                    }
+                }
+                Result.failure(it) // TODO
+            },
+        ).mapList { it.toDomain() }
+    }
     
     override suspend fun deleteDataSetData(
         dataSetId: String,
@@ -244,33 +270,6 @@ class DataRepositoryImpl(
     ) = runCatchingNetworkExceptions {
         dataApi.deleteAllUserData(sessionToken, userId)
     }
-    
-    override suspend fun getData(
-        userId: String,
-        uploadId: String?,
-        deviceId: String?,
-        types: List<DataType>?,
-        startDate: Instant?,
-        endDate: Instant?,
-        latest: Boolean?,
-        sessionToken: String
-    ) = runCatchingNetworkExceptions {
-        val typesParam = types
-            ?.map { it.toDto() }
-            ?.toTypedArray()
-            ?.let { DataApi.CommaSeparatedArray(*it) }
-        
-        dataApi.getData(
-            sessionToken = sessionToken,
-            userId = userId,
-            uploadId = uploadId,
-            deviceId = deviceId,
-            types = typesParam,
-            startDate = startDate,
-            endDate = endDate,
-            latest = latest
-        )
-    }.mapList { it.toDomain() }
     
     override suspend fun uploadData(
         userId: String,

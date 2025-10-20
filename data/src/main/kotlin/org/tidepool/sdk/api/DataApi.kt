@@ -168,18 +168,6 @@ interface DataApi {
         @Path("userId") userId: String,
     )
     
-    @GET("/v1/users/{userId}/data")
-    suspend fun getData(
-        @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("userId") userId: String,
-        @Query("uploadId") uploadId: String? = null,
-        @Query("deviceId") deviceId: String? = null,
-        @Query("type", encoded = true) types: CommaSeparatedArray<BaseDataDto.DataTypeDto>? = null,
-        @Query("startDate") startDate: Instant? = null,
-        @Query("endDate") endDate: Instant? = null,
-        @Query("latest") latest: Boolean? = null,
-    ): List<BaseDataDto>
-    
     @POST("/v1/users/{userId}/data")
     suspend fun uploadData(
         @Header("X-Tidepool-Session-Token") sessionToken: String,

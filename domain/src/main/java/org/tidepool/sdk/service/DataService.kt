@@ -229,25 +229,6 @@ class DataService internal constructor(
             sessionToken = tokenProvider.getToken()
         )
     
-    suspend fun getData(
-        userId: String,
-        uploadId: String? = null,
-        deviceId: String? = null,
-        types: List<DataType>? = null,
-        startDate: Instant? = null,
-        endDate: Instant? = null,
-        latest: Boolean? = null,
-    ): Result<List<BaseData>> = dataRepository.getData(
-        userId = userId,
-        uploadId = uploadId,
-        deviceId = deviceId,
-        types = types,
-        startDate = startDate,
-        endDate = endDate,
-        latest = latest,
-        sessionToken = tokenProvider.getToken()
-    )
-    
     suspend fun uploadData(userId: String, data: List<BaseData>): Result<List<BaseData>> =
         dataRepository.uploadData(
             userId = userId,

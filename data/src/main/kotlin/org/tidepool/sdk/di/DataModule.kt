@@ -1,5 +1,8 @@
 package org.tidepool.sdk.di
 
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
@@ -30,6 +33,8 @@ import org.tidepool.sdk.api.PrescriptionApi
 import org.tidepool.sdk.api.SummaryApi
 import org.tidepool.sdk.api.TaskApi
 import org.tidepool.sdk.api.UserApi
+import org.tidepool.sdk.database.DataDao
+import org.tidepool.sdk.database.LoopKitDatabase
 import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
@@ -112,6 +117,12 @@ public val dataModule = module {
     }
     
     single {
+        Room.databaseBuilder<LoopKitDatabase>("loop-kit-database")
+            .setDriver(BundledSQLiteDriver())
+            .build()
+    }
+    
+    single {
         OkHttpClient.Builder()
             .addInterceptor(
                 HttpLoggingInterceptor()
@@ -160,6 +171,8 @@ public val dataModule = module {
     single { get<Retrofit>(qualifier = named("main")).create(SummaryApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(TaskApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(UserApi::class.java) }
+    
+    single<DataDao> { get<LoopKitDatabase>().dataDao() }
     
     singleOf(::AlertRepositoryImpl) bind AlertRepository::class
     singleOf(::AuthenticationRepositoryImpl) bind AuthenticationRepository::class

@@ -32,7 +32,7 @@ class AuthenticationService internal constructor(
     suspend fun authorize(
         realm: Realm,
         clientId: String,
-        scopes: Array<String>,
+        scopes: List<String>,
         redirectUri: String,
         loginHint: String? = null,
         kcIdpHint: String? = null,
