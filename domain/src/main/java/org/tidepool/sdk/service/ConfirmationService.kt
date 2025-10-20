@@ -129,7 +129,7 @@ class ConfirmationService internal constructor(
     ): Result<Unit> = tokenProvider.getToken().let { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             confirmationRepository.acceptConfirmation(
-                sessionToken = tokenProvider.getToken(),
+                sessionToken = token,
                 userId = user.userId,
                 confirmationKey = confirmationKey,
                 creatorId = creatorId,
@@ -143,7 +143,7 @@ class ConfirmationService internal constructor(
     ): Result<Unit> = tokenProvider.getToken().let { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             confirmationRepository.dismissConfirmation(
-                sessionToken = tokenProvider.getToken(),
+                sessionToken = token,
                 userId = user.userId,
                 confirmationKey = confirmationKey,
                 creatorId = creatorId,
@@ -156,7 +156,7 @@ class ConfirmationService internal constructor(
     ): Result<Unit> = tokenProvider.getToken().let { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             confirmationRepository.cancelInvite(
-                sessionToken = tokenProvider.getToken(),
+                sessionToken = token,
                 userId = user.userId,
                 invitedBy = invitedBy,
             )

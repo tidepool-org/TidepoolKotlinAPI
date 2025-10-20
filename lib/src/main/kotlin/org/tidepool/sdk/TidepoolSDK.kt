@@ -1,6 +1,7 @@
 package org.tidepool.sdk
 
 import org.koin.core.Koin
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.tidepool.sdk.di.dataModule
@@ -24,7 +25,7 @@ import org.tidepool.sdk.service.UserService
 
 class TidepoolSDK(
     environment: Environment,
-    private val tokenProvider: TokenProvider,
+    private val tokenProvider: TokenProvider? = null,
 ) {
     
     // Internal DI container - not exposed
@@ -34,7 +35,8 @@ class TidepoolSDK(
             // Environment module
             module {
                 single<Environment> { environment }
-                single<TokenProvider> { tokenProvider }
+                singleOf(::TidepoolAuth)
+                single<TokenProvider> { tokenProvider ?: get<TidepoolAuth>() }
             },
             domainModule,
             dataModule,

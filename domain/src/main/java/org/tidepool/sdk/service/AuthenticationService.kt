@@ -22,7 +22,7 @@ class AuthenticationService internal constructor(
         tokenRequest: TokenRequest,
     ): Result<TokenResponse> = repository.obtainToken(
         realm = realm,
-        tokenRequest = tokenRequest
+        tokenRequest = tokenRequest,
     )
     
     /**
@@ -44,7 +44,7 @@ class AuthenticationService internal constructor(
         redirectUri = redirectUri,
         loginHint = loginHint,
         kcIdpHint = kcIdpHint,
-        prompt = prompt
+        prompt = prompt,
     )
     
     /**
