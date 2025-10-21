@@ -3,13 +3,13 @@ package org.tidepool.sdk.service
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tidepool.sdk.AppLifecycleProvider
-import java.time.Duration
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Manages lifecycle-aware periodic data uploads.
@@ -22,8 +22,8 @@ class LifecycleAwareDataUploadManager(
     
     private var uploadJob: Job? = null
     private var isConfigured = false
-    private var uploadPeriod: Duration = Duration.ofMinutes(5)
-    private var initialDelay: Duration = Duration.ofSeconds(30)
+    private var uploadPeriod: Duration = 5.minutes
+    private var initialDelay: Duration = 30.seconds
     private var uploadAction: (suspend () -> Unit)? = null
     
     /**
@@ -35,7 +35,7 @@ class LifecycleAwareDataUploadManager(
      */
     fun configure(
         period: Duration,
-        delay: Duration = Duration.ofSeconds(30),
+        delay: Duration = 30.seconds,
         action: suspend () -> Unit
     ) {
         this.uploadPeriod = period
@@ -57,7 +57,7 @@ class LifecycleAwareDataUploadManager(
         
         uploadJob = scope.launch {
             // Wait for initial delay
-            delay(initialDelay.toMillis())
+            delay(initialDelay.inWholeMilliseconds)
             
             // Observe foreground state changes
             lifecycleProvider.foregroundStateFlow
@@ -98,7 +98,7 @@ class LifecycleAwareDataUploadManager(
             }
             
             // Break early if we went to background during the delay
-            val delayMillis = uploadPeriod.toMillis()
+            val delayMillis = uploadPeriod.inWholeMilliseconds
             val checkInterval = 1000L // Check every second
             var remainingDelay = delayMillis
             

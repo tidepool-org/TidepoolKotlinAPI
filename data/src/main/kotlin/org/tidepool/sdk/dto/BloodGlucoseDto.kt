@@ -1,5 +1,6 @@
 package org.tidepool.sdk.dto
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.dto.BloodGlucoseDto.GlucoseReadingDto
@@ -117,6 +118,7 @@ class BloodGlucoseDto {
     
     @Serializable
     data class StartTargetDto(
+        @Contextual
         @SerialName("start")
         val start: Duration?,
         @SerialName("target")

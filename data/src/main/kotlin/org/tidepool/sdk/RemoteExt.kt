@@ -51,7 +51,7 @@ suspend fun <T : Any> runCatchingNetworkExceptions(
 
 suspend fun <T : Any> runWithRetry(
     maxRetries: Int = 3,
-    delay: Long = 2.seconds.inWholeSeconds,
+    delay: Long = 2.seconds.inWholeMilliseconds,
     retriableExceptions: List<KClass<out TidepoolNetworkException>> = listOf(
         NetworkUnavailableException::class,
         TimeoutException::class,

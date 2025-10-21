@@ -13,7 +13,7 @@ import org.tidepool.sdk.model.data.NewDataSet
 import org.tidepool.sdk.model.data.NewDataSource
 import org.tidepool.sdk.repository.DataRepository
 import org.tidepool.sdk.repository.UserRepository
-import java.time.Duration
+import kotlin.time.Duration
 import java.time.Instant
 import java.util.Collections.emptyList
 
