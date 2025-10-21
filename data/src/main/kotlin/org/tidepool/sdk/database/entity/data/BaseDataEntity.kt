@@ -39,6 +39,15 @@ internal fun BaseDataEntity.toDomain(): BaseData = when (this) {
     is InsulinDataEntity           -> toDomain()
 }
 
+internal fun BaseDataEntity.toDto(): BaseDataDto = when (this) {
+    is BasalAutomatedDataEntity    -> toDto()
+    is BolusDataEntity             -> toDto()
+    is ContinuousGlucoseDataEntity -> toDto()
+    is DosingDecisionDataEntity    -> toDto()
+    is FoodDataEntity              -> toDto()
+    is InsulinDataEntity           -> toDto()
+}
+
 internal fun DataType.toEntity(): DataTypeEntity = when (this) {
     DataType.Alert              -> DataTypeEntity.Alert
     DataType.Basal              -> DataTypeEntity.Basal

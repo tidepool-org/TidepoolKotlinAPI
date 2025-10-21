@@ -2,6 +2,13 @@ package org.tidepool.sdk.repository
 
 import org.tidepool.sdk.api.DataApi
 import org.tidepool.sdk.database.DataDao
+import org.tidepool.sdk.database.entity.data.BasalAutomatedDataEntity
+import org.tidepool.sdk.database.entity.data.BolusDataEntity
+import org.tidepool.sdk.database.entity.data.ContinuousGlucoseDataEntity
+import org.tidepool.sdk.database.entity.data.DosingDecisionDataEntity
+import org.tidepool.sdk.database.entity.data.FoodDataEntity
+import org.tidepool.sdk.database.entity.data.InsulinDataEntity
+import org.tidepool.sdk.database.entity.data.toDto
 import org.tidepool.sdk.database.entity.data.toEntity
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
@@ -44,7 +51,7 @@ class DataRepositoryImpl(
         dexcom: Boolean?,
         carelink: Boolean?,
         medtronic: Boolean?,
-        sessionToken: String
+        sessionToken: String,
     ): Result<List<BaseData>> = runCatchingNetworkExceptions {
         val typesParam = types
             ?.map { it.toDto() }
@@ -126,23 +133,9 @@ class DataRepositoryImpl(
                 dataSetId = dataSetId,
                 data = dtos,
             )
-        }.fold(
-            onSuccess = { Result.success(it) },
-            onFailure = {
-                // TODO
-                dtos.forEach {
-                    when (it) {
-                        is BasalAutomatedDataDto -> dataDao.insertBasalAutomatedData(it.toEntity())
-                        is BolusDataDto -> dataDao.insertBolusData(it.toEntity())
-                        is ContinuousGlucoseDataDto -> dataDao.insertContinuousGlucoseData(it.toEntity())
-                        is DosingDecisionDataDto -> dataDao.insertDosingDecisionData(it.toEntity())
-                        is FoodDataDto -> dataDao.insertFoodData(it.toEntity())
-                        is InsulinDataDto -> dataDao.insertInsulinData(it.toEntity())
-                    }
-                }
-                Result.failure(it) // TODO
-            },
-        ).mapList { it.toDomain() }
+        }
+            .cacheOnFailure(dtos)
+            .mapList { it.toDomain() }
     }
     
     override suspend fun deleteDataSetData(
@@ -275,11 +268,67 @@ class DataRepositoryImpl(
         userId: String,
         data: List<BaseData>,
         sessionToken: String
-    ) = runCatchingNetworkExceptions {
-        dataApi.uploadData(
-            sessionToken = sessionToken,
-            userId = userId,
-            data = data.map { BaseDataDto.fromDomain(it) }
-        )
-    }.mapList { it.toDomain() }
+    ): Result<List<BaseData>> {
+        val dtos = data.map { BaseDataDto.fromDomain(it) }
+        return runCatchingNetworkExceptions {
+            dataApi.uploadData(
+                sessionToken = sessionToken,
+                userId = userId,
+                data = dtos
+            )
+        }
+            .cacheOnFailure(dtos)
+            .mapList { it.toDomain() }
+    }
+    
+    override suspend fun uploadCachedData(
+        sessionToken: String,
+        userId: String,
+    ): Result<Unit> = listOf(
+        dataDao.getAllBasalAutomatedData(),
+        dataDao.getAllBolusData(),
+        dataDao.getAllContinuousGlucoseData(),
+        dataDao.getAllDosingDecisionData(),
+        dataDao.getAllFoodData(),
+        dataDao.getAllInsulinData(),
+    ).flatten().let { entities ->
+        runCatchingNetworkExceptions {
+            dataApi.uploadData(
+                sessionToken = sessionToken,
+                userId = userId,
+                data = entities.map { it.toDto() },
+            )
+        }.map {
+            entities.forEach { it ->
+                when (it) {
+                    is BasalAutomatedDataEntity    -> dataDao.insertBasalAutomatedData(it)
+                    is BolusDataEntity             -> dataDao.insertBolusData(it)
+                    is ContinuousGlucoseDataEntity -> dataDao.insertContinuousGlucoseData(it)
+                    is DosingDecisionDataEntity    -> dataDao.insertDosingDecisionData(it)
+                    is FoodDataEntity              -> dataDao.insertFoodData(it)
+                    is InsulinDataEntity           -> dataDao.insertInsulinData(it)
+                }
+            }
+        }
+    }
+    
+    private suspend fun Result<List<BaseDataDto>>.cacheOnFailure(
+        toUpload: List<BaseDataDto>
+    ) = fold(
+        onSuccess = { Result.success(it) },
+        onFailure = { ex ->
+            // TODO
+            toUpload.forEach { dto ->
+                when (dto) {
+                    is BasalAutomatedDataDto    -> dataDao.insertBasalAutomatedData(dto.toEntity())
+                    is BolusDataDto             -> dataDao.insertBolusData(dto.toEntity())
+                    is ContinuousGlucoseDataDto -> dataDao.insertContinuousGlucoseData(dto.toEntity())
+                    is DosingDecisionDataDto    -> dataDao.insertDosingDecisionData(dto.toEntity())
+                    is FoodDataDto              -> dataDao.insertFoodData(dto.toEntity())
+                    is InsulinDataDto           -> dataDao.insertInsulinData(dto.toEntity())
+                }
+            }
+            Result.failure(ex)
+        },
+    )
 }

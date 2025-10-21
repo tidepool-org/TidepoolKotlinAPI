@@ -4,8 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
+import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
 import java.time.Instant
+import java.util.TimeZone
+import kotlin.time.Duration.Companion.milliseconds
 
 @Entity(tableName = "insulin_data")
 data class InsulinDataEntity(
@@ -69,5 +72,28 @@ fun InsulinDataDto.toEntity() = InsulinDataEntity(
     timeZone = timeZone?.id,
     timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
     dose = Json.encodeToString(dose),
+    site = site
+)
+
+fun InsulinDataEntity.toDto() = InsulinDataDto(
+    id = id,
+    type = Json.decodeFromString(type),
+    time = time,
+    annotations = annotations
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
+        .orEmpty(),
+    associations = associations
+        ?.let { Json.decodeFromString<List<AssociationDto>>(it) }
+        .orEmpty(),
+    clockDriftOffset = clockDriftOffset?.milliseconds,
+    conversionOffset = conversionOffset?.milliseconds,
+    dataSetId = dataSetId,
+    deviceTime = deviceTime,
+    notes = notes
+        ?.let { Json.decodeFromString<List<String>>(it) }
+        .orEmpty(),
+    timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
+    timeZoneOffset = timeZoneOffset?.milliseconds,
+    dose = Json.decodeFromString(dose),
     site = site
 )

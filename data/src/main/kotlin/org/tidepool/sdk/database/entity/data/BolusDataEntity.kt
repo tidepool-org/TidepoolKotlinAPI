@@ -4,8 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
+import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.BolusDataDto
 import java.time.Instant
+import java.util.TimeZone
+import kotlin.time.Duration.Companion.milliseconds
 
 @Entity(tableName = "bolus_data")
 data class BolusDataEntity(
@@ -58,15 +61,38 @@ fun BolusDataDto.toEntity() = BolusDataEntity(
     id = id,
     type = Json.encodeToString(type),
     time = time,
-    annotations = annotations?.let { Json.encodeToString(it) },
-    associations = associations?.let { Json.encodeToString(it) },
+    annotations = annotations.let { Json.encodeToString(it) },
+    associations = associations.let { Json.encodeToString(it) },
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
     conversionOffset = conversionOffset?.inWholeMilliseconds,
     dataSetId = dataSetId,
     deviceTime = deviceTime,
-    notes = notes?.let { Json.encodeToString(it) },
+    notes = notes.let { Json.encodeToString(it) },
     timeZone = timeZone?.id,
     timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
     subType = Json.encodeToString(subType),
     deliveryContext = Json.encodeToString(deliveryContext),
+)
+
+fun BolusDataEntity.toDto() = BolusDataDto(
+    id = id,
+    type = Json.decodeFromString(type),
+    time = time,
+    annotations = annotations
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
+        .orEmpty(),
+    associations = associations
+        ?.let { Json.decodeFromString<List<AssociationDto>>(it) }
+        .orEmpty(),
+    clockDriftOffset = clockDriftOffset?.milliseconds,
+    conversionOffset = conversionOffset?.milliseconds,
+    dataSetId = dataSetId,
+    deviceTime = deviceTime,
+    notes = notes
+        ?.let { Json.decodeFromString<List<String>>(it) }
+        .orEmpty(),
+    timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
+    timeZoneOffset = timeZoneOffset?.milliseconds,
+    subType = Json.decodeFromString(subType),
+    deliveryContext = Json.decodeFromString(deliveryContext),
 )

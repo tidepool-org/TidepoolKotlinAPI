@@ -4,8 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
+import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import java.time.Instant
+import java.util.TimeZone
+import kotlin.time.Duration.Companion.milliseconds
 
 @Entity(tableName = "food_data")
 data class FoodDataEntity(
@@ -86,4 +89,39 @@ fun FoodDataDto.toEntity() = FoodDataEntity(
     },
     mealOther = mealOther,
     name = name
+)
+
+fun FoodDataEntity.toDto() = FoodDataDto(
+    id = id,
+    type = Json.decodeFromString(type),
+    time = time,
+    annotations = annotations
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
+        .orEmpty(),
+    associations = associations
+        ?.let { Json.decodeFromString<List<AssociationDto>>(it) }
+        .orEmpty(),
+    clockDriftOffset = clockDriftOffset?.milliseconds,
+    conversionOffset = conversionOffset?.milliseconds,
+    dataSetId = dataSetId,
+    deviceTime = deviceTime,
+    notes = notes
+        ?.let { Json.decodeFromString<List<String>>(it) }
+        .orEmpty(),
+    timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
+    timeZoneOffset = timeZoneOffset?.milliseconds,
+    brand = brand,
+    code = code,
+    meal = meal?.let { mealString ->
+        when (mealString) {
+            "breakfast" -> FoodDataDto.MealDto.Breakfast
+            "lunch"     -> FoodDataDto.MealDto.Lunch
+            "dinner"    -> FoodDataDto.MealDto.Dinner
+            "snack"     -> FoodDataDto.MealDto.Snack
+            "other"     -> FoodDataDto.MealDto.Other
+            else        -> null
+        }
+    },
+    mealOther = mealOther,
+    name = name,
 )

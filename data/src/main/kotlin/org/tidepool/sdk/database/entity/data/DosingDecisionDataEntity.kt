@@ -4,8 +4,11 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
+import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import java.time.Instant
+import java.util.TimeZone
+import kotlin.time.Duration.Companion.milliseconds
 
 @Entity(tableName = "dosing_decision_data")
 data class DosingDecisionDataEntity(
@@ -86,5 +89,34 @@ fun DosingDecisionDataDto.toEntity() = DosingDecisionDataEntity(
     recommendedBolus = recommendedBolus?.let { Json.encodeToString(it) },
     requestedBolus = requestedBolus?.let { Json.encodeToString(it) },
     scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-    units = Json.encodeToString(units)
+    units = Json.encodeToString(units),
+)
+
+fun DosingDecisionDataEntity.toDto() = DosingDecisionDataDto(
+    id = id,
+    type = Json.decodeFromString(type),
+    time = time,
+    annotations = annotations
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
+        .orEmpty(),
+    associations = associations
+        ?.let { Json.decodeFromString<List<AssociationDto>>(it) }
+        .orEmpty(),
+    clockDriftOffset = clockDriftOffset?.milliseconds,
+    conversionOffset = conversionOffset?.milliseconds,
+    dataSetId = dataSetId,
+    deviceTime = deviceTime,
+    notes = notes
+        ?.let { Json.decodeFromString<List<String>>(it) }
+        .orEmpty(),
+    timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
+    timeZoneOffset = timeZoneOffset?.milliseconds,
+    reason = reason,
+    carbsOnBoard = carbsOnBoard?.let { Json.decodeFromString(it) },
+    insulinOnBoard = insulinOnBoard?.let { Json.decodeFromString(it) },
+    recommendedBasal = recommendedBasal?.let { Json.decodeFromString(it) },
+    recommendedBolus = recommendedBolus?.let { Json.decodeFromString(it) },
+    requestedBolus = requestedBolus?.let { Json.decodeFromString(it) },
+    scheduleTimeZoneOffset = scheduleTimeZoneOffset,
+    units = Json.decodeFromString(units),
 )
