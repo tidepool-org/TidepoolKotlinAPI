@@ -2,7 +2,6 @@ package org.tidepool.sdk.repository
 
 import org.tidepool.sdk.api.MessageApi
 import org.tidepool.sdk.dto.message.EditMessageDto
-import org.tidepool.sdk.dto.message.MessageDto
 import org.tidepool.sdk.dto.message.NewMessageDto
 import org.tidepool.sdk.dto.message.toDomain
 import org.tidepool.sdk.mapList
@@ -55,7 +54,7 @@ class MessageRepositoryImpl(
             userId = userId,
             requestBody = NewMessageDto(
                 message = NewMessageDto.NewMessageContentDto(
-                    messagetext = messageText,
+                    messageText = messageText,
                     timestamp = timestamp,
                     guid = guid,
                 )
@@ -75,7 +74,7 @@ class MessageRepositoryImpl(
             messageId = messageId,
             requestBody = NewMessageDto(
                 message = NewMessageDto.NewMessageContentDto(
-                    messagetext = messageText,
+                    messageText = messageText,
                     timestamp = timestamp,
                     guid = guid,
                 )
@@ -114,7 +113,7 @@ class MessageRepositoryImpl(
             messageId = messageId,
             requestBody = EditMessageDto(
                 message = EditMessageDto.EditMessageContentDto(
-                    messagetext = messageText,
+                    messageText = messageText,
                     timestamp = timestamp,
                 )
             ),

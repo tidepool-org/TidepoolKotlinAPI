@@ -14,7 +14,7 @@ data class EditMessageDto(
     @Serializable
     data class EditMessageContentDto(
         @SerialName("messagetext")
-        val messagetext: String? = null,
+        val messageText: String? = null,
         @SerialName("timestamp")
         @Contextual val timestamp: Instant? = null,
     )

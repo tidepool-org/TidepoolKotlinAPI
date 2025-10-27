@@ -14,7 +14,7 @@ data class NewMessageDto(
     @Serializable
     data class NewMessageContentDto(
         @SerialName("messagetext")
-        val messagetext: String,
+        val messageText: String,
         @SerialName("timestamp")
         @Contextual val timestamp: Instant,
         @SerialName("guid")

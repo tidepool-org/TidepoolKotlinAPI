@@ -1,12 +1,14 @@
 package org.tidepool.sdk.dto.general
 
 import io.mcarle.konvert.api.KonvertTo
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.general.MinimumClientVersions
 
 @Serializable
 @KonvertTo(MinimumClientVersions::class, mapFunctionName = "toDomain")
 data class MinimumClientVersionsDto(
+    @SerialName("minimumClientVersions")
     val versions: VersionsDto
 ) {
     

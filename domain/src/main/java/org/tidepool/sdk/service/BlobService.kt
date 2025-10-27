@@ -1,8 +1,10 @@
 package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
-import org.tidepool.sdk.mapList
-import org.tidepool.sdk.model.blob.*
+import org.tidepool.sdk.model.blob.BlobMetadata
+import org.tidepool.sdk.model.blob.BlobStatus
+import org.tidepool.sdk.model.blob.DeviceLogContent
+import org.tidepool.sdk.model.blob.DeviceLogsMetadata
 import org.tidepool.sdk.repository.BlobRepository
 import java.time.Instant
 

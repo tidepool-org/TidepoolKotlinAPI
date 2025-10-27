@@ -1,5 +1,6 @@
 package org.tidepool.sdk.dto.alert
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.alert.Glucose
 
@@ -10,13 +11,17 @@ sealed class GlucoseDto {
     
     @Serializable
     data class MgDLGlucoseDto(
+        @SerialName("units")
         override val units: String = "mg/dL",
+        @SerialName("value")
         val value: Int
     ) : GlucoseDto()
     
     @Serializable
     data class MmolGlucoseDto(
+        @SerialName("units")
         override val units: String = "mmol/L",
+        @SerialName("value")
         val value: Float
     ) : GlucoseDto()
 }

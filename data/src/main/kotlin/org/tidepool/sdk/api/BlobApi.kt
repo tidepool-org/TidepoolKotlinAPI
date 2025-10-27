@@ -6,8 +6,13 @@ import org.tidepool.sdk.dto.blob.BlobMetadataDto
 import org.tidepool.sdk.dto.blob.BlobStatusDto
 import org.tidepool.sdk.dto.blob.DeviceLogContentDto
 import org.tidepool.sdk.dto.blob.DeviceLogsMetadataDto
-import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.Path
+import retrofit2.http.Query
 import java.time.Instant
 
 interface BlobApi {
@@ -18,7 +23,7 @@ interface BlobApi {
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("userId") userId: String,
         @Query("mediaType") mediaType: String? = null,
-        @Query("status") status: BlobStatusDto? = null
+        @Query("status") status: BlobStatusDto? = null,
     ): List<BlobMetadataDto>
     
     @POST("/v1/users/{userId}/blobs")
@@ -27,31 +32,31 @@ interface BlobApi {
         @Path("userId") userId: String,
         @Header("Content-Type") contentType: String,
         @Header("Digest") digest: String,
-        @Body content: RequestBody
+        @Body content: RequestBody,
     ): BlobMetadataDto
     
     @DELETE("/v1/users/{userId}/blobs")
     suspend fun deleteAllBlobs(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("userId") userId: String
+        @Path("userId") userId: String,
     )
     
     @GET("/v1/blobs/{blobId}")
     suspend fun getBlobMetadata(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("blobId") blobId: String
+        @Path("blobId") blobId: String,
     ): BlobMetadataDto
     
     @DELETE("/v1/blobs/{blobId}")
     suspend fun deleteBlob(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("blobId") blobId: String
+        @Path("blobId") blobId: String,
     )
     
     @GET("/v1/blobs/{blobId}/content")
     suspend fun getBlobContent(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("blobId") blobId: String
+        @Path("blobId") blobId: String,
     ): ResponseBody
     
     // Device logs operations
@@ -70,6 +75,6 @@ interface BlobApi {
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("userId") userId: String,
         @Query("startAtTime") startAtTime: Instant,
-        @Query("endAtTime") endAtTime: Instant
+        @Query("endAtTime") endAtTime: Instant,
     ): List<DeviceLogsMetadataDto>
 }

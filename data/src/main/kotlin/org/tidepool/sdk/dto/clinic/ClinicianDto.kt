@@ -35,8 +35,11 @@ data class ClinicianDto(
 
 @Serializable
 enum class ClinicianRole {
-    
-    CLINIC_ADMIN,
-    CLINIC_MEMBER,
-    PRESCRIBER
+    @SerialName("CLINIC_ADMIN")
+    ClinicAdmin,
+    @SerialName("CLINIC_MEMBER")
+    ClinicMember,
+    @SerialName("PRESCRIBER")
+    Prescriber,
+    ;
 }

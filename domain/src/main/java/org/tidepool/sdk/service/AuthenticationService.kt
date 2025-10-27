@@ -1,6 +1,10 @@
 package org.tidepool.sdk.service
 
-import org.tidepool.sdk.model.auth.*
+import org.tidepool.sdk.model.auth.Realm
+import org.tidepool.sdk.model.auth.RequestedTokenType
+import org.tidepool.sdk.model.auth.SubjectTokenType
+import org.tidepool.sdk.model.auth.TokenRequest
+import org.tidepool.sdk.model.auth.TokenResponse
 import org.tidepool.sdk.repository.AuthenticationRepository
 
 /**

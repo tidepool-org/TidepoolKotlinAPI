@@ -2,7 +2,11 @@ package org.tidepool.sdk.api
 
 import org.tidepool.sdk.dto.auth.ModifyUserPermissionsDto
 import org.tidepool.sdk.dto.metadata.users.PermissionsDto
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.POST
+import retrofit2.http.Path
 
 /**
  * Authorization API interface based on the Tidepool Authorization API specification

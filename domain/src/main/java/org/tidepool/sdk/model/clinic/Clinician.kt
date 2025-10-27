@@ -13,7 +13,8 @@ data class Clinician(
 )
 
 enum class ClinicianRole {
-    CLINIC_ADMIN,
-    CLINIC_MEMBER,
-    PRESCRIBER
+    ClinicAdmin,
+    ClinicMember,
+    Prescriber,
+    ;
 }
