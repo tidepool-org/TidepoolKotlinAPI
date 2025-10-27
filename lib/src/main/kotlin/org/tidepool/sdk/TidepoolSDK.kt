@@ -23,7 +23,7 @@ import org.tidepool.sdk.service.TaskService
 import org.tidepool.sdk.service.UserService
 
 class TidepoolSDK(
-    environment: Environment,
+    val environment: Environment,
     private val tokenProvider: TokenProvider,
 ) {
     
