@@ -1,6 +1,7 @@
 package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
+import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
 import org.tidepool.sdk.model.prescription.PrescriptionStatus
@@ -26,28 +27,32 @@ class PrescriptionService internal constructor(
         startDate: Instant,
         endDate: Instant?,
         notes: String?,
-    ): Result<Prescription> = prescriptionRepository.createPrescription(
-        sessionToken = tokenProvider.getToken(),
-        newPrescription = NewPrescription(
-            clinicId = clinicId,
-            patientId = patientId,
-            medicationName = medicationName,
-            dosage = dosage,
-            frequency = frequency,
-            instructions = instructions,
-            startDate = startDate.toString(),
-            endDate = endDate?.toString(),
-            notes = notes,
-        ),
-    )
+    ): Result<Prescription> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.createPrescription(
+            sessionToken = it,
+            newPrescription = NewPrescription(
+                clinicId = clinicId,
+                patientId = patientId,
+                medicationName = medicationName,
+                dosage = dosage,
+                frequency = frequency,
+                instructions = instructions,
+                startDate = startDate.toString(),
+                endDate = endDate?.toString(),
+                notes = notes,
+            ),
+        )
+    }
     
     // Get prescription by ID
     suspend fun getPrescription(
         prescriptionId: String,
-    ): Result<Prescription> = prescriptionRepository.getPrescription(
-        sessionToken = tokenProvider.getToken(),
-        prescriptionId = prescriptionId,
-    )
+    ): Result<Prescription> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.getPrescription(
+            sessionToken = it,
+            prescriptionId = prescriptionId,
+        )
+    }
     
     // Update prescription
     suspend fun updatePrescription(
@@ -60,28 +65,32 @@ class PrescriptionService internal constructor(
         endDate: Instant? = null,
         status: PrescriptionStatus? = null,
         notes: String? = null,
-    ): Result<Prescription> = prescriptionRepository.updatePrescription(
-        sessionToken = tokenProvider.getToken(),
-        prescriptionId = prescriptionId,
-        updatePrescription = UpdatePrescription(
-            medicationName = medicationName,
-            dosage = dosage,
-            frequency = frequency,
-            instructions = instructions,
-            startDate = startDate?.toString(),
-            endDate = endDate?.toString(),
-            status = status,
-            notes = notes,
-        ),
-    )
+    ): Result<Prescription> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.updatePrescription(
+            sessionToken = it,
+            prescriptionId = prescriptionId,
+            updatePrescription = UpdatePrescription(
+                medicationName = medicationName,
+                dosage = dosage,
+                frequency = frequency,
+                instructions = instructions,
+                startDate = startDate?.toString(),
+                endDate = endDate?.toString(),
+                status = status,
+                notes = notes,
+            ),
+        )
+    }
     
     // Delete prescription
     suspend fun deletePrescription(
         prescriptionId: String,
-    ): Result<Unit> = prescriptionRepository.deletePrescription(
-        sessionToken = tokenProvider.getToken(),
-        prescriptionId = prescriptionId,
-    )
+    ): Result<Unit> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.deletePrescription(
+            sessionToken = it,
+            prescriptionId = prescriptionId,
+        )
+    }
     
     // Get prescriptions for a patient
     suspend fun getPrescriptionsForPatient(
@@ -89,13 +98,15 @@ class PrescriptionService internal constructor(
         status: PrescriptionStatus? = null,
         limit: Int? = null,
         offset: Int? = null,
-    ): Result<List<Prescription>> = prescriptionRepository.getPrescriptionsForPatient(
-        sessionToken = tokenProvider.getToken(),
-        patientId = patientId,
-        status = status?.name?.lowercase(),
-        limit = limit,
-        offset = offset,
-    )
+    ): Result<List<Prescription>> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.getPrescriptionsForPatient(
+            sessionToken = it,
+            patientId = patientId,
+            status = status?.name?.lowercase(),
+            limit = limit,
+            offset = offset,
+        )
+    }
     
     // Get prescriptions by prescriber
     suspend fun getPrescriptionsByPrescriber(
@@ -103,13 +114,15 @@ class PrescriptionService internal constructor(
         status: PrescriptionStatus? = null,
         limit: Int? = null,
         offset: Int? = null,
-    ): Result<List<Prescription>> = prescriptionRepository.getPrescriptionsByPrescriber(
-        sessionToken = tokenProvider.getToken(),
-        prescriberId = prescriberId,
-        status = status?.name?.lowercase(),
-        limit = limit,
-        offset = offset,
-    )
+    ): Result<List<Prescription>> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.getPrescriptionsByPrescriber(
+            sessionToken = it,
+            prescriberId = prescriberId,
+            status = status?.name?.lowercase(),
+            limit = limit,
+            offset = offset,
+        )
+    }
     
     // Get prescriptions for a clinic
     suspend fun getPrescriptionsForClinic(
@@ -117,11 +130,13 @@ class PrescriptionService internal constructor(
         status: PrescriptionStatus? = null,
         limit: Int? = null,
         offset: Int? = null,
-    ): Result<List<Prescription>> = prescriptionRepository.getPrescriptionsForClinic(
-        sessionToken = tokenProvider.getToken(),
-        clinicId = clinicId,
-        status = status?.name?.lowercase(),
-        limit = limit,
-        offset = offset,
-    )
+    ): Result<List<Prescription>> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.getPrescriptionsForClinic(
+            sessionToken = it,
+            clinicId = clinicId,
+            status = status?.name?.lowercase(),
+            limit = limit,
+            offset = offset,
+        )
+    }
 }

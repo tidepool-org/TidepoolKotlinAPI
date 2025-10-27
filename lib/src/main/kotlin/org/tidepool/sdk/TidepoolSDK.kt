@@ -7,7 +7,6 @@ import org.koin.dsl.module
 import org.tidepool.sdk.di.dataModule
 import org.tidepool.sdk.di.domainModule
 import org.tidepool.sdk.service.AlertService
-import org.tidepool.sdk.service.AuthenticationService
 import org.tidepool.sdk.service.AuthorizationService
 import org.tidepool.sdk.service.BlobService
 import org.tidepool.sdk.service.ClinicService
@@ -25,7 +24,7 @@ import org.tidepool.sdk.service.UserService
 
 class TidepoolSDK(
     environment: Environment,
-    private val tokenProvider: TokenProvider? = null,
+    private val tokenProvider: TokenProvider,
 ) {
     
     // Internal DI container - not exposed
@@ -35,8 +34,7 @@ class TidepoolSDK(
             // Environment module
             module {
                 single<Environment> { environment }
-                singleOf(::TidepoolAuth)
-                single<TokenProvider> { tokenProvider ?: get<TidepoolAuth>() }
+                single<TokenProvider> { tokenProvider }
             },
             domainModule,
             dataModule,
@@ -45,7 +43,6 @@ class TidepoolSDK(
     private val koin: Koin = koinApp.koin
     
     val alerts: AlertService by lazy { koin.get() }
-    val authentication: AuthenticationService by lazy { koin.get() }
     val authorization: AuthorizationService by lazy { koin.get() }
     val blobs: BlobService by lazy { koin.get() }
     val confirmations: ConfirmationService by lazy { koin.get() }

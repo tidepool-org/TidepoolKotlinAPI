@@ -1,6 +1,7 @@
 package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
+import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.auth.ModifyUserPermissionsRequest
 import org.tidepool.sdk.model.metadata.users.Permission
 import org.tidepool.sdk.repository.AuthorizationRepository
@@ -17,19 +18,23 @@ class AuthorizationService internal constructor(
      * Retrieve all groups accessible to the user
      */
     suspend fun getGroupsForUser(userId: String): Result<Map<String, Set<Permission>>> =
-        repository.getGroupsForUser(
-            sessionToken = tokenProvider.getToken(),
-            userId = userId,
-        )
+        tokenProvider.getToken().flatMap {
+            repository.getGroupsForUser(
+                sessionToken = it,
+                userId = userId,
+            )
+        }
     
     /**
      * Retrieve all users that have access to a group
      */
     suspend fun getUsersInGroup(groupId: String): Result<Map<String, Set<Permission>>> =
-        repository.getUsersInGroup(
-            sessionToken = tokenProvider.getToken(),
-            groupId = groupId,
-        )
+        tokenProvider.getToken().flatMap {
+            repository.getUsersInGroup(
+                sessionToken = it,
+                groupId = groupId,
+            )
+        }
     
     /**
      * Retrieve permissions of an individual user in a group
@@ -37,11 +42,13 @@ class AuthorizationService internal constructor(
     suspend fun getPermissionsForUser(
         groupId: String,
         userId: String,
-    ): Result<Set<Permission>> = repository.getPermissionsForUser(
-        sessionToken = tokenProvider.getToken(),
-        groupId = groupId,
-        userId = userId,
-    )
+    ): Result<Set<Permission>> = tokenProvider.getToken().flatMap {
+        repository.getPermissionsForUser(
+            sessionToken = it,
+            groupId = groupId,
+            userId = userId,
+        )
+    }
     
     /**
      * Update permissions of an individual user in a group.
@@ -52,10 +59,12 @@ class AuthorizationService internal constructor(
         groupId: String,
         userId: String,
         permissions: Set<Permission>,
-    ): Result<Set<Permission>> = repository.grantPermissionsInGroup(
-        sessionToken = tokenProvider.getToken(),
-        groupId = groupId,
-        userId = userId,
-        permissions = ModifyUserPermissionsRequest(permissions),
-    )
+    ): Result<Set<Permission>> = tokenProvider.getToken().flatMap {
+        repository.grantPermissionsInGroup(
+            sessionToken = it,
+            groupId = groupId,
+            userId = userId,
+            permissions = ModifyUserPermissionsRequest(permissions),
+        )
+    }
 }

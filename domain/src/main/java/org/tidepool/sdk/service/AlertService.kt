@@ -14,7 +14,7 @@ class AlertService internal constructor(
     
     suspend fun getAlertsConfiguration(
         followerUserId: String
-    ): Result<AlertConfig> = tokenProvider.getToken().let { token ->
+    ): Result<AlertConfig> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             alertRepository.getAlertsConfiguration(
                 sessionToken = token,
@@ -27,7 +27,7 @@ class AlertService internal constructor(
     suspend fun upsertAlertsConfiguration(
         followerUserId: String,
         alertConfig: AlertConfig
-    ): Result<Unit> = tokenProvider.getToken().let { token ->
+    ): Result<Unit> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             alertRepository.upsertAlertsConfiguration(
                 sessionToken = token,
@@ -40,7 +40,7 @@ class AlertService internal constructor(
     
     suspend fun deleteAlertsConfiguration(
         followerUserId: String
-    ): Result<Unit> = tokenProvider.getToken().let { token ->
+    ): Result<Unit> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             alertRepository.deleteAlertsConfiguration(
                 sessionToken = token,

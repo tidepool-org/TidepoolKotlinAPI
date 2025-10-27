@@ -5,6 +5,7 @@ import org.tidepool.sdk.AppLifecycleProvider
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
+import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
@@ -36,7 +37,7 @@ class DataService internal constructor(
             period = period,
             delay = delay,
             action = {
-                tokenProvider.getToken().let {
+                tokenProvider.getToken().flatMap {
                     dataRepository.uploadCachedData(
                         userId = userRepository.getCurrentUser(it).getOrThrow().userId,
                         sessionToken = it,
@@ -58,26 +59,30 @@ class DataService internal constructor(
         dexcom: Boolean? = null,
         carelink: Boolean? = null,
         medtronic: Boolean? = null,
-    ): Result<List<BaseData>> = dataRepository.getDataForUser(
-        userId = userId,
-        uploadId = uploadId,
-        deviceId = deviceId,
-        types = types,
-        startDate = startDate,
-        endDate = endDate,
-        latest = latest,
-        dexcom = dexcom,
-        carelink = carelink,
-        medtronic = medtronic,
-        sessionToken = tokenProvider.getToken(),
-    )
+    ): Result<List<BaseData>> = tokenProvider.getToken().flatMap {
+        dataRepository.getDataForUser(
+            userId = userId,
+            uploadId = uploadId,
+            deviceId = deviceId,
+            types = types,
+            startDate = startDate,
+            endDate = endDate,
+            latest = latest,
+            dexcom = dexcom,
+            carelink = carelink,
+            medtronic = medtronic,
+            sessionToken = it,
+        )
+    }
     
     // Data Sets operations
     suspend fun getUserDataSets(userId: String): Result<List<DataSet>> =
-        dataRepository.getUserDataSets(
-            userId = userId,
-            sessionToken = tokenProvider.getToken(),
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.getUserDataSets(
+                userId = userId,
+                sessionToken = it,
+            )
+        }
     
     // Data Sets operations
     suspend fun getUserDataSetsPaginator(
@@ -88,12 +93,14 @@ class DataService internal constructor(
     ): Paginator<Int, List<DataSet>> = PaginatorImpl(
         initialKey = 0,
         onRequest = { page ->
-            dataRepository.getUserDataSets(
-                userId = userId,
-                sessionToken = tokenProvider.getToken(),
-                page = page,
-                size = pageSize,
-            )
+            tokenProvider.getToken().flatMap {
+                dataRepository.getUserDataSets(
+                    userId = userId,
+                    sessionToken = it,
+                    page = page,
+                    size = pageSize,
+                )
+            }
         },
         getNextKey = { page, offset -> offset + page.size },
         onSuccess = onPageLoadSuccess,
@@ -102,102 +109,128 @@ class DataService internal constructor(
     )
     
     suspend fun createDataSet(userId: String, newDataSet: NewDataSet): Result<DataSet> =
-        dataRepository.createDataSet(
-            userId = userId,
-            newDataSet = newDataSet,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.createDataSet(
+                userId = userId,
+                newDataSet = newDataSet,
+                sessionToken = it,
+            )
+        }
     
     suspend fun getDataSet(dataSetId: String): Result<DataSet> =
-        dataRepository.getDataSet(
-            dataSetId = dataSetId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.getDataSet(
+                dataSetId = dataSetId,
+                sessionToken = it,
+            )
+        }
     
     suspend fun updateDataSet(dataSetId: String, dataSet: DataSet): Result<DataSet> =
-        dataRepository.updateDataSet(
-            dataSetId = dataSetId,
-            dataSet = dataSet,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.updateDataSet(
+                dataSetId = dataSetId,
+                dataSet = dataSet,
+                sessionToken = it,
+            )
+        }
     
     suspend fun deleteDataSet(dataSetId: String): Result<Unit> =
-        dataRepository.deleteDataSet(
-            dataSetId = dataSetId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.deleteDataSet(
+                dataSetId = dataSetId,
+                sessionToken = it,
+            )
+        }
     
     suspend fun uploadDataToDataSet(
         dataSetId: String,
         data: List<BaseData>
     ): Result<List<BaseData>> =
-        dataRepository.uploadDataToDataSet(
-            dataSetId = dataSetId,
-            data = data,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.uploadDataToDataSet(
+                dataSetId = dataSetId,
+                data = data,
+                sessionToken = it,
+            )
+        }
     
     suspend fun deleteDataSetData(dataSetId: String): Result<Unit> =
-        dataRepository.deleteDataSetData(
-            dataSetId = dataSetId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.deleteDataSetData(
+                dataSetId = dataSetId,
+                sessionToken = it,
+            )
+        }
     
     // Legacy datasets operations
     @Deprecated("Use getUserDataSets instead", ReplaceWith("getUserDataSets"))
     suspend fun getUserDataSetsLegacy(userId: String): Result<List<DataSet>> =
-        dataRepository.getUserDataSetsLegacy(
-            userId = userId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.getUserDataSetsLegacy(
+                userId = userId,
+                sessionToken = it,
+            )
+        }
     
     @Deprecated("Use createDataSet instead", ReplaceWith("createDataSet"))
     suspend fun createDataSetLegacy(userId: String, newDataSet: NewDataSet): Result<DataSet> =
-        dataRepository.createDataSetLegacy(
-            userId = userId,
-            newDataSet = newDataSet,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.createDataSetLegacy(
+                userId = userId,
+                newDataSet = newDataSet,
+                sessionToken = it,
+            )
+        }
     
     @Deprecated("Use getDataSet instead", ReplaceWith("getDataSet"))
     suspend fun getDataSetLegacy(dataSetId: String): Result<DataSet> =
-        dataRepository.getDataSetLegacy(
-            dataSetId = dataSetId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.getDataSetLegacy(
+                dataSetId = dataSetId,
+                sessionToken = it,
+            )
+        }
     
     @Deprecated("Use updateDataSet instead", ReplaceWith("updateDataSet"))
     suspend fun updateDataSetLegacy(dataSetId: String, dataSet: DataSet): Result<DataSet> =
-        dataRepository.updateDataSetLegacy(
-            dataSetId = dataSetId,
-            dataSet = dataSet,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.updateDataSetLegacy(
+                dataSetId = dataSetId,
+                dataSet = dataSet,
+                sessionToken = it,
+            )
+        }
     
     @Deprecated("Use deleteDataSet instead", ReplaceWith("deleteDataSet"))
     suspend fun deleteDataSetLegacy(dataSetId: String): Result<Unit> =
-        dataRepository.deleteDataSetLegacy(
-            dataSetId = dataSetId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.deleteDataSetLegacy(
+                dataSetId = dataSetId,
+                sessionToken = it,
+            )
+        }
     
     @Deprecated("Use uploadDataToDataSet instead", ReplaceWith("uploadDataToDataSet"))
     suspend fun uploadDataToDataSetLegacy(
         dataSetId: String,
         data: List<BaseData>
     ): Result<List<BaseData>> =
-        dataRepository.uploadDataToDataSetLegacy(
-            dataSetId = dataSetId,
-            data = data,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.uploadDataToDataSetLegacy(
+                dataSetId = dataSetId,
+                data = data,
+                sessionToken = it,
+            )
+        }
     
     // Data Sources operations
     suspend fun getUserDataSources(userId: String): Result<List<DataSource>> =
-        dataRepository.getUserDataSources(
-            userId = userId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.getUserDataSources(
+                userId = userId,
+                sessionToken = it,
+            )
+        }
     
     suspend fun getUserDataSourcesPaginator(
         userId: String,
@@ -207,10 +240,12 @@ class DataService internal constructor(
     ): Paginator<Int, List<DataSource>> = PaginatorImpl(
         initialKey = 0,
         onRequest = { page ->
-            dataRepository.getUserDataSources(
-                userId = userId,
-                sessionToken = tokenProvider.getToken()
-            )
+            tokenProvider.getToken().flatMap {
+                dataRepository.getUserDataSources(
+                    userId = userId,
+                    sessionToken = it,
+                )
+            }
         },
         getNextKey = { page, offset -> offset + page.size },
         onSuccess = onPageLoadSuccess,
@@ -219,48 +254,62 @@ class DataService internal constructor(
     )
     
     suspend fun createDataSource(userId: String, newDataSource: NewDataSource): Result<DataSource> =
-        dataRepository.createDataSource(
-            userId = userId,
-            newDataSource = newDataSource,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.createDataSource(
+                userId = userId,
+                newDataSource = newDataSource,
+                sessionToken = it,
+            )
+        }
     
     suspend fun deleteAllDataSources(userId: String): Result<Unit> =
-        dataRepository.deleteAllDataSources(
-            userId = userId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.deleteAllDataSources(
+                userId = userId,
+                sessionToken = it,
+            )
+        }
     
     suspend fun getDataSource(dataSourceId: String): Result<DataSource> =
-        dataRepository.getDataSource(
-            dataSourceId = dataSourceId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.getDataSource(
+                dataSourceId = dataSourceId,
+                sessionToken = it,
+            )
+        }
     
     suspend fun updateDataSource(dataSourceId: String, dataSource: DataSource): Result<DataSource> =
-        dataRepository.updateDataSource(
-            dataSourceId = dataSourceId,
-            dataSource = dataSource,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.updateDataSource(
+                dataSourceId = dataSourceId,
+                dataSource = dataSource,
+                sessionToken = it,
+            )
+        }
     
     suspend fun deleteDataSource(dataSourceId: String): Result<Unit> =
-        dataRepository.deleteDataSource(
-            dataSourceId = dataSourceId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.deleteDataSource(
+                dataSourceId = dataSourceId,
+                sessionToken = it,
+            )
+        }
     
     // Additional data operations
     suspend fun deleteAllUserData(userId: String): Result<Unit> =
-        dataRepository.deleteAllUserData(
-            userId = userId,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.deleteAllUserData(
+                userId = userId,
+                sessionToken = it,
+            )
+        }
     
     suspend fun uploadData(userId: String, data: List<BaseData>): Result<List<BaseData>> =
-        dataRepository.uploadData(
-            userId = userId,
-            data = data,
-            sessionToken = tokenProvider.getToken()
-        )
+        tokenProvider.getToken().flatMap {
+            dataRepository.uploadData(
+                userId = userId,
+                data = data,
+                sessionToken = it,
+            )
+        }
 }
