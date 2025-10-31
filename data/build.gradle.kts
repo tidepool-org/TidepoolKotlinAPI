@@ -1,16 +1,76 @@
 plugins {
-    kotlin("jvm")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
-    // Apply the java-library plugin for API and implementation separation.
-    `java-library`
+    id("com.android.library")
+    id("de.jensklingenberg.ktorfit") version "2.6.4"
+}
+
+
+android {
+    namespace = "org.tidepool.data"
+    compileSdk = 34
+
+    defaultConfig {
+        minSdk = 26
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
 
 kotlin {
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
+    }
+
     compilerOptions {
         freeCompilerArgs.add("-Xcontext-parameters")
     }
+
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                implementation(project(":TidepoolKotlinAPI:domain"))
+
+                // Ktorfit for networking
+                implementation("de.jensklingenberg.ktorfit:ktorfit-lib:2.6.4")
+                implementation("io.ktor:ktor-client-content-negotiation:3.1.3")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
+
+                // Serialization
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+
+                // Coroutines
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+
+
+                // Room KMP dependencies for local storage
+                implementation("androidx.room:room-runtime:2.8.1")
+                implementation("androidx.sqlite:sqlite-bundled:2.5.0")
+
+                // Koin dependency injection
+                implementation("io.insert-koin:koin-core:4.1.0")
+            }
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+                implementation("io.insert-koin:koin-test:4.1.0")
+            }
+        }
+
+        val androidMain by getting
+        val androidUnitTest by getting
+    }
 }
+
 
 repositories {
     mavenCentral()
@@ -18,46 +78,8 @@ repositories {
 }
 
 dependencies {
-    implementation(project(":TidepoolKotlinAPI:domain"))
-    // Networking
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.okhttp3:okhttp:5.1.0")
-
-    // Serialization
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
-
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    
-    implementation("io.mcarle:konvert-api:4.3.2")
-    ksp("io.mcarle:konvert:4.3.2")
-
-    // Room KMP dependencies for local storage
-    implementation("androidx.room:room-runtime:2.8.1")
-    implementation("androidx.sqlite:sqlite-bundled:2.5.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:5.1.0")
-    add("ksp", "androidx.room:room-compiler:2.8.1")
-
-    // Koin dependency injection
-    implementation("io.insert-koin:koin-core:4.1.0")
-
-    // Testing
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-    testImplementation("com.squareup.okhttp3:mockwebserver:5.1.0")
-    testImplementation("io.insert-koin:koin-test:4.1.0")
-
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-}
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
-    }
-}
-
-tasks.named<Test>("test") {
-    useJUnitPlatform()
+    add("kspCommonMainMetadata", "androidx.room:room-compiler:2.8.1")
+    add("kspAndroid", "androidx.room:room-compiler:2.8.1")
+    add("kspCommonMainMetadata", "de.jensklingenberg.ktorfit:ktorfit-ksp:2.6.4")
+    add("kspAndroid", "de.jensklingenberg.ktorfit:ktorfit-ksp:2.6.4")
 }

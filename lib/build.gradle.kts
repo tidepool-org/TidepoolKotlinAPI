@@ -6,12 +6,24 @@
  */
 
 plugins {
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    kotlin("jvm")
+    kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
-    // Apply the java-library plugin for API and implementation separation.
-    `java-library`
+    id("com.android.library")
+}
+
+android {
+    namespace = "org.tidepool.sdk"
+    compileSdk = 34
+
+    defaultConfig {
+        minSdk = 26
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
 }
 
 repositories {
@@ -21,49 +33,51 @@ repositories {
 }
 
 dependencies {
-    api(project(":TidepoolKotlinAPI:domain"))
-    implementation(project(":TidepoolKotlinAPI:data"))
-    
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-    
-    // Kotlinx.serialization dependencies
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
-    
-    // OkHttp for MediaType
-    implementation("com.squareup.okhttp3:okhttp:5.1.0")
-
-    // Room KMP dependencies
-    implementation("androidx.room:room-runtime:2.8.1")
-    implementation("androidx.sqlite:sqlite-bundled:2.5.0")
-    ksp("androidx.room:room-compiler:2.8.1")
-    
-    // Koin dependency injection
-    implementation("io.insert-koin:koin-core:4.1.0")
-    implementation("io.insert-koin:koin-annotations:2.1.0")
-    
-    // Use the Kotlin JUnit 5 integration.
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
-    
-    // Use the JUnit 5 integration.
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-    
-    // Koin testing
-    testImplementation("io.insert-koin:koin-test:4.1.0")
-    testImplementation("io.insert-koin:koin-test-junit5:4.1.0")
-    
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    add("kspCommonMainMetadata", "androidx.room:room-compiler:2.8.1")
 }
 
-// Apply a specific Java toolchain to ease working on different environments.
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+kotlin {
+    androidTarget {
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+        }
     }
-}
 
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+    sourceSets {
+        val commonMain by getting {
+            dependencies {
+                api(project(":TidepoolKotlinAPI:domain"))
+                implementation(project(":TidepoolKotlinAPI:data"))
+
+                implementation("com.squareup.retrofit2:retrofit:3.0.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+
+                // Kotlinx.serialization dependencies
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+                implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
+
+                // OkHttp for MediaType
+                implementation("com.squareup.okhttp3:okhttp:5.1.0")
+
+                // Room KMP dependencies
+                implementation("androidx.room:room-runtime:2.8.1")
+                implementation("androidx.sqlite:sqlite-bundled:2.5.0")
+
+                // Koin dependency injection
+                implementation("io.insert-koin:koin-core:4.1.0")
+                implementation("io.insert-koin:koin-annotations:2.1.0")
+            }
+        }
+
+        val commonTest by getting {
+            dependencies {
+                implementation(kotlin("test"))
+                // Koin testing
+                implementation("io.insert-koin:koin-test:4.1.0")
+            }
+        }
+
+        val androidMain by getting
+        val androidUnitTest by getting
+    }
 }
