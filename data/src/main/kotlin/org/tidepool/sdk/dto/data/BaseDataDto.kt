@@ -52,6 +52,17 @@ sealed class BaseDataDto(
     val timeZoneOffset: Duration? = null
 ) {
     
+    companion object {
+        internal fun fromDomain(domain: BaseData): BaseDataDto = when (domain) {
+            is BasalAutomatedData    -> BasalAutomatedDataDto.fromDomain(domain)
+            is BolusData             -> BolusDataDto.fromDomain(domain)
+            is ContinuousGlucoseData -> ContinuousGlucoseDataDto.fromDomain(domain)
+            is DosingDecisionData    -> DosingDecisionDataDto.fromDomain(domain)
+            is FoodData              -> FoodDataDto.fromDomain(domain)
+            is InsulinData           -> InsulinDataDto.fromDomain(domain)
+        }
+    }
+    
     val location: Nothing
         get() = TODO("schema \"\" not implemented")
     

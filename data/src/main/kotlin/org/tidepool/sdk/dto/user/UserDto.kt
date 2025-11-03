@@ -4,8 +4,8 @@ import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
-import org.tidepool.sdk.dto.metadata.ProfileDto
 import org.tidepool.sdk.model.metadata.users.User
+import org.tidepool.sdk.dto.metadata.UserProfileDto
 import java.time.Instant
 
 @Serializable
@@ -40,5 +40,5 @@ open class UserDto(
     @SerialName("deletedUserId")
     val deletedUserId: String? = null,
     @SerialName("profile")
-    val profile: ProfileDto? = null,
+    val profile: UserProfileDto? = null,
 )

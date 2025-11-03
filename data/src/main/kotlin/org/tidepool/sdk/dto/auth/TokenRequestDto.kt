@@ -1,8 +1,12 @@
 package org.tidepool.sdk.dto.auth
 
-import io.mcarle.konvert.api.KonvertTo
+import io.mcarle.konvert.api.KonvertFrom
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.auth.GrantType
+import org.tidepool.sdk.model.auth.RequestedTokenType
+import org.tidepool.sdk.model.auth.SubjectTokenType
+import org.tidepool.sdk.model.auth.TokenRequest
 
 @Serializable
 data class TokenRequestDto(
@@ -28,7 +32,10 @@ data class TokenRequestDto(
     val code: String? = null,
     @SerialName("code_verifier")
     val codeVerifier: String? = null,
-)
+) {
+    @KonvertFrom(TokenRequest::class, mapFunctionName = "fromDomain")
+    companion object {}
+}
 
 @Serializable
 enum class GrantTypeDto {
@@ -66,4 +73,21 @@ enum class RequestedTokenTypeDto {
     @SerialName("urn:ietf:params:oauth:token-type:refresh_token")
     RefreshToken,
     ;
+}
+
+internal fun GrantType.toDto() = when (this) {
+    GrantType.AuthorizationCode -> GrantTypeDto.AuthorizationCode
+    GrantType.RefreshToken      -> GrantTypeDto.RefreshToken
+    GrantType.Password          -> GrantTypeDto.Password
+    GrantType.TokenExchange     -> GrantTypeDto.TokenExchange
+}
+
+internal fun SubjectTokenType.toDto() = when (this) {
+    SubjectTokenType.AccessToken -> SubjectTokenTypeDto.AccessToken
+    SubjectTokenType.Jwt         -> SubjectTokenTypeDto.Jwt
+}
+
+internal fun RequestedTokenType.toDto() = when (this) {
+    RequestedTokenType.AccessToken  -> RequestedTokenTypeDto.AccessToken
+    RequestedTokenType.RefreshToken -> RequestedTokenTypeDto.RefreshToken
 }

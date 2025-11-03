@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 import org.tidepool.sdk.dto.BloodGlucoseDto.GlucoseReadingDto
 import org.tidepool.sdk.dto.BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter
 import org.tidepool.sdk.dto.BloodGlucoseDto.UnitsDto.MillimolesPerLiter
+import org.tidepool.sdk.model.BloodGlucose
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 
@@ -31,7 +32,7 @@ class BloodGlucoseDto {
         @SerialName("amount")
         val amount: Double,
         @SerialName("units")
-        val units: UnitsDto
+        val units: UnitsDto,
     ) : Comparable<GlucoseReadingDto> {
         
         fun inUnit(newUnit: UnitsDto) = units.convert(amount, newUnit)
@@ -125,7 +126,7 @@ class BloodGlucoseDto {
         @SerialName("low")
         val low: Double?,
         @SerialName("high")
-        val high: Double?
+        val high: Double?,
     )
     
     companion object {
@@ -180,3 +181,8 @@ internal val Float.mmollDto: GlucoseReadingDto
         MillimolesPerLiter
     )
 internal val Double.mmollDto: GlucoseReadingDto get() = GlucoseReadingDto(this, MillimolesPerLiter)
+
+internal fun BloodGlucose.Units.toDto() = when (this) {
+    BloodGlucose.Units.MilligramsPerDeciliter -> BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter
+    BloodGlucose.Units.MillimolesPerLiter     -> BloodGlucoseDto.UnitsDto.MillimolesPerLiter
+}

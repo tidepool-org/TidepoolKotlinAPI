@@ -1,9 +1,11 @@
 package org.tidepool.sdk.dto
 
+import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+@KonvertTo(org.tidepool.sdk.model.Association::class, mapFunctionName = "toDomain")
 data class AssociationDto(
     @SerialName("type")
     val type: AssociationTypeDto?,
@@ -12,7 +14,7 @@ data class AssociationDto(
     @SerialName("url")
     val url: String?,
     @SerialName("reason")
-    val reason: String?
+    val reason: String?,
 ) {
     
     @Serializable

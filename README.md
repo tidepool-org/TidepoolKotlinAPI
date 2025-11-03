@@ -38,7 +38,7 @@ userResult.fold(
 // Get diabetes data for a user
 val dataResult = sdk.getUserData(
     userId = "user-id",
-    types = listOf(BaseData.DataType.Cbg, BaseData.DataType.Bolus),
+    types = listOf(DataType.Cbg, DataType.Bolus),
     startDate = Instant.now().minus(Duration.ofDays(7)),
     endDate = Instant.now()
 )

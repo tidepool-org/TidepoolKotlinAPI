@@ -1,5 +1,6 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertFrom
 import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -20,6 +21,9 @@ data class ContinuousGlucoseDataDto(
     @SerialName("trendRate")
     val trendRate: Double? = null
 ) : BaseDataDto(type = DataTypeDto.Cbg) {
+    
+    @KonvertFrom(ContinuousGlucoseData::class, mapFunctionName = "fromDomain")
+    companion object {}
     
     public constructor(
         reading: GlucoseReadingDto?,

@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.metadata.users
 
-import org.tidepool.sdk.model.metadata.Profile
+import org.tidepool.sdk.model.metadata.UserProfile
 import java.time.Instant
 
 open class User(
@@ -16,5 +16,5 @@ open class User(
     open val modifiedUserId: String? = null,
     open val deletedTime: Instant? = null,
     open val deletedUserId: String? = null,
-    open val profile: Profile? = null,
+    open val profile: UserProfile? = null,
 )

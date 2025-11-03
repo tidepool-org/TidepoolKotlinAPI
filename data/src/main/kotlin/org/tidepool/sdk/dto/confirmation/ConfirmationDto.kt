@@ -1,17 +1,16 @@
 package org.tidepool.sdk.dto.confirmation
 
-import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import org.tidepool.sdk.dto.metadata.ProfileDto
+import kotlinx.serialization.json.JsonPrimitive
 import org.tidepool.sdk.model.confirmation.Confirmation
-import org.tidepool.sdk.model.confirmation.ConfirmationStatus
+import org.tidepool.sdk.dto.metadata.UserProfileDto
+import org.tidepool.sdk.model.metadata.UserProfile
 import java.time.Instant
 
 @Serializable
-@KonvertTo(value = Confirmation::class, mapFunctionName = "toDomain")
 data class ConfirmationDto(
     @SerialName("key")
     val key: String = "",
@@ -41,11 +40,45 @@ data class ConfirmationDto(
 ) {
     
     @Serializable
-    @KonvertTo(value = Confirmation.Creator::class, mapFunctionName = "toDomain")
     data class CreatorDto(
         @SerialName("userId")
         val userId: String = "",
         @SerialName("profile")
-        val profile: ProfileDto = ProfileDto(),
+        val profile: UserProfileDto = UserProfileDto(),
     )
 }
+
+// Manual mapping functions
+internal fun ConfirmationDto.toDomain(): Confirmation = Confirmation(
+    key = key,
+    type = type.toDomain(),
+    status = status.toDomain(),
+    email = email,
+    creatorId = creatorId,
+    created = created,
+    modified = modified,
+    creator = creator?.toDomain(),
+    context = context?.let { jsonObject ->
+        jsonObject.entries.associate { (key, value) ->
+            key to when (value) {
+                is JsonPrimitive -> value.content
+                else             -> value.toString()
+            }
+        }
+    },
+    restrictions = restrictions?.toDomain(),
+    expiresAt = expiresAt
+)
+
+internal fun ConfirmationDto.CreatorDto.toDomain(): Confirmation.Creator = Confirmation.Creator(
+    userId = userId,
+    profile = UserProfile(fullName = profile.fullName)
+)
+
+internal fun ConfirmationTypeDto.toDomain(): org.tidepool.sdk.model.confirmation.ConfirmationType =
+    when (this) {
+        ConfirmationTypeDto.PasswordReset      -> org.tidepool.sdk.model.confirmation.ConfirmationType.PasswordReset
+        ConfirmationTypeDto.CareteamInvitation -> org.tidepool.sdk.model.confirmation.ConfirmationType.CareteamInvitation
+        ConfirmationTypeDto.SignupConfirmation -> org.tidepool.sdk.model.confirmation.ConfirmationType.SignupConfirmation
+        ConfirmationTypeDto.NoAccount          -> org.tidepool.sdk.model.confirmation.ConfirmationType.NoAccount
+    }

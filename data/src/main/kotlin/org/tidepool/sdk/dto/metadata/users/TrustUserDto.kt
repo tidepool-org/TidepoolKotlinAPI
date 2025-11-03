@@ -3,7 +3,7 @@ package org.tidepool.sdk.dto.metadata.users
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.dto.user.UserDto
-import org.tidepool.sdk.model.metadata.Profile
+import org.tidepool.sdk.model.metadata.UserProfile
 import org.tidepool.sdk.model.metadata.users.TrustUser
 import org.tidepool.sdk.model.metadata.users.TrustUser.TrusteeUser
 import org.tidepool.sdk.model.metadata.users.TrustUser.TrustorUser
@@ -56,7 +56,7 @@ fun TrustUserDto.toDomain(): TrustUser = when {
         deletedTime = deletedTime,
         deletedUserId = deletedUserId,
         profile = profile?.let {
-            Profile(it.fullName)
+            UserProfile(it.fullName)
         }
     )
     
@@ -75,7 +75,7 @@ fun TrustUserDto.toDomain(): TrustUser = when {
         deletedTime = deletedTime,
         deletedUserId = deletedUserId,
         profile = profile?.let {
-            Profile(it.fullName)
+            UserProfile(it.fullName)
         }
     )
     

@@ -1,10 +1,12 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertFrom
 import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
 import org.tidepool.sdk.dto.BloodGlucoseDto
+import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.data.BasalAutomatedData
 import org.tidepool.sdk.model.data.DosingDecisionData
 import java.time.Instant
@@ -31,6 +33,9 @@ data class DosingDecisionDataDto(
     val units: UnitsDto = UnitsDto(),
 ) : BaseDataDto(DataTypeDto.DosingDecision) {
     
+    @KonvertFrom(DosingDecisionData::class, mapFunctionName = "fromDomain")
+    companion object {}
+    
     val originalFood: Nothing
         get() = TODO("backing object not implemented")
     val food: Nothing
@@ -56,7 +61,11 @@ data class DosingDecisionDataDto(
         val time: Instant? = null,
         @SerialName("amount")
         val amount: Double = -1.0,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionData.CarbsOnBoard::class, mapFunctionName = "fromDomain")
+        companion object {}
+    }
     
     @Serializable
     @KonvertTo(DosingDecisionData.InsulinOnBoard::class, mapFunctionName = "toDomain")
@@ -66,7 +75,11 @@ data class DosingDecisionDataDto(
         val time: Instant? = null,
         @SerialName("amount")
         val amount: Double = -1.0,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionData.InsulinOnBoard::class, mapFunctionName = "fromDomain")
+        companion object {}
+    }
     
     @Serializable
     @KonvertTo(DosingDecisionData.RecommendedBasal::class, mapFunctionName = "toDomain")
@@ -75,21 +88,33 @@ data class DosingDecisionDataDto(
         val rate: Double = -1.0,
         @SerialName("duration")
         val duration: Double? = null,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionData.RecommendedBasal::class, mapFunctionName = "fromDomain")
+        companion object {}
+    }
     
     @Serializable
     @KonvertTo(DosingDecisionData.RecommendedBolus::class, mapFunctionName = "toDomain")
     data class RecommendedBolusDto(
         @SerialName("amount")
         val amount: Double = -1.0,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionData.RecommendedBolus::class, mapFunctionName = "fromDomain")
+        companion object {}
+    }
     
     @Serializable
     @KonvertTo(DosingDecisionData.RequestedBolus::class, mapFunctionName = "toDomain")
     data class RequestedBolusDto(
         @SerialName("amount")
         val amount: Double = -1.0,
-    )
+    ) {
+        
+        @KonvertFrom(DosingDecisionData.RequestedBolus::class, mapFunctionName = "fromDomain")
+        companion object {}
+    }
     
     @Serializable
     @KonvertTo(DosingDecisionData.Units::class, mapFunctionName = "toDomain")
@@ -101,6 +126,9 @@ data class DosingDecisionDataDto(
         @SerialName("insulin")
         val insulin: InsulinDto = InsulinDto.Units,
     ) {
+        
+        @KonvertFrom(DosingDecisionData.Units::class, mapFunctionName = "fromDomain")
+        companion object {}
         
         @Serializable
         enum class CarbDto {
@@ -119,4 +147,32 @@ data class DosingDecisionDataDto(
             Units,
         }
     }
+}
+
+internal fun DosingDecisionDataDto.UnitsDto.InsulinDto.toDomain() = when (this) {
+    DosingDecisionDataDto.UnitsDto.InsulinDto.Units -> DosingDecisionData.Units.Insulin.Units
+}
+
+internal fun DosingDecisionDataDto.UnitsDto.CarbDto.toDomain() = when (this) {
+    DosingDecisionDataDto.UnitsDto.CarbDto.Exchanges -> DosingDecisionData.Units.Carb.Exchanges
+    DosingDecisionDataDto.UnitsDto.CarbDto.Grams     -> DosingDecisionData.Units.Carb.Grams
+}
+
+internal fun BloodGlucoseDto.UnitsDto.toDomain() = when (this) {
+    BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter -> BloodGlucose.Units.MilligramsPerDeciliter
+    BloodGlucoseDto.UnitsDto.MillimolesPerLiter     -> BloodGlucose.Units.MillimolesPerLiter
+}
+
+internal fun DosingDecisionData.Units.Insulin.toDto() = when (this) {
+    DosingDecisionData.Units.Insulin.Units -> DosingDecisionDataDto.UnitsDto.InsulinDto.Units
+}
+
+internal fun DosingDecisionData.Units.Carb.toDto() = when (this) {
+    DosingDecisionData.Units.Carb.Exchanges -> DosingDecisionDataDto.UnitsDto.CarbDto.Exchanges
+    DosingDecisionData.Units.Carb.Grams     -> DosingDecisionDataDto.UnitsDto.CarbDto.Grams
+}
+
+internal fun BloodGlucose.Units.toDto() = when (this) {
+    BloodGlucose.Units.MilligramsPerDeciliter -> BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter
+    BloodGlucose.Units.MillimolesPerLiter     -> BloodGlucoseDto.UnitsDto.MillimolesPerLiter
 }

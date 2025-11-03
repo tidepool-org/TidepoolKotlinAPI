@@ -65,7 +65,7 @@ public class BloodGlucose {
         
         fun toSignString(unit: Units): String {
             return when (unit) {
-                MillimolesPerLiter -> inUnit(unit).let {
+                MillimolesPerLiter     -> inUnit(unit).let {
                     if (it == 0.0) "0" else "%+.1f".format(
                         it.roundMillimolesPerLiter()
                     )

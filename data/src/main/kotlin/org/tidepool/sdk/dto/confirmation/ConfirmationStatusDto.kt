@@ -19,7 +19,8 @@ enum class ConfirmationStatusDto {
     Canceled,
     
     @SerialName("declined")
-    Declined
+    Declined,
+    ;
 }
 
 fun ConfirmationStatusDto.toDomain(): ConfirmationStatus = when (this) {

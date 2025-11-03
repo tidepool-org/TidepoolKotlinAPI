@@ -1,8 +1,7 @@
 package org.tidepool.sdk.model.metadata.users
 
-import org.tidepool.sdk.model.metadata.Profile
+import org.tidepool.sdk.model.metadata.UserProfile
 import java.time.Instant
-import kotlin.collections.map
 
 sealed class TrustUser(
     override val emailVerified: Boolean = false,
@@ -17,7 +16,7 @@ sealed class TrustUser(
     override val modifiedUserId: String? = null,
     override val deletedTime: Instant? = null,
     override val deletedUserId: String? = null,
-    override val profile: Profile? = null,
+    override val profile: UserProfile? = null,
 ) : User(
     emailVerified = emailVerified,
     emails = emails,
@@ -47,7 +46,7 @@ sealed class TrustUser(
         override val modifiedUserId: String? = null,
         override val deletedTime: Instant? = null,
         override val deletedUserId: String? = null,
-        override val profile: Profile? = null,
+        override val profile: UserProfile? = null,
     ) : TrustUser(
         emailVerified = emailVerified,
         emails = emails,
@@ -78,7 +77,7 @@ sealed class TrustUser(
         override val modifiedUserId: String? = null,
         override val deletedTime: Instant? = null,
         override val deletedUserId: String? = null,
-        override val profile: Profile? = null,
+        override val profile: UserProfile? = null,
     ) : TrustUser(
         emailVerified = emailVerified,
         emails = emails,

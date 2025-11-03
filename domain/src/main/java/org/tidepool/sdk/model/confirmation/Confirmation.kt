@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.confirmation
 
-import org.tidepool.sdk.model.metadata.Profile
+import org.tidepool.sdk.model.metadata.UserProfile
 import java.time.Instant
 
 data class Confirmation(
@@ -19,6 +19,6 @@ data class Confirmation(
     
     data class Creator(
         val userId: String = "",
-        val profile: Profile = Profile(),
+        val profile: UserProfile = UserProfile(),
     )
 }

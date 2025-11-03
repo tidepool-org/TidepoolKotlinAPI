@@ -1,8 +1,10 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertFrom
 import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.data.BasalAutomatedData
 import org.tidepool.sdk.model.data.Dose
 
 @Serializable
@@ -30,4 +32,7 @@ data class DoseDto(
     val correction: Double?,
     @SerialName("active")
     val active: Double?,
-)
+) {
+    @KonvertFrom(Dose::class, mapFunctionName = "fromDomain")
+    companion object {}
+}

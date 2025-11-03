@@ -1,4 +1,4 @@
-package org.tidepool.sdk.model.auth;
+package org.tidepool.sdk.model.auth
 
 enum class Realm {
     Dev1,
@@ -9,5 +9,4 @@ enum class Realm {
     Qa5,
     Integration,
     Tidepool,
-    ;
 }

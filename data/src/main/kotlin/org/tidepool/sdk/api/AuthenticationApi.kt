@@ -9,27 +9,27 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
-import java.net.URI
 
-interface AuthApi {
+interface AuthenticationApi {
 
     @POST("/realms/{realm}/protocol/openid-connect/token")
     suspend fun obtainToken(
-        @Path("realm") realm: RealmDto,
+        @Path("realm") realm: String,
         @Body grantType: TokenRequestDto,
     ): TokenResponseDto
-
-    @GET("/realms/{realm}/protocol/openid-connect/auth?response_type=code")
+    
+    @GET("/realms/{realm}/protocol/openid-connect/auth")
     suspend fun authorize(
-        @Path("realm") realm: RealmDto,
+        @Path("realm") realm: String,
         @Query("client_id") clientId: String,
-        @Query("scope") scope: Array<ScopeType>,
-        @Query("redirect_uri") redirectUri: URI,
+        @Query("scope") scope: String,
+        @Query("response_type") responseType: String = "code",
+        @Query("redirect_uri") redirectUri: String,
         @Query("login_hint") loginHint: String? = null,
         @Query("kc_idp_hint") kcIdpHint: String? = null,
-        @Query("prompt") prompt: PromptType? = null,
-    )
-
+        @Query("prompt") prompt: String? = null,
+    ): String
+    
     enum class PromptType {
         @SerialName("none")
         None,

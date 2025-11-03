@@ -1,5 +1,6 @@
 package org.tidepool.sdk.dto.data
 
+import io.mcarle.konvert.api.KonvertFrom
 import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,6 +16,9 @@ data class InsulinDataDto(
     @SerialName("site")
     val site: String?
 ) : BaseDataDto(DataTypeDto.Insulin) {
+    
+    @KonvertFrom(InsulinData::class, mapFunctionName = "fromDomain")
+    companion object {}
     
     val formulation: Nothing
         get() = TODO("schema \"formulation.v1\" not implemented")

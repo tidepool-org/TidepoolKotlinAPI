@@ -21,7 +21,7 @@ class TestClass {
             val allData = helper.dataApi.getDataForUser(
                 connectionResponse.access_token,
                 user.userid,
-                types = CommaSeparatedArray(BaseData.DataType.Cbg)
+                types = CommaSeparatedArray(DataType.Cbg)
             )
             for (data in allData) {
                 (data as? ContinuousGlucoseData)?.run {
