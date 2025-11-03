@@ -323,4 +323,15 @@ class DataService internal constructor(
                 )
             }
         }
+
+    suspend fun uploadData(datum: BaseData): Result<List<BaseData>> =
+        tokenProvider.getToken().flatMap { token ->
+            userRepository.getCurrentUser(token).flatMap { user ->
+                dataRepository.uploadData(
+                    userId = user.userId,
+                    data = listOf(datum),
+                    sessionToken = token,
+                )
+            }
+        }
 }
