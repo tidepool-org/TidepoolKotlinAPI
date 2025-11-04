@@ -20,12 +20,14 @@ class ConfirmationService internal constructor(
         userId: String,
         clinicId: String? = null,
         invitedBy: String? = null,
-    ): Result<Unit> = confirmationRepository.sendAccountSignupConfirmation(
-        sessionToken = tokenProvider.getToken(),
-        userId = userId,
-        clinicId = clinicId,
-        invitedBy = invitedBy,
-    )
+    ): Result<Unit> = tokenProvider.getToken().flatMap {
+        confirmationRepository.sendAccountSignupConfirmation(
+            sessionToken = it,
+            userId = userId,
+            clinicId = clinicId,
+            invitedBy = invitedBy,
+        )
+    }
     
     suspend fun resendAccountSignup(
         email: String,
@@ -51,21 +53,25 @@ class ConfirmationService internal constructor(
     
     suspend fun getAccountSignupConfirmation(
         userId: String,
-    ): Result<Confirmation> = confirmationRepository.getAccountSignupConfirmation(
-        sessionToken = tokenProvider.getToken(),
-        userId = userId,
-    )
+    ): Result<Confirmation> = tokenProvider.getToken().flatMap {
+        confirmationRepository.getAccountSignupConfirmation(
+            sessionToken = it,
+            userId = userId,
+        )
+    }
     
     suspend fun upsertAccountSignupConfirmation(
         userId: String,
         clinicId: String? = null,
         invitedBy: String? = null,
-    ): Result<Confirmation> = confirmationRepository.upsertAccountSignupConfirmation(
-        sessionToken = tokenProvider.getToken(),
-        userId = userId,
-        clinicId = clinicId,
-        invitedBy = invitedBy,
-    )
+    ): Result<Confirmation> = tokenProvider.getToken().flatMap {
+        confirmationRepository.upsertAccountSignupConfirmation(
+            sessionToken = it,
+            userId = userId,
+            clinicId = clinicId,
+            invitedBy = invitedBy,
+        )
+    }
     
     suspend fun cancelAccountSignupConfirmation(
         userId: String,
@@ -98,23 +104,27 @@ class ConfirmationService internal constructor(
         email: String,
         permissions: Set<Permission>,
         nickname: String? = null,
-    ): Result<Confirmation> = confirmationRepository.sendCareTeamInvite(
-        sessionToken = tokenProvider.getToken(),
-        userId = userId,
-        email = email,
-        permissions = permissions,
-        nickname = nickname,
-    )
+    ): Result<Confirmation> = tokenProvider.getToken().flatMap {
+        confirmationRepository.sendCareTeamInvite(
+            sessionToken = it,
+            userId = userId,
+            email = email,
+            permissions = permissions,
+            nickname = nickname,
+        )
+    }
     
     suspend fun getPendingCareTeamInvitations(
         userId: String,
-    ): Result<List<Confirmation>> = confirmationRepository.getPendingCareTeamInvitations(
-        sessionToken = tokenProvider.getToken(),
-        userId = userId,
-    )
+    ): Result<List<Confirmation>> = tokenProvider.getToken().flatMap {
+        confirmationRepository.getPendingCareTeamInvitations(
+            sessionToken = it,
+            userId = userId,
+        )
+    }
     
     suspend fun getReceivedInvitations(
-    ): Result<List<Confirmation>> = tokenProvider.getToken().let { token ->
+    ): Result<List<Confirmation>> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             confirmationRepository.getReceivedInvitations(
                 sessionToken = token,
@@ -126,10 +136,10 @@ class ConfirmationService internal constructor(
     suspend fun acceptConfirmation(
         confirmationKey: String,
         creatorId: String,
-    ): Result<Unit> = tokenProvider.getToken().let { token ->
+    ): Result<Unit> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             confirmationRepository.acceptConfirmation(
-                sessionToken = tokenProvider.getToken(),
+                sessionToken = token,
                 userId = user.userId,
                 confirmationKey = confirmationKey,
                 creatorId = creatorId,
@@ -140,10 +150,10 @@ class ConfirmationService internal constructor(
     suspend fun dismissConfirmation(
         confirmationKey: String,
         creatorId: String,
-    ): Result<Unit> = tokenProvider.getToken().let { token ->
+    ): Result<Unit> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             confirmationRepository.dismissConfirmation(
-                sessionToken = tokenProvider.getToken(),
+                sessionToken = token,
                 userId = user.userId,
                 confirmationKey = confirmationKey,
                 creatorId = creatorId,
@@ -153,10 +163,10 @@ class ConfirmationService internal constructor(
     
     suspend fun cancelInvite(
         invitedBy: String,
-    ): Result<Unit> = tokenProvider.getToken().let { token ->
+    ): Result<Unit> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             confirmationRepository.cancelInvite(
-                sessionToken = tokenProvider.getToken(),
+                sessionToken = token,
                 userId = user.userId,
                 invitedBy = invitedBy,
             )

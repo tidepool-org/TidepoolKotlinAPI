@@ -17,7 +17,6 @@ import org.koin.dsl.module
 import org.tidepool.sdk.Environment
 import org.tidepool.sdk.EnvironmentInternal
 import org.tidepool.sdk.api.AlertApi
-import org.tidepool.sdk.api.AuthenticationApi
 import org.tidepool.sdk.api.AuthorizationApi
 import org.tidepool.sdk.api.BlobApi
 import org.tidepool.sdk.api.ClinicApi
@@ -47,7 +46,6 @@ import org.tidepool.sdk.dto.summary.CgmSummaryDto
 import org.tidepool.sdk.dto.summary.BgmSummaryDto
 import org.tidepool.sdk.dto.summary.ContinuousSummaryDto
 import org.tidepool.sdk.repository.AlertRepository
-import org.tidepool.sdk.repository.AuthenticationRepository
 import org.tidepool.sdk.repository.AuthorizationRepository
 import org.tidepool.sdk.repository.BlobRepository
 import org.tidepool.sdk.repository.ClinicRepository
@@ -63,7 +61,6 @@ import org.tidepool.sdk.repository.SummaryRepository
 import org.tidepool.sdk.repository.TaskRepository
 import org.tidepool.sdk.repository.UserRepository
 import org.tidepool.sdk.repository.AlertRepositoryImpl
-import org.tidepool.sdk.repository.AuthenticationRepositoryImpl
 import org.tidepool.sdk.repository.BlobRepositoryImpl
 import org.tidepool.sdk.repository.ClinicRepositoryImpl
 import org.tidepool.sdk.repository.ConfirmationRepositoryImpl
@@ -91,6 +88,7 @@ public val dataModule = module {
             ignoreUnknownKeys = true
             encodeDefaults = true
             isLenient = true
+            explicitNulls = false
             classDiscriminator =
                 "__type"  // Use different discriminator to avoid conflict with 'type' property
             serializersModule = SerializersModule {
@@ -155,7 +153,6 @@ public val dataModule = module {
     }
     
     single { get<Retrofit>(qualifier = named("main")).create(AlertApi::class.java) }
-    single { get<Retrofit>(qualifier = named("auth")).create(AuthenticationApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(AuthorizationApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(BlobApi::class.java) }
     single { get<Retrofit>(qualifier = named("main")).create(ClinicApi::class.java) }
@@ -174,7 +171,6 @@ public val dataModule = module {
     single<DataDao> { get<LoopKitDatabase>().dataDao() }
     
     singleOf(::AlertRepositoryImpl) bind AlertRepository::class
-    singleOf(::AuthenticationRepositoryImpl) bind AuthenticationRepository::class
     singleOf(::AuthorizationRepositoryImpl) bind AuthorizationRepository::class
     singleOf(::BlobRepositoryImpl) bind BlobRepository::class
     singleOf(::ClinicRepositoryImpl) bind ClinicRepository::class

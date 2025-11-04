@@ -20,17 +20,16 @@ class ExportService internal constructor(
         endDate: Instant? = null,
         format: ExportFormat = ExportFormat.Xlsx,
         bgUnits: BloodGlucose.Units = BloodGlucose.Units.MillimolesPerLiter,
-    ): Result<ExportData> = tokenProvider.getToken()
-        .let { token ->
-            userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
-                exportRepository.exportUserData(
-                    sessionToken = token,
-                    userId = user.userId,
-                    startDate = startDate,
-                    endDate = endDate,
-                    bgUnits = bgUnits,
-                    format = format,
-                )
-            }
+    ): Result<ExportData> = tokenProvider.getToken().flatMap { token ->
+        userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
+            exportRepository.exportUserData(
+                sessionToken = token,
+                userId = user.userId,
+                startDate = startDate,
+                endDate = endDate,
+                bgUnits = bgUnits,
+                format = format,
+            )
         }
+    }
 }

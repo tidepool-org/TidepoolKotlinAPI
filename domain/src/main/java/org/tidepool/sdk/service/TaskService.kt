@@ -3,6 +3,7 @@ package org.tidepool.sdk.service
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
+import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.task.NewTask
 import org.tidepool.sdk.model.task.Task
 import org.tidepool.sdk.model.task.TaskState
@@ -24,14 +25,16 @@ class TaskService internal constructor(
     ): Paginator<Int, List<Task>> = PaginatorImpl(
         initialKey = 0,
         onRequest = { pageIndex: Int ->
-            taskRepository.getTasks(
-                sessionToken = tokenProvider.getToken(),
-                name = name,
-                type = type,
-                state = state,
-                page = pageIndex,
-                size = pageSize,
-            )
+            tokenProvider.getToken().flatMap {
+                taskRepository.getTasks(
+                    sessionToken = it,
+                    name = name,
+                    type = type,
+                    state = state,
+                    page = pageIndex,
+                    size = pageSize,
+                )
+            }
         },
         getNextKey = { page, offset -> offset + 1 },
         onSuccess = onPageLoadSuccess,
@@ -41,31 +44,39 @@ class TaskService internal constructor(
     
     suspend fun createTask(
         task: NewTask
-    ): Result<Task> = taskRepository.createTask(
-        sessionToken = tokenProvider.getToken(),
-        task = task
-    )
+    ): Result<Task> = tokenProvider.getToken().flatMap {
+        taskRepository.createTask(
+            sessionToken = it,
+            task = task
+        )
+    }
     
     suspend fun getTask(
         taskId: String
-    ): Result<Task> = taskRepository.getTask(
-        sessionToken = tokenProvider.getToken(),
-        taskId = taskId
-    )
+    ): Result<Task> = tokenProvider.getToken().flatMap {
+        taskRepository.getTask(
+            sessionToken = it,
+            taskId = taskId
+        )
+    }
     
     suspend fun updateTask(
         taskId: String,
         task: UpdateTask
-    ): Result<Task> = taskRepository.updateTask(
-        sessionToken = tokenProvider.getToken(),
-        taskId = taskId,
-        task = task
-    )
+    ): Result<Task> = tokenProvider.getToken().flatMap {
+        taskRepository.updateTask(
+            sessionToken = it,
+            taskId = taskId,
+            task = task
+        )
+    }
     
     suspend fun deleteTask(
         taskId: String
-    ): Result<Unit> = taskRepository.deleteTask(
-        sessionToken = tokenProvider.getToken(),
-        taskId = taskId
-    )
+    ): Result<Unit> = tokenProvider.getToken().flatMap {
+        taskRepository.deleteTask(
+            sessionToken = it,
+            taskId = taskId
+        )
+    }
 }

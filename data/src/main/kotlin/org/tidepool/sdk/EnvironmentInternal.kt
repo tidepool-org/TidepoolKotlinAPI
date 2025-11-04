@@ -20,7 +20,7 @@ enum class EnvironmentInternal(
 internal fun Environment.toInternal() = when (this) {
     Environments.Production  -> EnvironmentInternal.Production
     Environments.Integration -> EnvironmentInternal.Integration
-    Environments.Dev1        -> EnvironmentInternal.Dev1
+    Environments.Dev         -> EnvironmentInternal.Dev1
     Environments.Qa1         -> EnvironmentInternal.Qa1
     Environments.Qa2         -> EnvironmentInternal.Qa2
     

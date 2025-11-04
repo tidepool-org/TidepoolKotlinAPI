@@ -1,6 +1,7 @@
 package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
+import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.repository.MetricsRepository
 
 class MetricsService internal constructor(
@@ -20,7 +21,7 @@ class MetricsService internal constructor(
     ): Result<Unit> = metricsRepository.recordMetricsEventForUser(
         userId = userId,
         eventName = eventName,
-        sessionToken = if (includeSessionToken) tokenProvider.getToken() else null,
+        sessionToken = if (includeSessionToken) tokenProvider.getToken().getOrNull() else null,
         queryParameters = queryParameters
     )
     
@@ -31,11 +32,13 @@ class MetricsService internal constructor(
     suspend fun recordMetricsEventForLoggedInUser(
         eventName: String,
         queryParameters: Map<String, String> = emptyMap()
-    ): Result<Unit> = metricsRepository.recordMetricsEventForLoggedInUser(
-        sessionToken = tokenProvider.getToken(),
-        eventName = eventName,
-        queryParameters = queryParameters
-    )
+    ): Result<Unit> = tokenProvider.getToken().flatMap {
+        metricsRepository.recordMetricsEventForLoggedInUser(
+            sessionToken = it,
+            eventName = eventName,
+            queryParameters = queryParameters
+        )
+    }
     
     /**
      * Records a metrics event for a server.
@@ -45,10 +48,12 @@ class MetricsService internal constructor(
         serverName: String,
         eventName: String,
         queryParameters: Map<String, String> = emptyMap()
-    ): Result<Unit> = metricsRepository.recordMetricsEventForServer(
-        sessionToken = tokenProvider.getToken(),
-        serverName = serverName,
-        eventName = eventName,
-        queryParameters = queryParameters
-    )
+    ): Result<Unit> = tokenProvider.getToken().flatMap {
+        metricsRepository.recordMetricsEventForServer(
+            sessionToken = it,
+            serverName = serverName,
+            eventName = eventName,
+            queryParameters = queryParameters
+        )
+    }
 }

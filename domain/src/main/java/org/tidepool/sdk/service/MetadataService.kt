@@ -16,24 +16,26 @@ class MetadataService internal constructor(
     private val userRepository: UserRepository,
 ) {
     
-    suspend fun getMetadataCollections(): Result<List<String>> =
+    suspend fun getMetadataCollections(): Result<List<String>> = tokenProvider.getToken().flatMap {
         metadataRepository.getMetadataCollections(
-            sessionToken = tokenProvider.getToken()
+            sessionToken = it,
         )
+    }
     
     suspend fun getUserMetadataCollection(
         userId: String,
         collection: MetadataCollection,
-    ): Result<Map<String, Any>> =
+    ): Result<Map<String, Any>> = tokenProvider.getToken().flatMap {
         metadataRepository.getUserMetadataCollection(
-            sessionToken = tokenProvider.getToken(),
+            sessionToken = it,
             userId = userId,
             collectionName = collection.code,
         )
+    }
     
     suspend fun getCurrentUserMetadataCollection(
         collection: MetadataCollection,
-    ): Result<Map<String, Any>> = tokenProvider.getToken().let { token ->
+    ): Result<Map<String, Any>> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             metadataRepository.getUserMetadataCollection(
                 sessionToken = token,
@@ -49,19 +51,21 @@ class MetadataService internal constructor(
         collection: UserProfile,
         usePost: Boolean = false
     ): Result<Map<String, Any>> =
-        metadataRepository.updateUserMetadataCollection(
-            sessionToken = tokenProvider.getToken(),
-            userId = userId,
-            collectionName = collectionName,
-            collection = collection,
-            usePost = usePost
-        )
+        tokenProvider.getToken().flatMap {
+            metadataRepository.updateUserMetadataCollection(
+                sessionToken = it,
+                userId = userId,
+                collectionName = collectionName,
+                collection = collection,
+                usePost = usePost
+            )
+        }
     
     suspend fun updateCurrentUserMetadataCollection(
         collectionName: String,
         collection: UserProfile,
         usePost: Boolean = false
-    ): Result<Map<String, Any>> = tokenProvider.getToken().let { token ->
+    ): Result<Map<String, Any>> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             metadataRepository.updateUserMetadataCollection(
                 sessionToken = token,
@@ -77,25 +81,31 @@ class MetadataService internal constructor(
         userId: String,
         fieldName: String
     ): Result<Map<String, Any>> =
-        metadataRepository.getUserPrivateMetadataItem(
-            sessionToken = tokenProvider.getToken(),
-            userId = userId,
-            fieldName = fieldName
-        )
+        tokenProvider.getToken().flatMap {
+            metadataRepository.getUserPrivateMetadataItem(
+                sessionToken = it,
+                userId = userId,
+                fieldName = fieldName
+            )
+        }
     
     suspend fun getTrustUsers(): Result<List<TrustUser>> =
-        metadataRepository.getTrustUsers(
-            sessionToken = tokenProvider.getToken(),
-        )
+        tokenProvider.getToken().flatMap {
+            metadataRepository.getTrustUsers(
+                sessionToken = it,
+            )
+        }
     
     suspend fun getUserProfile(userId: String): Result<UserProfile> =
-        metadataRepository.getUserProfile(
-            sessionToken = tokenProvider.getToken(),
-            userId = userId
-        )
+        tokenProvider.getToken().flatMap {
+            metadataRepository.getUserProfile(
+                sessionToken = it,
+                userId = userId
+            )
+        }
     
     suspend fun getCurrentUserProfile(): Result<UserProfile> =
-        tokenProvider.getToken().let { token ->
+        tokenProvider.getToken().flatMap { token ->
             userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
                 metadataRepository.getUserProfile(
                     sessionToken = token,
@@ -110,18 +120,20 @@ class MetadataService internal constructor(
         userId: String,
         profile: UserProfile,
         usePost: Boolean = false
-    ): Result<Map<String, Any>> = metadataRepository.updateUserMetadataCollection(
-        sessionToken = tokenProvider.getToken(),
-        userId = userId,
-        collectionName = MetadataCollection.Profile.code,
-        collection = profile,
-        usePost = usePost
-    )
+    ): Result<Map<String, Any>> = tokenProvider.getToken().flatMap {
+        metadataRepository.updateUserMetadataCollection(
+            sessionToken = it,
+            userId = userId,
+            collectionName = MetadataCollection.Profile.code,
+            collection = profile,
+            usePost = usePost
+        )
+    }
     
     suspend fun updateCurrentUserProfile(
         profile: UserProfile,
         usePost: Boolean = false
-    ): Result<Map<String, Any>> = tokenProvider.getToken().let { token ->
+    ): Result<Map<String, Any>> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->
             updateUserProfile(
                 userId = user.userId,

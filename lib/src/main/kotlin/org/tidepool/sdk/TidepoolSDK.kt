@@ -1,12 +1,12 @@
 package org.tidepool.sdk
 
 import org.koin.core.Koin
+import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.koinApplication
 import org.koin.dsl.module
 import org.tidepool.sdk.di.dataModule
 import org.tidepool.sdk.di.domainModule
 import org.tidepool.sdk.service.AlertService
-import org.tidepool.sdk.service.AuthenticationService
 import org.tidepool.sdk.service.AuthorizationService
 import org.tidepool.sdk.service.BlobService
 import org.tidepool.sdk.service.ClinicService
@@ -23,7 +23,7 @@ import org.tidepool.sdk.service.TaskService
 import org.tidepool.sdk.service.UserService
 
 class TidepoolSDK(
-    environment: Environment,
+    val environment: Environment,
     private val tokenProvider: TokenProvider,
 ) {
     
@@ -43,7 +43,6 @@ class TidepoolSDK(
     private val koin: Koin = koinApp.koin
     
     val alerts: AlertService by lazy { koin.get() }
-    val authentication: AuthenticationService by lazy { koin.get() }
     val authorization: AuthorizationService by lazy { koin.get() }
     val blobs: BlobService by lazy { koin.get() }
     val confirmations: ConfirmationService by lazy { koin.get() }

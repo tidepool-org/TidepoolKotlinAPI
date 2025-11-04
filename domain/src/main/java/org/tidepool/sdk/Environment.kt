@@ -19,7 +19,7 @@ enum class Environments(
         envCode = "integration",
         auth = AuthenticationServers.External
     ),
-    Dev1(
+    Dev(
         envCode = "dev",
         auth = AuthenticationServers.Development,
     ),
@@ -30,5 +30,18 @@ enum class Environments(
     Qa2(
         envCode = "qa2",
         auth = AuthenticationServers.QA,
-    );
+    ),
+    Qa3(
+        envCode = "qa3",
+        auth = AuthenticationServers.QA,
+    ),
+    Qa4(
+        envCode = "qa4",
+        auth = AuthenticationServers.QA,
+    ),
+    Qa5(
+        envCode = "qa5",
+        auth = AuthenticationServers.QA,
+    ),
+    ;
 }
