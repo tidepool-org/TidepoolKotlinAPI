@@ -1,9 +1,10 @@
 package org.tidepool.sdk.service
 
+import kotlinx.coroutines.CoroutineScope
+import org.tidepool.sdk.AppLifecycleProvider
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
-import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
@@ -11,13 +12,40 @@ import org.tidepool.sdk.model.data.DataType
 import org.tidepool.sdk.model.data.NewDataSet
 import org.tidepool.sdk.model.data.NewDataSource
 import org.tidepool.sdk.repository.DataRepository
+import org.tidepool.sdk.repository.UserRepository
+import kotlin.time.Duration
 import java.time.Instant
 import java.util.Collections.emptyList
 
 class DataService internal constructor(
     private val dataRepository: DataRepository,
+    private val userRepository: UserRepository,
     private val tokenProvider: TokenProvider,
 ) {
+    
+    fun startLifecycleAwareRecurrentUpload(
+        lifecycleProvider: AppLifecycleProvider,
+        scope: CoroutineScope,
+        period: Duration,
+        delay: Duration,
+    ) = LifecycleAwareDataUploadManager(
+        lifecycleProvider = lifecycleProvider,
+        scope = scope,
+    ).apply {
+        configure(
+            period = period,
+            delay = delay,
+            action = {
+                tokenProvider.getToken().let {
+                    dataRepository.uploadCachedData(
+                        userId = userRepository.getCurrentUser(it).getOrThrow().userId,
+                        sessionToken = it,
+                    )
+                }
+            },
+        )
+        start()
+    }
     
     suspend fun getDataForUser(
         userId: String,
@@ -41,7 +69,7 @@ class DataService internal constructor(
         dexcom = dexcom,
         carelink = carelink,
         medtronic = medtronic,
-        sessionToken = tokenProvider.getToken()
+        sessionToken = tokenProvider.getToken(),
     )
     
     // Data Sets operations
@@ -228,25 +256,6 @@ class DataService internal constructor(
             userId = userId,
             sessionToken = tokenProvider.getToken()
         )
-    
-    suspend fun getData(
-        userId: String,
-        uploadId: String? = null,
-        deviceId: String? = null,
-        types: List<DataType>? = null,
-        startDate: Instant? = null,
-        endDate: Instant? = null,
-        latest: Boolean? = null,
-    ): Result<List<BaseData>> = dataRepository.getData(
-        userId = userId,
-        uploadId = uploadId,
-        deviceId = deviceId,
-        types = types,
-        startDate = startDate,
-        endDate = endDate,
-        latest = latest,
-        sessionToken = tokenProvider.getToken()
-    )
     
     suspend fun uploadData(userId: String, data: List<BaseData>): Result<List<BaseData>> =
         dataRepository.uploadData(

@@ -5,16 +5,37 @@ import io.mcarle.konvert.api.KonvertTo
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Contextual
+import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.BloodGlucoseDto
 import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.data.BasalAutomatedData
 import org.tidepool.sdk.model.data.DosingDecisionData
 import java.time.Instant
+import java.util.TimeZone
+import kotlin.time.Duration
 
 // TODO: finish implementing dosingdecision.v1
 @Serializable
 @KonvertTo(DosingDecisionData::class, mapFunctionName = "toDomain")
 data class DosingDecisionDataDto(
+    override val id: String = "",
+    override val type: DataTypeDto = DataTypeDto.Alert,
+    @Contextual
+    override val time: Instant? = null,
+    override val annotations: List<Map<String, String>> = emptyList(),
+    override val associations: List<AssociationDto> = emptyList(),
+    @Contextual
+    override val clockDriftOffset: Duration? = null,
+    @Contextual
+    override val conversionOffset: Duration? = null,
+    override val dataSetId: String? = null,
+    override val deviceTime: String? = null,
+    override val notes: List<String> = emptyList(),
+    @Contextual
+    override val timeZone: TimeZone? = null,
+    @Contextual
+    override val timeZoneOffset: Duration? = null,
+    
     @SerialName("reason")
     val reason: String,
     @SerialName("carbsOnBoard")
@@ -31,7 +52,7 @@ data class DosingDecisionDataDto(
     val scheduleTimeZoneOffset: Int? = null,
     @SerialName("units")
     val units: UnitsDto = UnitsDto(),
-) : BaseDataDto(DataTypeDto.DosingDecision) {
+) : BaseDataDto() {
     
     @KonvertFrom(DosingDecisionData::class, mapFunctionName = "fromDomain")
     companion object {}

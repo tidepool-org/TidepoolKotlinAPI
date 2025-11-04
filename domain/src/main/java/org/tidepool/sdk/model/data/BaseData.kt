@@ -7,18 +7,18 @@ import kotlin.time.Duration
 
 // TODO: finish implementing base.v1
 sealed class BaseData(
-    val type: DataType = DataType.Alert,
-    val time: Instant? = null,
-    val annotations: Array<Map<String, String>>? = null,
-    val associations: Array<Association>? = null,
-    val clockDriftOffset: Duration? = null,
-    val conversionOffset: Duration? = null,
-    val dataSetId: String? = null,
-    val deviceTime: String? = null,
-    val id: String? = null,
-    val notes: Array<String>? = null,
-    val timeZone: TimeZone? = null,
-    val timeZoneOffset: Duration? = null
+    open val id: String,
+    open val type: DataType = DataType.Alert,
+    open val time: Instant? = null,
+    open val annotations: List<Map<String, String>> = emptyList(),
+    open val associations: List<Association> = emptyList(),
+    open val clockDriftOffset: Duration? = null,
+    open val conversionOffset: Duration? = null,
+    open val dataSetId: String? = null,
+    open val deviceTime: String? = null,
+    open val notes: List<String> = emptyList(),
+    open val timeZone: TimeZone? = null,
+    open val timeZoneOffset: Duration? = null,
 ) {
     
     val location: Nothing

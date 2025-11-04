@@ -1,14 +1,43 @@
 package org.tidepool.sdk.model.data
 
+import org.tidepool.sdk.model.Association
 import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
+import java.time.Instant
+import java.util.TimeZone
+import kotlin.time.Duration
 
-public data class ContinuousGlucoseData(
+data class ContinuousGlucoseData(
+    override val id: String,
+    override val type: DataType = DataType.Alert,
+    override val time: Instant? = null,
+    override val annotations: List<Map<String, String>> = emptyList(),
+    override val associations: List<Association> = emptyList(),
+    override val clockDriftOffset: Duration? = null,
+    override val conversionOffset: Duration? = null,
+    override val dataSetId: String? = null,
+    override val deviceTime: String? = null,
+    override val notes: List<String> = emptyList(),
+    override val timeZone: TimeZone? = null,
+    override val timeZoneOffset: Duration? = null,
     val value: Double? = null,
     val units: BloodGlucose.Units? = null,
     val trend: BloodGlucose.Trend? = null,
     val trendRate: Double? = null
-) : BaseData(type = DataType.Cbg) {
+) : BaseData(
+    id = id,
+    type = type,
+    time = time,
+    annotations = annotations,
+    associations = associations,
+    clockDriftOffset = clockDriftOffset,
+    conversionOffset = conversionOffset,
+    dataSetId = dataSetId,
+    deviceTime = deviceTime,
+    notes = notes,
+    timeZone = timeZone,
+    timeZoneOffset = timeZoneOffset,
+) {
     
     // public constructor(
     //     reading: GlucoseReading?,
@@ -23,10 +52,4 @@ public data class ContinuousGlucoseData(
             }
         }
     }
-    
-    fun copy(
-        reading: GlucoseReading? = this.reading,
-        trend: BloodGlucose.Trend? = this.trend,
-        trendRate: Double? = this.trendRate
-    ) = copy(reading?.amount, reading?.units, trend, trendRate)
 }

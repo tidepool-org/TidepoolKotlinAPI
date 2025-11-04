@@ -9,7 +9,7 @@ interface AuthenticationServer {
 
 enum class AuthenticationServers(url: String) : AuthenticationServer {
     Development("https://auth.dev.tidepool.org"),
-    QA("https://auth.qa2.tidepool.org"),
+    QA("https://auth.qa.tidepool.org"),
     External("https://auth.external.tidepool.org"),
     Production("https://auth.tidepool.org");
     

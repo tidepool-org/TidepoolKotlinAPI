@@ -19,38 +19,32 @@ import kotlin.reflect.KClass
 import kotlin.time.Duration
 
 // TODO: finish implementing base.v1
-@Serializable
-sealed class BaseDataDto(
-    @SerialName("type")
-    val type: DataTypeDto = DataTypeDto.Alert,
-    @Contextual
-    @SerialName("time")
-    val time: Instant? = null,
-    @SerialName("annotations")
-    val annotations: Array<Map<String, String>>? = null,
-    @SerialName("associations")
-    val associations: Array<AssociationDto>? = null,
-    @Contextual
-    @SerialName("clockDriftOffset")
-    val clockDriftOffset: Duration? = null,
-    @Contextual
-    @SerialName("conversionOffset")
-    val conversionOffset: Duration? = null,
-    @SerialName("dataSetId")
-    val dataSetId: String? = null,
-    @SerialName("deviceTime")
-    val deviceTime: String? = null,
+abstract class BaseDataDto {
     @SerialName("id")
-    val id: String? = null,
+    abstract val id: String
+    @SerialName("type")
+    abstract val type: DataTypeDto
+    @SerialName("time")
+    abstract val time: Instant?
+    @SerialName("annotations")
+    abstract val annotations: List<Map<String, String>>
+    @SerialName("associations")
+    abstract val associations: List<AssociationDto>
+    @SerialName("clockDriftOffset")
+    abstract val clockDriftOffset: Duration?
+    @SerialName("conversionOffset")
+    abstract val conversionOffset: Duration?
+    @SerialName("dataSetId")
+    abstract val dataSetId: String?
+    @SerialName("deviceTime")
+    abstract val deviceTime: String?
     @SerialName("notes")
-    val notes: Array<String>? = null,
+    abstract val notes: List<String>
     @Contextual
     @SerialName("timeZone")
-    val timeZone: TimeZone? = null,
-    @Contextual
+    abstract val timeZone: TimeZone?
     @SerialName("timeZoneOffset")
-    val timeZoneOffset: Duration? = null
-) {
+    abstract val timeZoneOffset: Duration?
     
     companion object {
         internal fun fromDomain(domain: BaseData): BaseDataDto = when (domain) {
@@ -133,6 +127,7 @@ internal fun BaseDataDto.toDomain(): BaseData = when (this) {
     is DosingDecisionDataDto    -> toDomain()
     is FoodDataDto              -> toDomain()
     is InsulinDataDto           -> toDomain()
+    else -> throw IllegalArgumentException("Unknown BaseDataDto subtype: ${this::class}")
 }
 
 internal fun DataType.toDto(): BaseDataDto.DataTypeDto = when (this) {
