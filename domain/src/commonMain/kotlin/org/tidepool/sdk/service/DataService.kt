@@ -7,6 +7,7 @@ import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.data.BaseData
+import org.tidepool.sdk.model.data.ClientSoftware
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.DataType
@@ -23,7 +24,7 @@ class DataService internal constructor(
     private val userRepository: UserRepository,
     private val tokenProvider: TokenProvider,
 ) {
-    
+
     fun startLifecycleAwareRecurrentUpload(
         lifecycleProvider: AppLifecycleProvider,
         scope: CoroutineScope,
@@ -47,7 +48,7 @@ class DataService internal constructor(
         )
         start()
     }
-    
+
     suspend fun getDataForUser(
         userId: String,
         uploadId: String? = null,
@@ -74,7 +75,7 @@ class DataService internal constructor(
             sessionToken = it,
         )
     }
-    
+
     // Data Sets operations
     suspend fun getUserDataSets(userId: String): Result<List<DataSet>> =
         tokenProvider.getToken().flatMap {
@@ -83,7 +84,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     // Data Sets operations
     suspend fun getUserDataSetsPaginator(
         userId: String,
@@ -107,7 +108,7 @@ class DataService internal constructor(
         onFailure = onPageLoadFailure,
         endReached = { page, _ -> page.size < pageSize }
     )
-    
+
     suspend fun createDataSet(userId: String, newDataSet: NewDataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap {
             dataRepository.createDataSet(
@@ -116,7 +117,18 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
+    suspend fun createDataSet(newDataSet: NewDataSet): Result<DataSet> =
+        tokenProvider.getToken().flatMap { token ->
+            userRepository.getCurrentUser(token).flatMap { user ->
+                dataRepository.createDataSet(
+                    userId = user.userId,
+                    newDataSet = newDataSet,
+                    sessionToken = token,
+                )
+            }
+        }
+
     suspend fun getDataSet(dataSetId: String): Result<DataSet> =
         tokenProvider.getToken().flatMap {
             dataRepository.getDataSet(
@@ -124,7 +136,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun updateDataSet(dataSetId: String, dataSet: DataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap {
             dataRepository.updateDataSet(
@@ -133,7 +145,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun deleteDataSet(dataSetId: String): Result<Unit> =
         tokenProvider.getToken().flatMap {
             dataRepository.deleteDataSet(
@@ -141,10 +153,10 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun uploadDataToDataSet(
         dataSetId: String,
-        data: List<BaseData>
+        data: List<BaseData>,
     ): Result<List<BaseData>> =
         tokenProvider.getToken().flatMap {
             dataRepository.uploadDataToDataSet(
@@ -153,7 +165,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun deleteDataSetData(dataSetId: String): Result<Unit> =
         tokenProvider.getToken().flatMap {
             dataRepository.deleteDataSetData(
@@ -161,7 +173,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     // Legacy datasets operations
     @Deprecated("Use getUserDataSets instead", ReplaceWith("getUserDataSets"))
     suspend fun getUserDataSetsLegacy(userId: String): Result<List<DataSet>> =
@@ -171,7 +183,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     @Deprecated("Use createDataSet instead", ReplaceWith("createDataSet"))
     suspend fun createDataSetLegacy(userId: String, newDataSet: NewDataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap {
@@ -181,7 +193,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     @Deprecated("Use getDataSet instead", ReplaceWith("getDataSet"))
     suspend fun getDataSetLegacy(dataSetId: String): Result<DataSet> =
         tokenProvider.getToken().flatMap {
@@ -190,7 +202,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     @Deprecated("Use updateDataSet instead", ReplaceWith("updateDataSet"))
     suspend fun updateDataSetLegacy(dataSetId: String, dataSet: DataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap {
@@ -200,7 +212,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     @Deprecated("Use deleteDataSet instead", ReplaceWith("deleteDataSet"))
     suspend fun deleteDataSetLegacy(dataSetId: String): Result<Unit> =
         tokenProvider.getToken().flatMap {
@@ -209,11 +221,11 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     @Deprecated("Use uploadDataToDataSet instead", ReplaceWith("uploadDataToDataSet"))
     suspend fun uploadDataToDataSetLegacy(
         dataSetId: String,
-        data: List<BaseData>
+        data: List<BaseData>,
     ): Result<List<BaseData>> =
         tokenProvider.getToken().flatMap {
             dataRepository.uploadDataToDataSetLegacy(
@@ -222,7 +234,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     // Data Sources operations
     suspend fun getUserDataSources(userId: String): Result<List<DataSource>> =
         tokenProvider.getToken().flatMap {
@@ -231,7 +243,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun getUserDataSourcesPaginator(
         userId: String,
         pageSize: Int = 42,
@@ -252,7 +264,7 @@ class DataService internal constructor(
         onFailure = onPageLoadFailure,
         endReached = { page, _ -> page.size < pageSize },
     )
-    
+
     suspend fun createDataSource(userId: String, newDataSource: NewDataSource): Result<DataSource> =
         tokenProvider.getToken().flatMap {
             dataRepository.createDataSource(
@@ -261,7 +273,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun deleteAllDataSources(userId: String): Result<Unit> =
         tokenProvider.getToken().flatMap {
             dataRepository.deleteAllDataSources(
@@ -269,7 +281,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun getDataSource(dataSourceId: String): Result<DataSource> =
         tokenProvider.getToken().flatMap {
             dataRepository.getDataSource(
@@ -277,7 +289,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun updateDataSource(dataSourceId: String, dataSource: DataSource): Result<DataSource> =
         tokenProvider.getToken().flatMap {
             dataRepository.updateDataSource(
@@ -286,7 +298,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     suspend fun deleteDataSource(dataSourceId: String): Result<Unit> =
         tokenProvider.getToken().flatMap {
             dataRepository.deleteDataSource(
@@ -294,7 +306,7 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
+
     // Additional data operations
     suspend fun deleteAllUserData(userId: String): Result<Unit> =
         tokenProvider.getToken().flatMap {
@@ -303,35 +315,12 @@ class DataService internal constructor(
                 sessionToken = it,
             )
         }
-    
-    suspend fun uploadData(userId: String, data: List<BaseData>): Result<List<BaseData>> =
-        tokenProvider.getToken().flatMap {
-            dataRepository.uploadData(
-                userId = userId,
-                data = data,
-                sessionToken = it,
+
+    suspend fun uploadData(datum: BaseData): Result<List<BaseData>> = datum.dataSetId
+        ?.let { dataSetId: String ->
+            uploadDataToDataSet(
+                dataSetId = dataSetId,
+                data = listOf(datum),
             )
-        }
-
-    suspend fun uploadData(data: List<BaseData>): Result<List<BaseData>> =
-        tokenProvider.getToken().flatMap { token ->
-            userRepository.getCurrentUser(token).flatMap { user ->
-                dataRepository.uploadData(
-                    userId = user.userId,
-                    data = data,
-                    sessionToken = token,
-                )
-            }
-        }
-
-    suspend fun uploadData(datum: BaseData): Result<List<BaseData>> =
-        tokenProvider.getToken().flatMap { token ->
-            userRepository.getCurrentUser(token).flatMap { user ->
-                dataRepository.uploadData(
-                    userId = user.userId,
-                    data = listOf(datum),
-                    sessionToken = token,
-                )
-            }
-        }
+        } ?: Result.failure(IllegalStateException("DataSet ID is null"))
 }

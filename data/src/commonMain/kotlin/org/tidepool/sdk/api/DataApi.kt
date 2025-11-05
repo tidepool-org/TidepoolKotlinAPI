@@ -31,6 +31,22 @@ interface DataApi {
         @Query("carelink") carelink: Boolean? = null,
         @Query("medtronic") medtronic: Boolean? = null,
     ): List<BaseDataDto>
+
+    @POST("data/{userId}")
+    suspend fun uploadDataForUser(
+        @Header("X-Tidepool-Session-Token") sessionToken: String,
+        @Path("userId") userId: String,
+        @Query("uploadId") uploadId: String? = null,
+        @Query("deviceId") deviceId: String? = null,
+        @Query("type", encoded = true) types: CommaSeparatedArray<BaseDataDto.DataTypeDto>? = null,
+        @Query("startDate") startDate: Instant? = null,
+        @Query("endDate") endDate: Instant? = null,
+        @Query("latest") latest: Boolean? = null,
+        @Query("dexcom") dexcom: Boolean? = null,
+        @Query("carelink") carelink: Boolean? = null,
+        @Query("medtronic") medtronic: Boolean? = null,
+        @Body data: List<DataSetDto>,
+    ): List<BaseDataDto>
     
     // Data Sets endpoints
     @GET("v1/users/{userId}/data_sets")
@@ -167,13 +183,6 @@ interface DataApi {
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("userId") userId: String,
     )
-    
-    @POST("v1/users/{userId}/data")
-    suspend fun uploadData(
-        @Header("X-Tidepool-Session-Token") sessionToken: String,
-        @Path("userId") userId: String,
-        @Body data: List<BaseDataDto>,
-    ): List<BaseDataDto>
     
     class CommaSeparatedArray<T>(private vararg val types: T) {
         

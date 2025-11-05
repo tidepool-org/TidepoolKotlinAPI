@@ -4,6 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.modules.SerializersModule
+import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import java.time.Instant
@@ -69,54 +71,69 @@ data class DosingDecisionDataEntity(
     timeZoneOffset = timeZoneOffset,
 )
 
-fun DosingDecisionDataDto.toEntity() = DosingDecisionDataEntity(
-    id = id,
-    type = Json.encodeToString(type),
-    time = time,
-    annotations = annotations.let { Json.encodeToString(it) },
-    associations = associations.let { Json.encodeToString(it) },
-    clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
-    conversionOffset = conversionOffset?.inWholeMilliseconds,
-    dataSetId = dataSetId,
-    deviceTime = deviceTime,
-    notes = notes.let { Json.encodeToString(it) },
-    timeZone = timeZone?.id,
-    timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
-    reason = reason,
-    carbsOnBoard = carbsOnBoard?.let { Json.encodeToString(it) },
-    insulinOnBoard = insulinOnBoard?.let { Json.encodeToString(it) },
-    recommendedBasal = recommendedBasal?.let { Json.encodeToString(it) },
-    recommendedBolus = recommendedBolus?.let { Json.encodeToString(it) },
-    requestedBolus = requestedBolus?.let { Json.encodeToString(it) },
-    scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-    units = Json.encodeToString(units),
-)
+fun DosingDecisionDataDto.toEntity(): DosingDecisionDataEntity {
+    val json = Json {
+        SerializersModule {
+            contextual(Instant::class, InstantSerializer)
+        }
+    }
+    return DosingDecisionDataEntity(
+        id = id,
+        type = json.encodeToString(type),
+        time = time,
+        annotations = annotations.let { json.encodeToString(it) },
+        associations = associations.let { json.encodeToString(it) },
+        clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
+        conversionOffset = conversionOffset?.inWholeMilliseconds,
+        dataSetId = dataSetId,
+        deviceTime = deviceTime,
+        notes = notes.let { json.encodeToString(it) },
+        timeZone = timeZone?.id,
+        timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
+        reason = reason,
+        carbsOnBoard = carbsOnBoard?.let { json.encodeToString(it) },
+        insulinOnBoard = insulinOnBoard?.let { json.encodeToString(it) },
+        recommendedBasal = recommendedBasal?.let { json.encodeToString(it) },
+        recommendedBolus = recommendedBolus?.let { json.encodeToString(it) },
+        requestedBolus = requestedBolus?.let { json.encodeToString(it) },
+        scheduleTimeZoneOffset = scheduleTimeZoneOffset,
+        units = json.encodeToString(units),
+    )
+}
 
-fun DosingDecisionDataEntity.toDto() = DosingDecisionDataDto(
-    id = id,
-    type = Json.decodeFromString(type),
-    time = time,
-    annotations = annotations
-        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
-        .orEmpty(),
-    associations = associations
-        ?.let { Json.decodeFromString<List<AssociationDto>>(it) }
-        .orEmpty(),
-    clockDriftOffset = clockDriftOffset?.milliseconds,
-    conversionOffset = conversionOffset?.milliseconds,
-    dataSetId = dataSetId,
-    deviceTime = deviceTime,
-    notes = notes
-        ?.let { Json.decodeFromString<List<String>>(it) }
-        .orEmpty(),
-    timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
-    timeZoneOffset = timeZoneOffset?.milliseconds,
-    reason = reason,
-    carbsOnBoard = carbsOnBoard?.let { Json.decodeFromString(it) },
-    insulinOnBoard = insulinOnBoard?.let { Json.decodeFromString(it) },
-    recommendedBasal = recommendedBasal?.let { Json.decodeFromString(it) },
-    recommendedBolus = recommendedBolus?.let { Json.decodeFromString(it) },
-    requestedBolus = requestedBolus?.let { Json.decodeFromString(it) },
-    scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-    units = Json.decodeFromString(units),
-)
+fun DosingDecisionDataEntity.toDto(): DosingDecisionDataDto {
+    val json = Json {
+        SerializersModule {
+            contextual(Instant::class, InstantSerializer)
+        }
+    }
+
+    return DosingDecisionDataDto(
+        id = id,
+        type = json.decodeFromString(type),
+        time = time,
+        annotations = annotations
+            ?.let { json.decodeFromString<List<Map<String, String>>>(it) }
+            .orEmpty(),
+        associations = associations
+            ?.let { json.decodeFromString<List<AssociationDto>>(it) }
+            .orEmpty(),
+        clockDriftOffset = clockDriftOffset?.milliseconds,
+        conversionOffset = conversionOffset?.milliseconds,
+        dataSetId = dataSetId,
+        deviceTime = deviceTime,
+        notes = notes
+            ?.let { json.decodeFromString<List<String>>(it) }
+            .orEmpty(),
+        timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
+        timeZoneOffset = timeZoneOffset?.milliseconds,
+        reason = reason,
+        carbsOnBoard = carbsOnBoard?.let { json.decodeFromString(it) },
+        insulinOnBoard = insulinOnBoard?.let { json.decodeFromString(it) },
+        recommendedBasal = recommendedBasal?.let { json.decodeFromString(it) },
+        recommendedBolus = recommendedBolus?.let { json.decodeFromString(it) },
+        requestedBolus = requestedBolus?.let { json.decodeFromString(it) },
+        scheduleTimeZoneOffset = scheduleTimeZoneOffset,
+        units = json.decodeFromString(units),
+    )
+}

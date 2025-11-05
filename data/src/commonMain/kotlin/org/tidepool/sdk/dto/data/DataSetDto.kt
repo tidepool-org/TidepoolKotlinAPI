@@ -8,6 +8,7 @@ import kotlin.time.Duration
 import org.tidepool.sdk.model.data.ClientSoftware
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DeduplicatorDescriptor
+import org.tidepool.sdk.model.data.DeviceTag
 
 @Serializable
 data class DataSetDto(
@@ -44,7 +45,7 @@ data class DataSetDto(
     @SerialName("deviceSerialNumber")
     val deviceSerialNumber: String? = null,
     @SerialName("deviceTags")
-    val deviceTags: List<String>? = null,
+    val deviceTags: List<DeviceTagDto>? = null,
     @SerialName("id")
     val id: String? = null,
     @SerialName("modifiedTime")
@@ -66,7 +67,7 @@ data class DataSetDto(
     @SerialName("uploadId")
     val uploadId: String? = null,
     @SerialName("version")
-    val version: String? = null
+    val version: String? = null,
 )
 
 @Serializable
@@ -74,7 +75,7 @@ data class ClientSoftwareDto(
     @SerialName("name")
     val name: String? = null,
     @SerialName("version")
-    val version: String? = null
+    val version: String? = null,
 )
 
 @Serializable
@@ -82,8 +83,20 @@ data class DeduplicatorDescriptorDto(
     @SerialName("name")
     val name: String? = null,
     @SerialName("version")
-    val version: String? = null
+    val version: String? = null,
 )
+
+@Serializable
+enum class DeviceTagDto {
+    @SerialName("bgm")
+    Bgm,
+
+    @SerialName("cgm")
+    Cgm,
+
+    @SerialName("insulin-pump")
+    InsulinPump,
+}
 
 fun ClientSoftwareDto.toDomain(): ClientSoftware = ClientSoftware(
     name = name,
@@ -112,7 +125,7 @@ fun DataSetDto.toDomain(): DataSet = DataSet(
     deviceManufacturers = deviceManufacturers,
     deviceModel = deviceModel,
     deviceSerialNumber = deviceSerialNumber,
-    deviceTags = deviceTags,
+    deviceTags = deviceTags?.map { it.toDomain() },
     id = id,
     modifiedTime = modifiedTime,
     modifiedUserId = modifiedUserId,
@@ -143,7 +156,7 @@ fun DataSet.toDto(): DataSetDto = DataSetDto(
     deviceManufacturers = deviceManufacturers,
     deviceModel = deviceModel,
     deviceSerialNumber = deviceSerialNumber,
-    deviceTags = deviceTags,
+    deviceTags = deviceTags?.map { it.toDto() },
     id = id,
     modifiedTime = modifiedTime,
     modifiedUserId = modifiedUserId,
@@ -166,3 +179,15 @@ fun DeduplicatorDescriptor.toDto(): DeduplicatorDescriptorDto = DeduplicatorDesc
     name = name,
     version = version,
 )
+
+fun DeviceTagDto.toDomain(): DeviceTag = when (this) {
+    DeviceTagDto.Bgm -> DeviceTag.Bgm
+    DeviceTagDto.Cgm -> DeviceTag.Cgm
+    DeviceTagDto.InsulinPump -> DeviceTag.InsulinPump
+}
+
+fun DeviceTag.toDto(): DeviceTagDto = when (this) {
+    DeviceTag.Bgm -> DeviceTagDto.Bgm
+    DeviceTag.Cgm -> DeviceTagDto.Cgm
+    DeviceTag.InsulinPump -> DeviceTagDto.InsulinPump
+}

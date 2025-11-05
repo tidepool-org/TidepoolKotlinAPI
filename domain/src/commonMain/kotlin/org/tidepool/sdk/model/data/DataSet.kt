@@ -20,7 +20,7 @@ data class DataSet(
     val deviceManufacturers: List<String>? = null,
     val deviceModel: String? = null,
     val deviceSerialNumber: String? = null,
-    val deviceTags: List<String>? = null,
+    val deviceTags: List<DeviceTag>? = null,
     val id: String? = null,
     val modifiedTime: Instant? = null,
     val modifiedUserId: String? = null,
@@ -51,10 +51,16 @@ data class NewDataSet(
     val deviceManufacturers: List<String>? = null,
     val deviceModel: String? = null,
     val deviceSerialNumber: String? = null,
-    val deviceTags: List<String>? = null,
+    val deviceTags: List<DeviceTag>? = null,
     val deduplicator: DeduplicatorDescriptor? = null,
     val time: Instant? = null,
     val timeProcessing: String? = null,
     val timezone: String? = null,
     val timezoneOffset: Duration? = null
 )
+
+enum class DeviceTag {
+    Bgm,
+    Cgm,
+    InsulinPump,
+}

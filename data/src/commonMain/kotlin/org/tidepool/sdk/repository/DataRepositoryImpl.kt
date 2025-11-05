@@ -14,6 +14,7 @@ import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
 import org.tidepool.sdk.dto.data.BolusDataDto
 import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
+import org.tidepool.sdk.dto.data.DataSetDto
 import org.tidepool.sdk.dto.data.toDomain
 import org.tidepool.sdk.dto.data.toDto
 import org.tidepool.sdk.mapList
@@ -22,6 +23,7 @@ import org.tidepool.sdk.model.data.DataType
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
+import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.NewDataSet
@@ -34,7 +36,7 @@ class DataRepositoryImpl(
     private val dataApi: DataApi,
     private val dataDao: DataDao,
 ) : DataRepository {
-    
+
     override suspend fun getDataForUser(
         userId: String,
         uploadId: String?,
@@ -52,7 +54,7 @@ class DataRepositoryImpl(
             ?.map { it.toDto() }
             ?.toTypedArray()
             ?.let { DataApi.CommaSeparatedArray(*it) }
-        
+
         dataApi.getDataForUser(
             sessionToken = sessionToken,
             userId = userId,
@@ -67,7 +69,7 @@ class DataRepositoryImpl(
             medtronic = medtronic
         )
     }.mapList { it.toDomain() }
-    
+
     // Data Sets operations
     override suspend fun getUserDataSets(
         userId: String,
@@ -77,11 +79,11 @@ class DataRepositoryImpl(
     ) = runCatchingNetworkExceptions {
         dataApi.getUserDataSets(sessionToken, userId)
     }.mapList { it.toDomain() }
-    
+
     override suspend fun createDataSet(
         userId: String,
         newDataSet: NewDataSet,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.createDataSet(
             sessionToken = sessionToken,
@@ -89,18 +91,18 @@ class DataRepositoryImpl(
             newDataSet = newDataSet.toDto(),
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun getDataSet(
         dataSetId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.getDataSet(sessionToken, dataSetId)
     }.map { it.toDomain() }
-    
+
     override suspend fun updateDataSet(
         dataSetId: String,
         dataSet: DataSet,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.updateDataSet(
             sessionToken = sessionToken,
@@ -108,18 +110,18 @@ class DataRepositoryImpl(
             dataSet = dataSet.toDto(),
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun deleteDataSet(
         dataSetId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.deleteDataSet(sessionToken, dataSetId)
     }
-    
+
     override suspend fun uploadDataToDataSet(
         dataSetId: String,
         data: List<BaseData>,
-        sessionToken: String
+        sessionToken: String,
     ): Result<List<BaseData>> {
         val dtos = data.map { BaseDataDto.fromDomain(it) }
         return runCatchingNetworkExceptions {
@@ -132,26 +134,26 @@ class DataRepositoryImpl(
             .cacheOnFailure(dtos)
             .mapList { it.toDomain() }
     }
-    
+
     override suspend fun deleteDataSetData(
         dataSetId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.deleteDataSetData(sessionToken, dataSetId)
     }
-    
+
     // Legacy datasets operations
     override suspend fun getUserDataSetsLegacy(
         userId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.getUserDataSetsLegacy(sessionToken, userId)
     }.mapList { it.toDomain() }
-    
+
     override suspend fun createDataSetLegacy(
         userId: String,
         newDataSet: NewDataSet,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.createDataSetLegacy(
             sessionToken = sessionToken,
@@ -159,18 +161,18 @@ class DataRepositoryImpl(
             newDataSet = newDataSet.toDto(),
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun getDataSetLegacy(
         dataSetId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.getDataSetLegacy(sessionToken, dataSetId)
     }.map { it.toDomain() }
-    
+
     override suspend fun updateDataSetLegacy(
         dataSetId: String,
         dataSet: DataSet,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.updateDataSetLegacy(
             sessionToken = sessionToken,
@@ -178,18 +180,18 @@ class DataRepositoryImpl(
             dataSet = dataSet.toDto(),
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun deleteDataSetLegacy(
         dataSetId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.deleteDataSetLegacy(sessionToken, dataSetId)
     }
-    
+
     override suspend fun uploadDataToDataSetLegacy(
         dataSetId: String,
         data: List<BaseData>,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.uploadDataToDataSetLegacy(
             sessionToken = sessionToken,
@@ -197,19 +199,19 @@ class DataRepositoryImpl(
             data = data.map { BaseDataDto.fromDomain(it) }
         )
     }.mapList { it.toDomain() }
-    
+
     // Data Sources operations
     override suspend fun getUserDataSources(
         userId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.getUserDataSources(sessionToken, userId)
     }.mapList { it.toDomain() }
-    
+
     override suspend fun createDataSource(
         userId: String,
         newDataSource: NewDataSource,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.createDataSource(
             sessionToken = sessionToken,
@@ -217,25 +219,25 @@ class DataRepositoryImpl(
             newDataSource = newDataSource.toDto()
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun deleteAllDataSources(
         userId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.deleteAllDataSources(sessionToken, userId)
     }
-    
+
     override suspend fun getDataSource(
         dataSourceId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.getDataSource(sessionToken, dataSourceId)
     }.map { it.toDomain() }
-    
+
     override suspend fun updateDataSource(
         dataSourceId: String,
         dataSource: DataSource,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.updateDataSource(
             sessionToken = sessionToken,
@@ -243,39 +245,58 @@ class DataRepositoryImpl(
             dataSource = dataSource.toDto()
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun deleteDataSource(
         dataSourceId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.deleteDataSource(sessionToken, dataSourceId)
     }
-    
+
     // Additional data operations
     override suspend fun deleteAllUserData(
         userId: String,
-        sessionToken: String
+        sessionToken: String,
     ) = runCatchingNetworkExceptions {
         dataApi.deleteAllUserData(sessionToken, userId)
     }
-    
-    override suspend fun uploadData(
-        userId: String,
-        data: List<BaseData>,
-        sessionToken: String
-    ): Result<List<BaseData>> {
-        val dtos = data.map { BaseDataDto.fromDomain(it) }
-        return runCatchingNetworkExceptions {
-            dataApi.uploadData(
-                sessionToken = sessionToken,
-                userId = userId,
-                data = dtos
-            )
-        }
-            .cacheOnFailure(dtos)
-            .mapList { it.toDomain() }
-    }
-    
+
+//    override suspend fun uploadData(
+//        userId: String,
+//        data: List<BaseData>,
+//        sessionToken: String,
+//    ): Result<List<BaseData>> {
+//        val dtos = data.map { BaseDataDto.fromDomain(it) }
+//        return runCatchingNetworkExceptions {
+//            dataApi.getUserDataSets(sessionToken, userId, 0, 5)
+////                .flatMap {
+////                    dataApi.uploadDataForUser(
+////                        sessionToken = sessionToken,
+////                        userId = userId,
+////                        data = listOf(
+////                            DataSetDto(
+////
+////                            )
+////                        ),
+////                    ).cacheOnFailure(dtos)
+////                }
+//        }
+//            .flatMap { it ->
+//                if (it.isEmpty()) {
+//                    createDataSet(
+//                        sessionToken = sessionToken,
+//                        userId = userId,
+//                        newDataSet = NewDataSet(),
+//                    )
+//                } else {
+//                    it.maxBy { it.uploadId }
+//                }
+//                println("HECKERY: Fetched ${it.size} data sets")
+//                Result.success(emptyList<BaseDataDto>())
+//            }
+//            .mapList { it.toDomain() }
+//    }
+
     override suspend fun uploadCachedData(
         sessionToken: String,
         userId: String,
@@ -288,39 +309,39 @@ class DataRepositoryImpl(
         dataDao.getAllInsulinData(),
     ).flatten().let { entities ->
         runCatchingNetworkExceptions {
-            dataApi.uploadData(
+            dataApi.uploadDataForUser(
                 sessionToken = sessionToken,
                 userId = userId,
-                data = entities.map { it.toDto() },
+                data = emptyList(), // entities.map { it.toDto() },
             )
         }.map {
             entities.forEach { it ->
                 when (it) {
-                    is BasalAutomatedDataEntity    -> dataDao.insertBasalAutomatedData(it)
-                    is BolusDataEntity             -> dataDao.insertBolusData(it)
+                    is BasalAutomatedDataEntity -> dataDao.insertBasalAutomatedData(it)
+                    is BolusDataEntity -> dataDao.insertBolusData(it)
                     is ContinuousGlucoseDataEntity -> dataDao.insertContinuousGlucoseData(it)
-                    is DosingDecisionDataEntity    -> dataDao.insertDosingDecisionData(it)
-                    is FoodDataEntity              -> dataDao.insertFoodData(it)
-                    is InsulinDataEntity           -> dataDao.insertInsulinData(it)
+                    is DosingDecisionDataEntity -> dataDao.insertDosingDecisionData(it)
+                    is FoodDataEntity -> dataDao.insertFoodData(it)
+                    is InsulinDataEntity -> dataDao.insertInsulinData(it)
                 }
             }
         }
     }
-    
+
     private suspend fun Result<List<BaseDataDto>>.cacheOnFailure(
-        toUpload: List<BaseDataDto>
+        toUpload: List<BaseDataDto>,
     ) = fold(
         onSuccess = { Result.success(it) },
         onFailure = { ex ->
             // TODO
             toUpload.forEach { dto ->
                 when (dto) {
-                    is BasalAutomatedDataDto    -> dataDao.insertBasalAutomatedData(dto.toEntity())
-                    is BolusDataDto             -> dataDao.insertBolusData(dto.toEntity())
+                    is BasalAutomatedDataDto -> dataDao.insertBasalAutomatedData(dto.toEntity())
+                    is BolusDataDto -> dataDao.insertBolusData(dto.toEntity())
                     is ContinuousGlucoseDataDto -> dataDao.insertContinuousGlucoseData(dto.toEntity())
-                    is DosingDecisionDataDto    -> dataDao.insertDosingDecisionData(dto.toEntity())
-                    is FoodDataDto              -> dataDao.insertFoodData(dto.toEntity())
-                    is InsulinDataDto           -> dataDao.insertInsulinData(dto.toEntity())
+                    is DosingDecisionDataDto -> dataDao.insertDosingDecisionData(dto.toEntity())
+                    is FoodDataDto -> dataDao.insertFoodData(dto.toEntity())
+                    is InsulinDataDto -> dataDao.insertInsulinData(dto.toEntity())
                 }
             }
             Result.failure(ex)

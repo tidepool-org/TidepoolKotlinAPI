@@ -1,13 +1,11 @@
 package org.tidepool.sdk.di
 
-import android.R.attr.level
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.tidepool.sdk.Environment
@@ -18,7 +16,6 @@ import org.tidepool.sdk.api.BlobApi
 import org.tidepool.sdk.api.ClinicApi
 import org.tidepool.sdk.api.ConfirmationApi
 import org.tidepool.sdk.api.DataApi
-import org.tidepool.sdk.api.ExportApi
 import org.tidepool.sdk.api.GeneralApi
 import org.tidepool.sdk.api.MessageApi
 import org.tidepool.sdk.api.MetadataApi
@@ -76,8 +73,14 @@ import java.time.Instant
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.defaultRequest
 import io.ktor.serialization.kotlinx.json.json
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import de.jensklingenberg.ktorfit.Ktorfit
+import io.ktor.client.plugins.logging.ANDROID
+import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.Logger
 
 expect val platformDataModule: Module
 
@@ -87,6 +90,7 @@ expect fun provideBlobApi(ktorfit: Ktorfit): BlobApi
 expect fun provideClinicApi(ktorfit: Ktorfit): ClinicApi
 expect fun provideConfirmationApi(ktorfit: Ktorfit): ConfirmationApi
 expect fun provideDataApi(ktorfit: Ktorfit): DataApi
+//expect fun provideExportApi(ktorfit: Ktorfit): ExportApi
 expect fun provideGeneralApi(ktorfit: Ktorfit): GeneralApi
 expect fun provideMessageApi(ktorfit: Ktorfit): MessageApi
 expect fun provideMetadataApi(ktorfit: Ktorfit): MetadataApi
@@ -143,6 +147,15 @@ public val dataModule = module {
                 connectTimeoutMillis = 10_000
                 socketTimeoutMillis = 30_000
             }
+
+            install(Logging) {
+                logger = Logger.ANDROID
+            }
+
+            defaultRequest {
+                headers.append("Content-Type", "application/json")
+                contentType(ContentType.Application.Json)
+            }
         }
     }
 
@@ -164,7 +177,7 @@ public val dataModule = module {
     single<ClinicApi> { provideClinicApi(get<Ktorfit>()) }
     single<ConfirmationApi> { provideConfirmationApi(get<Ktorfit>()) }
     single<DataApi> { provideDataApi(get<Ktorfit>()) }
-    // single<ExportApi> { provideExportApi(get<Ktorfit>()) } // Uncomment if needed
+//    single<ExportApi> { provideExportApi(get<Ktorfit>()) }
     single<GeneralApi> { provideGeneralApi(get<Ktorfit>()) }
     single<MessageApi> { provideMessageApi(get<Ktorfit>()) }
     single<MetadataApi> { provideMetadataApi(get<Ktorfit>()) }

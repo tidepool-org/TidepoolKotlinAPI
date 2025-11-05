@@ -138,12 +138,6 @@ interface DataRepository {
         sessionToken: String
     ): Result<Unit>
     
-    suspend fun uploadData(
-        userId: String,
-        data: List<BaseData>,
-        sessionToken: String
-    ): Result<List<BaseData>>
-    
     suspend fun uploadCachedData(
         userId: String,
         sessionToken: String,

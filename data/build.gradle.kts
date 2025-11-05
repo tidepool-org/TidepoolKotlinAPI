@@ -41,6 +41,7 @@ kotlin {
                 implementation("de.jensklingenberg.ktorfit:ktorfit-lib:2.6.4")
                 implementation("io.ktor:ktor-client-content-negotiation:3.1.3")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
+                implementation("io.ktor:ktor-client-logging:3.1.3")
 
                 // Serialization
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")

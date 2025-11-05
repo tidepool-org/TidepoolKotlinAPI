@@ -9,6 +9,8 @@ import kotlin.time.Duration
 
 @Serializable
 data class NewDataSetDto(
+    @SerialName("type")
+    val type: String? = "upload",
     @SerialName("client")
     val client: ClientSoftwareDto? = null,
     @SerialName("dataSetType")
@@ -22,7 +24,7 @@ data class NewDataSetDto(
     @SerialName("deviceSerialNumber")
     val deviceSerialNumber: String? = null,
     @SerialName("deviceTags")
-    val deviceTags: List<String>? = null,
+    val deviceTags: List<DeviceTagDto>? = null,
     @SerialName("deduplicator")
     val deduplicator: DeduplicatorDescriptorDto? = null,
     @SerialName("time")
@@ -35,21 +37,6 @@ data class NewDataSetDto(
     @Contextual val timezoneOffset: Duration? = null,
 )
 
-fun NewDataSetDto.toDomain(): NewDataSet = NewDataSet(
-    client = client?.toDomain(),
-    dataSetType = dataSetType,
-    deviceId = deviceId,
-    deviceManufacturers = deviceManufacturers,
-    deviceModel = deviceModel,
-    deviceSerialNumber = deviceSerialNumber,
-    deviceTags = deviceTags,
-    deduplicator = deduplicator?.toDomain(),
-    time = time,
-    timeProcessing = timeProcessing,
-    timezone = timezone,
-    timezoneOffset = timezoneOffset,
-)
-
 fun NewDataSet.toDto(): NewDataSetDto = NewDataSetDto(
     client = client?.toDto(),
     dataSetType = dataSetType,
@@ -57,7 +44,7 @@ fun NewDataSet.toDto(): NewDataSetDto = NewDataSetDto(
     deviceManufacturers = deviceManufacturers,
     deviceModel = deviceModel,
     deviceSerialNumber = deviceSerialNumber,
-    deviceTags = deviceTags,
+    deviceTags = deviceTags?.map { it.toDto() },
     deduplicator = deduplicator?.toDto(),
     time = time,
     timeProcessing = timeProcessing,
