@@ -18,7 +18,7 @@ import kotlin.time.Duration
 @Serializable
 data class DosingDecisionDataDto(
     override val id: String = "",
-    override val type: DataTypeDto = DataTypeDto.Alert,
+    override val type: DataTypeDto = DataTypeDto.DosingDecision,
     @Contextual
     override val time: Instant? = null,
     override val annotations: List<Map<String, String>> = emptyList(),
@@ -33,7 +33,7 @@ data class DosingDecisionDataDto(
     @Contextual
     override val timeZone: TimeZone? = null,
     @Contextual
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     
     @SerialName("reason")
     val reason: String,
@@ -130,7 +130,7 @@ data class DosingDecisionDataDto(
         @Serializable
         enum class InsulinDto {
             
-            @SerialName("units")
+            @SerialName("Units")
             Units,
         }
     }

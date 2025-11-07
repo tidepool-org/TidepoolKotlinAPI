@@ -18,7 +18,7 @@ sealed class BaseDataEntity(
     @PrimaryKey
     open var id: String,
     open var type: String,
-    open var time: Instant?,
+    open var time: Long?,
     open var annotations: String?, // JSON string
     open var associations: String?, // JSON string
     open var clockDriftOffset: Long?, // Duration in milliseconds
@@ -27,7 +27,7 @@ sealed class BaseDataEntity(
     open var deviceTime: String?,
     open var notes: String?, // JSON string
     open var timeZone: String?, // TimeZone ID
-    open var timeZoneOffset: Long?, // Duration in milliseconds
+    open var timeZoneOffset: Int?, // Duration in minutes
 )
 
 internal fun BaseDataEntity.toDomain(): BaseData = when (this) {
@@ -46,6 +46,16 @@ internal fun BaseDataEntity.toDto(): BaseDataDto = when (this) {
     is DosingDecisionDataEntity    -> toDto()
     is FoodDataEntity              -> toDto()
     is InsulinDataEntity           -> toDto()
+}
+
+fun BaseDataDto.toEntity(): BaseDataEntity = when (this) {
+    is BasalAutomatedDataDto    -> toEntity()
+    is BolusDataDto             -> toEntity()
+    is ContinuousGlucoseDataDto -> toEntity()
+    is DosingDecisionDataDto    -> toEntity()
+    is FoodDataDto              -> toEntity()
+    is InsulinDataDto           -> toEntity()
+    else -> throw IllegalArgumentException("Unknown BaseDataDto subtype: ${this::class}")
 }
 
 internal fun DataType.toEntity(): DataTypeEntity = when (this) {
@@ -67,14 +77,4 @@ internal fun DataType.toEntity(): DataTypeEntity = when (this) {
     DataType.PumpStatus         -> DataTypeEntity.PumpStatus
     DataType.ReportedState      -> DataTypeEntity.ReportedState
     DataType.Smbg               -> DataTypeEntity.Smbg
-}
-
-fun BaseDataDto.toEntity(): BaseDataEntity = when (this) {
-    is BasalAutomatedDataDto    -> toEntity()
-    is BolusDataDto             -> toEntity()
-    is ContinuousGlucoseDataDto -> toEntity()
-    is DosingDecisionDataDto    -> toEntity()
-    is FoodDataDto              -> toEntity()
-    is InsulinDataDto           -> toEntity()
-    else -> throw IllegalArgumentException("Unknown BaseDataDto subtype: ${this::class}")
 }

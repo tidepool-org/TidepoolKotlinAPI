@@ -18,7 +18,7 @@ data class InsulinDataEntity(
     @ColumnInfo(name = "type")
     override var type: String,
     @ColumnInfo(name = "time")
-    override var time: Instant? = null,
+    override var time: Long? = null,
     @ColumnInfo(name = "annotations")
     override var annotations: String? = null, // JSON string
     @ColumnInfo(name = "associations")
@@ -36,7 +36,7 @@ data class InsulinDataEntity(
     @ColumnInfo(name = "time_zone")
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
-    override var timeZoneOffset: Long? = null, // Duration in milliseconds
+    override var timeZoneOffset: Int?, // Duration in minutes
     
     // InsulinDataDto specific fields
     @ColumnInfo(name = "dose")
@@ -61,7 +61,7 @@ data class InsulinDataEntity(
 fun InsulinDataDto.toEntity() = InsulinDataEntity(
     id = id,
     type = Json.encodeToString(type),
-    time = time,
+    time = time?.epochSecond,
     annotations = annotations.let { Json.encodeToString(it) },
     associations = associations.let { Json.encodeToString(it) },
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
@@ -70,7 +70,7 @@ fun InsulinDataDto.toEntity() = InsulinDataEntity(
     deviceTime = deviceTime,
     notes = notes.let { Json.encodeToString(it) },
     timeZone = timeZone?.id,
-    timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
+    timeZoneOffset = timeZoneOffset,
     dose = Json.encodeToString(dose),
     site = site
 )
@@ -78,7 +78,7 @@ fun InsulinDataDto.toEntity() = InsulinDataEntity(
 fun InsulinDataEntity.toDto() = InsulinDataDto(
     id = id,
     type = Json.decodeFromString(type),
-    time = time,
+    time = time?.let { Instant.ofEpochSecond(it) },
     annotations = annotations
         ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
         .orEmpty(),
@@ -93,7 +93,7 @@ fun InsulinDataEntity.toDto() = InsulinDataDto(
         ?.let { Json.decodeFromString<List<String>>(it) }
         .orEmpty(),
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
-    timeZoneOffset = timeZoneOffset?.milliseconds,
+    timeZoneOffset = timeZoneOffset,
     dose = Json.decodeFromString(dose),
     site = site
 )

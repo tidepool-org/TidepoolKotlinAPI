@@ -19,7 +19,7 @@ data class BolusData(
     override val deviceTime: String? = null,
     override val notes: List<String> = emptyList(),
     override val timeZone: TimeZone? = null,
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     val subType: BolusSubtype = BolusSubtype.Normal,
     val deliveryContext: DeliveryContext,
 ) : BaseData(

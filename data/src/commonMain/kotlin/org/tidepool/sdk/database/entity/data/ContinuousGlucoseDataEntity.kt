@@ -18,7 +18,7 @@ data class ContinuousGlucoseDataEntity(
     @ColumnInfo(name = "type")
     override var type: String,
     @ColumnInfo(name = "time")
-    override var time: Instant? = null,
+    override var time: Long? = null,
     @ColumnInfo(name = "annotations")
     override var annotations: String? = null, // JSON string
     @ColumnInfo(name = "associations")
@@ -36,7 +36,7 @@ data class ContinuousGlucoseDataEntity(
     @ColumnInfo(name = "time_zone")
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
-    override var timeZoneOffset: Long? = null, // Duration in milliseconds
+    override var timeZoneOffset: Int?, // Duration in minutes
     
     @ColumnInfo(name = "value")
     var value: Double? = null,
@@ -64,7 +64,7 @@ data class ContinuousGlucoseDataEntity(
 fun ContinuousGlucoseDataDto.toEntity() = ContinuousGlucoseDataEntity(
     id = id,
     type = Json.encodeToString(type),
-    time = time,
+    time = time?.epochSecond,
     annotations = annotations.let { Json.encodeToString(it) },
     associations = associations.let { Json.encodeToString(it) },
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
@@ -73,7 +73,7 @@ fun ContinuousGlucoseDataDto.toEntity() = ContinuousGlucoseDataEntity(
     deviceTime = deviceTime,
     notes = notes.let { Json.encodeToString(it) },
     timeZone = timeZone?.id,
-    timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
+    timeZoneOffset = timeZoneOffset,
     value = value,
     units = units?.let { Json.encodeToString(it) },
     trend = trend?.let { Json.encodeToString(it) },
@@ -83,7 +83,7 @@ fun ContinuousGlucoseDataDto.toEntity() = ContinuousGlucoseDataEntity(
 fun ContinuousGlucoseDataEntity.toDto() = ContinuousGlucoseDataDto(
     id = id,
     type = Json.decodeFromString(type),
-    time = time,
+    time = time?.let { Instant.ofEpochSecond(it) },
     annotations = annotations
         ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
         .orEmpty(),
@@ -98,7 +98,7 @@ fun ContinuousGlucoseDataEntity.toDto() = ContinuousGlucoseDataDto(
         ?.let { Json.decodeFromString<List<String>>(it) }
         .orEmpty(),
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
-    timeZoneOffset = timeZoneOffset?.milliseconds,
+    timeZoneOffset = timeZoneOffset,
     value = value,
     units = units?.let { Json.decodeFromString(it) },
     trend = trend?.let { Json.decodeFromString(it) },

@@ -18,7 +18,7 @@ data class BolusDataEntity(
     @ColumnInfo(name = "type")
     override var type: String,
     @ColumnInfo(name = "time")
-    override var time: Instant? = null,
+    override var time: Long? = null,
     @ColumnInfo(name = "annotations")
     override var annotations: String? = null, // JSON string
     @ColumnInfo(name = "associations")
@@ -36,8 +36,8 @@ data class BolusDataEntity(
     @ColumnInfo(name = "time_zone")
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
-    override var timeZoneOffset: Long? = null, // Duration in milliseconds
-    
+    override var timeZoneOffset: Int?, // Duration in minutes
+
     @ColumnInfo(name = "sub_type")
     var subType: String = "normal",
     @ColumnInfo(name = "delivery_context")
@@ -60,16 +60,16 @@ data class BolusDataEntity(
 fun BolusDataDto.toEntity() = BolusDataEntity(
     id = id,
     type = Json.encodeToString(type),
-    time = time,
-    annotations = annotations.let { Json.encodeToString(it) },
-    associations = associations.let { Json.encodeToString(it) },
+    time = time?.epochSecond,
+    annotations = Json.encodeToString(annotations),
+    associations = Json.encodeToString(associations),
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
     conversionOffset = conversionOffset?.inWholeMilliseconds,
     dataSetId = dataSetId,
     deviceTime = deviceTime,
-    notes = notes.let { Json.encodeToString(it) },
+    notes = Json.encodeToString(notes),
     timeZone = timeZone?.id,
-    timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
+    timeZoneOffset = timeZoneOffset,
     subType = Json.encodeToString(subType),
     deliveryContext = Json.encodeToString(deliveryContext),
 )
@@ -77,7 +77,7 @@ fun BolusDataDto.toEntity() = BolusDataEntity(
 fun BolusDataEntity.toDto() = BolusDataDto(
     id = id,
     type = Json.decodeFromString(type),
-    time = time,
+    time = time?.let { Instant.ofEpochSecond(it) },
     annotations = annotations
         ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
         .orEmpty(),
@@ -92,7 +92,7 @@ fun BolusDataEntity.toDto() = BolusDataDto(
         ?.let { Json.decodeFromString<List<String>>(it) }
         .orEmpty(),
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
-    timeZoneOffset = timeZoneOffset?.milliseconds,
+    timeZoneOffset = timeZoneOffset,
     subType = Json.decodeFromString(subType),
     deliveryContext = Json.decodeFromString(deliveryContext),
 )

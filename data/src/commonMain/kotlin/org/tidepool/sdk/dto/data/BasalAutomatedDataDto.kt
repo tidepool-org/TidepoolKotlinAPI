@@ -30,7 +30,7 @@ data class BasalAutomatedDataDto(
     @Contextual
     override val timeZone: TimeZone? = null,
     @Contextual
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     
     @SerialName("deliveryType")
     val deliveryType: DeliveryTypeDto,
@@ -105,7 +105,7 @@ fun BasalAutomatedData.toDto(): BasalAutomatedDataDto = BasalAutomatedDataDto(
     notes = notes,
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
-    deliveryType = this.deliveryType.toDto(),
+    deliveryType = deliveryType.toDto(),
     duration = duration,
     expectedDuration = expectedDuration,
     rate = rate,

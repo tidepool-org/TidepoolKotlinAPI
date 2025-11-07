@@ -8,13 +8,11 @@ import org.tidepool.sdk.database.entity.data.ContinuousGlucoseDataEntity
 import org.tidepool.sdk.database.entity.data.DosingDecisionDataEntity
 import org.tidepool.sdk.database.entity.data.FoodDataEntity
 import org.tidepool.sdk.database.entity.data.InsulinDataEntity
-import org.tidepool.sdk.database.entity.data.toDto
 import org.tidepool.sdk.database.entity.data.toEntity
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
 import org.tidepool.sdk.dto.data.BolusDataDto
 import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
-import org.tidepool.sdk.dto.data.DataSetDto
 import org.tidepool.sdk.dto.data.toDomain
 import org.tidepool.sdk.dto.data.toDto
 import org.tidepool.sdk.mapList
@@ -23,7 +21,6 @@ import org.tidepool.sdk.model.data.DataType
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
-import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.NewDataSet
@@ -123,7 +120,7 @@ class DataRepositoryImpl(
         data: List<BaseData>,
         sessionToken: String,
     ): Result<List<BaseData>> {
-        val dtos = data.map { BaseDataDto.fromDomain(it) }
+        val dtos = data.map { it.toDto() }
         return runCatchingNetworkExceptions {
             dataApi.uploadDataToDataSet(
                 sessionToken = sessionToken,
@@ -131,6 +128,7 @@ class DataRepositoryImpl(
                 data = dtos,
             )
         }
+            .map { it.data }
             .cacheOnFailure(dtos)
             .mapList { it.toDomain() }
     }
@@ -196,7 +194,7 @@ class DataRepositoryImpl(
         dataApi.uploadDataToDataSetLegacy(
             sessionToken = sessionToken,
             dataSetId = dataSetId,
-            data = data.map { BaseDataDto.fromDomain(it) }
+            data = data.map { it.toDto() }
         )
     }.mapList { it.toDomain() }
 
@@ -261,42 +259,6 @@ class DataRepositoryImpl(
         dataApi.deleteAllUserData(sessionToken, userId)
     }
 
-//    override suspend fun uploadData(
-//        userId: String,
-//        data: List<BaseData>,
-//        sessionToken: String,
-//    ): Result<List<BaseData>> {
-//        val dtos = data.map { BaseDataDto.fromDomain(it) }
-//        return runCatchingNetworkExceptions {
-//            dataApi.getUserDataSets(sessionToken, userId, 0, 5)
-////                .flatMap {
-////                    dataApi.uploadDataForUser(
-////                        sessionToken = sessionToken,
-////                        userId = userId,
-////                        data = listOf(
-////                            DataSetDto(
-////
-////                            )
-////                        ),
-////                    ).cacheOnFailure(dtos)
-////                }
-//        }
-//            .flatMap { it ->
-//                if (it.isEmpty()) {
-//                    createDataSet(
-//                        sessionToken = sessionToken,
-//                        userId = userId,
-//                        newDataSet = NewDataSet(),
-//                    )
-//                } else {
-//                    it.maxBy { it.uploadId }
-//                }
-//                println("HECKERY: Fetched ${it.size} data sets")
-//                Result.success(emptyList<BaseDataDto>())
-//            }
-//            .mapList { it.toDomain() }
-//    }
-
     override suspend fun uploadCachedData(
         sessionToken: String,
         userId: String,
@@ -326,6 +288,10 @@ class DataRepositoryImpl(
                 }
             }
         }
+    }
+
+    override fun getCachedDataSetId(): String? {
+        return null // TODO
     }
 
     private suspend fun Result<List<BaseDataDto>>.cacheOnFailure(

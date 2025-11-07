@@ -1,5 +1,6 @@
 package org.tidepool.sdk.di
 
+import android.net.http.HttpException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -77,10 +78,16 @@ import io.ktor.client.plugins.defaultRequest
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import de.jensklingenberg.ktorfit.Ktorfit
-import io.ktor.client.plugins.logging.ANDROID
+import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.Logger
+import de.jensklingenberg.ktorfit.Ktorfit
+import io.ktor.client.plugins.HttpCallValidator
+import io.ktor.client.plugins.ResponseException
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import org.tidepool.sdk.deserialization.TimeZoneSerializer
+import java.util.TimeZone
 
 expect val platformDataModule: Module
 
@@ -109,11 +116,13 @@ public val dataModule = module {
             encodeDefaults = true
             isLenient = true
             explicitNulls = false
+            coerceInputValues = true
             classDiscriminator =
                 "__type"  // Use different discriminator to avoid conflict with 'type' property
             serializersModule = SerializersModule {
                 contextual(Instant::class, InstantSerializer)
-                // Configure BaseData polymorphism  
+                contextual(TimeZone::class, TimeZoneSerializer)
+                // Configure BaseData polymorphism
                 polymorphic(BaseDataDto::class) {
                     subclass(BasalAutomatedDataDto::class)
                     subclass(BolusDataDto::class)
@@ -142,6 +151,17 @@ public val dataModule = module {
                 json(get<Json>())
             }
 
+            install(HttpCallValidator) {
+                validateResponse { response: HttpResponse ->
+                    if (response.status.value !in 200..299) {
+                        throw ResponseException(
+                            response = response,
+                            cachedResponseText = response.bodyAsText(),
+                        )
+                    }
+                }
+            }
+
             install(HttpTimeout) {
                 requestTimeoutMillis = 30_000
                 connectTimeoutMillis = 10_000
@@ -149,7 +169,8 @@ public val dataModule = module {
             }
 
             install(Logging) {
-                logger = Logger.ANDROID
+                logger = get<Logger>()
+                level = LogLevel.ALL
             }
 
             defaultRequest {

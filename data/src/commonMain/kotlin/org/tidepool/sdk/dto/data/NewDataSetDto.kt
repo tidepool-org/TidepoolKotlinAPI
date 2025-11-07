@@ -9,6 +9,8 @@ import kotlin.time.Duration
 
 @Serializable
 data class NewDataSetDto(
+    @SerialName("id")
+    val id: String? = null,
     @SerialName("type")
     val type: String? = "upload",
     @SerialName("client")
@@ -34,7 +36,7 @@ data class NewDataSetDto(
     @SerialName("timezone")
     val timezone: String? = null,
     @SerialName("timezoneOffset")
-    @Contextual val timezoneOffset: Duration? = null,
+    val timeZoneOffset: Int? = null,
 )
 
 fun NewDataSet.toDto(): NewDataSetDto = NewDataSetDto(
@@ -49,5 +51,5 @@ fun NewDataSet.toDto(): NewDataSetDto = NewDataSetDto(
     time = time,
     timeProcessing = timeProcessing,
     timezone = timezone,
-    timezoneOffset = timezoneOffset,
+    timeZoneOffset = timeZoneOffset,
 )

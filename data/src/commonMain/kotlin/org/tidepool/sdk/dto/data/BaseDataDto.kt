@@ -19,6 +19,7 @@ import kotlin.reflect.KClass
 import kotlin.time.Duration
 
 // TODO: finish implementing base.v1
+@Serializable
 abstract class BaseDataDto {
     @SerialName("id")
     abstract val id: String
@@ -44,77 +45,66 @@ abstract class BaseDataDto {
     @SerialName("timeZone")
     abstract val timeZone: TimeZone?
     @SerialName("timeZoneOffset")
-    abstract val timeZoneOffset: Duration?
-    
-    companion object {
-        internal fun fromDomain(domain: BaseData): BaseDataDto = when (domain) {
-            is BasalAutomatedData    -> domain.toDto()
-            is BolusData             -> domain.toDto()
-            is ContinuousGlucoseData -> domain.toDto()
-            is DosingDecisionData    -> domain.toDto()
-            is FoodData              -> domain.toDto()
-            is InsulinData           -> domain.toDto()
-        }
-    }
-    
+    abstract val timeZoneOffset: Int?
+
     val location: Nothing
         get() = TODO("schema \"\" not implemented")
-    
+
     @Serializable
     enum class DataTypeDto(override val subclassType: KClass<out BaseDataDto>) :
         ResultType<BaseDataDto> {
-        
+
         @SerialName("alert")
         Alert(BaseDataDto::class),
-        
+
         @SerialName("basal")
         Basal(BasalAutomatedDataDto::class),
-        
+
         @SerialName("bloodKetone")
         BloodKetone(BaseDataDto::class),
-        
+
         @SerialName("bolus")
         Bolus(BolusDataDto::class),
-        
+
         @SerialName("wizard")
         Calculator(BaseDataDto::class),
-        
+
         @SerialName("cbg")
         Cbg(ContinuousGlucoseDataDto::class),
-        
+
         @SerialName("cgmSettings")
         CgmSettings(BaseDataDto::class),
-        
+
         @SerialName("controllerSettings")
         ControllerSettings(BaseDataDto::class),
-        
+
         @SerialName("controllerStatus")
         ControllerStatus(BaseDataDto::class),
-        
+
         @SerialName("deviceEvent")
         DeviceEvent(BaseDataDto::class),
-        
+
         @SerialName("dosingDecision")
         DosingDecision(DosingDecisionDataDto::class),
-        
+
         @SerialName("food")
         Food(FoodDataDto::class),
-        
+
         @SerialName("insulin")
         Insulin(InsulinDataDto::class),
-        
+
         @SerialName("physicalActivity")
         PhysicalActivity(BaseDataDto::class),
-        
+
         @SerialName("pumpSettings")
         PumpSettings(BaseDataDto::class),
-        
+
         @SerialName("pumpStatus")
         PumpStatus(BaseDataDto::class),
-        
+
         @SerialName("reportedState")
         ReportedState(BaseDataDto::class),
-        
+
         @SerialName("smbg")
         Smbg(BaseDataDto::class)
     }
@@ -128,6 +118,36 @@ internal fun BaseDataDto.toDomain(): BaseData = when (this) {
     is FoodDataDto              -> toDomain()
     is InsulinDataDto           -> toDomain()
     else -> throw IllegalArgumentException("Unknown BaseDataDto subtype: ${this::class}")
+}
+
+fun BaseDataDto.DataTypeDto.toDomain(): DataType = when (this) {
+    BaseDataDto.DataTypeDto.Alert ->                DataType.Alert
+    BaseDataDto.DataTypeDto.Basal ->                DataType.Basal
+    BaseDataDto.DataTypeDto.BloodKetone ->          DataType.BloodKetone
+    BaseDataDto.DataTypeDto.Bolus ->                DataType.Bolus
+    BaseDataDto.DataTypeDto.Calculator ->           DataType.Calculator
+    BaseDataDto.DataTypeDto.Cbg ->                  DataType.Cbg
+    BaseDataDto.DataTypeDto.CgmSettings ->          DataType.CgmSettings
+    BaseDataDto.DataTypeDto.ControllerSettings ->   DataType.ControllerSettings
+    BaseDataDto.DataTypeDto.ControllerStatus ->     DataType.ControllerStatus
+    BaseDataDto.DataTypeDto.DeviceEvent ->          DataType.DeviceEvent
+    BaseDataDto.DataTypeDto.DosingDecision ->       DataType.DosingDecision
+    BaseDataDto.DataTypeDto.Food ->                 DataType.Food
+    BaseDataDto.DataTypeDto.Insulin ->              DataType.Insulin
+    BaseDataDto.DataTypeDto.PhysicalActivity ->     DataType.PhysicalActivity
+    BaseDataDto.DataTypeDto.PumpSettings ->         DataType.PumpSettings
+    BaseDataDto.DataTypeDto.PumpStatus ->           DataType.PumpStatus
+    BaseDataDto.DataTypeDto.ReportedState ->        DataType.ReportedState
+    BaseDataDto.DataTypeDto.Smbg ->                 DataType.Smbg
+}
+
+internal fun BaseData.toDto(): BaseDataDto = when (this) {
+    is BasalAutomatedData    -> toDto()
+    is BolusData             -> toDto()
+    is ContinuousGlucoseData -> toDto()
+    is DosingDecisionData    -> toDto()
+    is FoodData              -> toDto()
+    is InsulinData           -> toDto()
 }
 
 internal fun DataType.toDto(): BaseDataDto.DataTypeDto = when (this) {
@@ -149,25 +169,4 @@ internal fun DataType.toDto(): BaseDataDto.DataTypeDto = when (this) {
     DataType.PumpStatus         -> BaseDataDto.DataTypeDto.PumpStatus
     DataType.ReportedState      -> BaseDataDto.DataTypeDto.ReportedState
     DataType.Smbg               -> BaseDataDto.DataTypeDto.Smbg
-}
-
-fun BaseDataDto.DataTypeDto.toDomain(): DataType = when (this) {
-    BaseDataDto.DataTypeDto.Alert -> DataType.Alert
-    BaseDataDto.DataTypeDto.Basal -> DataType.Basal
-    BaseDataDto.DataTypeDto.BloodKetone -> DataType.BloodKetone
-    BaseDataDto.DataTypeDto.Bolus -> DataType.Bolus
-    BaseDataDto.DataTypeDto.Calculator -> DataType.Calculator
-    BaseDataDto.DataTypeDto.Cbg -> DataType.Cbg
-    BaseDataDto.DataTypeDto.CgmSettings -> DataType.CgmSettings
-    BaseDataDto.DataTypeDto.ControllerSettings -> DataType.ControllerSettings
-    BaseDataDto.DataTypeDto.ControllerStatus -> DataType.ControllerStatus
-    BaseDataDto.DataTypeDto.DeviceEvent -> DataType.DeviceEvent
-    BaseDataDto.DataTypeDto.DosingDecision -> DataType.DosingDecision
-    BaseDataDto.DataTypeDto.Food -> DataType.Food
-    BaseDataDto.DataTypeDto.Insulin -> DataType.Insulin
-    BaseDataDto.DataTypeDto.PhysicalActivity -> DataType.PhysicalActivity
-    BaseDataDto.DataTypeDto.PumpSettings -> DataType.PumpSettings
-    BaseDataDto.DataTypeDto.PumpStatus -> DataType.PumpStatus
-    BaseDataDto.DataTypeDto.ReportedState -> DataType.ReportedState
-    BaseDataDto.DataTypeDto.Smbg -> DataType.Smbg
 }

@@ -5,20 +5,6 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.tidepool.sdk.database.LoopKitDatabase
-import org.tidepool.sdk.api.AlertApi
-import org.tidepool.sdk.api.AuthorizationApi
-import org.tidepool.sdk.api.BlobApi
-import org.tidepool.sdk.api.ClinicApi
-import org.tidepool.sdk.api.ConfirmationApi
-import org.tidepool.sdk.api.DataApi
-import org.tidepool.sdk.api.GeneralApi
-import org.tidepool.sdk.api.MessageApi
-import org.tidepool.sdk.api.MetadataApi
-import org.tidepool.sdk.api.MetricsApi
-import org.tidepool.sdk.api.PrescriptionApi
-import org.tidepool.sdk.api.SummaryApi
-import org.tidepool.sdk.api.TaskApi
-import org.tidepool.sdk.api.UserApi
 import org.tidepool.sdk.api.createAlertApi
 import org.tidepool.sdk.api.createAuthorizationApi
 import org.tidepool.sdk.api.createBlobApi
@@ -34,6 +20,8 @@ import org.tidepool.sdk.api.createSummaryApi
 import org.tidepool.sdk.api.createTaskApi
 import org.tidepool.sdk.api.createUserApi
 import de.jensklingenberg.ktorfit.Ktorfit
+import io.ktor.client.plugins.logging.ANDROID
+import io.ktor.client.plugins.logging.Logger
 
 actual val platformDataModule: Module
     get() = module {
@@ -44,6 +32,9 @@ actual val platformDataModule: Module
             )
                 .setDriver(BundledSQLiteDriver())
                 .build()
+        }
+        single<Logger> {
+            Logger.ANDROID
         }
     }
 

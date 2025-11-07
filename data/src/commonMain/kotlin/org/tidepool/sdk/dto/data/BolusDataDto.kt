@@ -33,7 +33,7 @@ data class BolusDataDto(
     @Contextual
     override val timeZone: TimeZone? = null,
     @Contextual
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     
     @SerialName("subType")
     val subType: BolusSubtypeDto = BolusSubtypeDto.Normal,

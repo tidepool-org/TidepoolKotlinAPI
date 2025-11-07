@@ -142,4 +142,6 @@ interface DataRepository {
         userId: String,
         sessionToken: String,
     ): Result<Unit>
+
+    fun getCachedDataSetId(): String?
 }

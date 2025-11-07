@@ -19,7 +19,7 @@ data class ContinuousGlucoseData(
     override val deviceTime: String? = null,
     override val notes: List<String> = emptyList(),
     override val timeZone: TimeZone? = null,
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     val value: Double? = null,
     val units: BloodGlucose.Units? = null,
     val trend: BloodGlucose.Trend? = null,

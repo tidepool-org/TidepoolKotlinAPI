@@ -61,7 +61,7 @@ data class DataSetDto(
     @SerialName("timezone")
     val timezone: String? = null,
     @SerialName("timezoneOffset")
-    @Contextual val timezoneOffset: Duration? = null,
+    val timeZoneOffset: Int? = null,
     @SerialName("type")
     val type: String? = null,
     @SerialName("uploadId")
@@ -133,7 +133,7 @@ fun DataSetDto.toDomain(): DataSet = DataSet(
     time = time,
     timeProcessing = timeProcessing,
     timezone = timezone,
-    timezoneOffset = timezoneOffset,
+    timeZoneOffset = timeZoneOffset,
     type = type,
     uploadId = uploadId,
     version = version
@@ -164,7 +164,7 @@ fun DataSet.toDto(): DataSetDto = DataSetDto(
     time = time,
     timeProcessing = timeProcessing,
     timezone = timezone,
-    timezoneOffset = timezoneOffset,
+    timeZoneOffset = timeZoneOffset,
     type = type,
     uploadId = uploadId,
     version = version

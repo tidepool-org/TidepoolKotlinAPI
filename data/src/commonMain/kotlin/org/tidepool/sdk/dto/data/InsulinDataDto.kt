@@ -30,7 +30,7 @@ data class InsulinDataDto(
     @Contextual
     override val timeZone: TimeZone? = null,
     @Contextual
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     
     @SerialName("dose")
     val dose: DoseDto,

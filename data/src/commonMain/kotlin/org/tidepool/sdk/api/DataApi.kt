@@ -13,6 +13,7 @@ import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.PUT
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
+import org.tidepool.sdk.dto.ResponseDto
 import java.time.Instant
 
 interface DataApi {
@@ -88,7 +89,7 @@ interface DataApi {
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("dataSetId") dataSetId: String,
         @Body data: List<BaseDataDto>,
-    ): List<BaseDataDto>
+    ): ResponseDto<BaseDataDto>
     
     @DELETE("v1/data_sets/{dataSetId}/data")
     suspend fun deleteDataSetData(

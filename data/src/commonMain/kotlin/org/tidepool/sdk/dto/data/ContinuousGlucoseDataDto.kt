@@ -31,7 +31,7 @@ data class ContinuousGlucoseDataDto(
     @Contextual
     override val timeZone: TimeZone? = null,
     @Contextual
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
 
     @SerialName("value")
     val value: Double? = null,

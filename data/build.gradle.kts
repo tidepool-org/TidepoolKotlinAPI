@@ -1,3 +1,5 @@
+import org.gradle.kotlin.dsl.invoke
+
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
@@ -39,9 +41,9 @@ kotlin {
 
                 // Ktorfit for networking
                 implementation("de.jensklingenberg.ktorfit:ktorfit-lib:2.6.4")
-                implementation("io.ktor:ktor-client-content-negotiation:3.1.3")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:3.1.3")
-                implementation("io.ktor:ktor-client-logging:3.1.3")
+                implementation("io.ktor:ktor-client-content-negotiation:3.3.1")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.1")
+                implementation("io.ktor:ktor-client-logging:3.3.1")
 
                 // Serialization
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
@@ -67,7 +69,12 @@ kotlin {
             }
         }
 
-        val androidMain by getting
+        val androidMain by getting {
+            dependencies {
+                implementation("io.ktor:ktor-client-logging:3.3.1")
+                implementation("io.ktor:ktor-client-content-negotiation:3.3.1")
+            }
+        }
         val androidUnitTest by getting
     }
 }

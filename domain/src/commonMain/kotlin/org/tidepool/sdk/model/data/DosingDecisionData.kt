@@ -19,7 +19,7 @@ data class DosingDecisionData(
     override val deviceTime: String? = null,
     override val notes: List<String> = emptyList(),
     override val timeZone: TimeZone? = null,
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     val reason: String,
     val carbsOnBoard: CarbsOnBoard? = null,
     val insulinOnBoard: InsulinOnBoard? = null,

@@ -18,7 +18,7 @@ sealed class BaseData(
     open val deviceTime: String? = null,
     open val notes: List<String> = emptyList(),
     open val timeZone: TimeZone? = null,
-    open val timeZoneOffset: Duration? = null,
+    open val timeZoneOffset: Int? = null,
 ) {
     
     val location: Nothing

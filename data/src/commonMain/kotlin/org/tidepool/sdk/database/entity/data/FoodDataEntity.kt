@@ -18,7 +18,7 @@ data class FoodDataEntity(
     @ColumnInfo(name = "type")
     override var type: String,
     @ColumnInfo(name = "time")
-    override var time: Instant? = null,
+    override var time: Long? = null,
     @ColumnInfo(name = "annotations")
     override var annotations: String? = null, // JSON string
     @ColumnInfo(name = "associations")
@@ -36,7 +36,7 @@ data class FoodDataEntity(
     @ColumnInfo(name = "time_zone")
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
-    override var timeZoneOffset: Long? = null, // Duration in milliseconds
+    override var timeZoneOffset: Int?, // Duration in minutes
     
     @ColumnInfo(name = "brand")
     var brand: String? = null,
@@ -66,7 +66,7 @@ data class FoodDataEntity(
 fun FoodDataDto.toEntity() = FoodDataEntity(
     id = id,
     type = Json.encodeToString(type),
-    time = time,
+    time = time?.epochSecond,
     annotations = annotations.let { Json.encodeToString(it) },
     associations = associations.let { Json.encodeToString(it) },
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
@@ -75,7 +75,7 @@ fun FoodDataDto.toEntity() = FoodDataEntity(
     deviceTime = deviceTime,
     notes = notes.let { Json.encodeToString(it) },
     timeZone = timeZone?.id,
-    timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
+    timeZoneOffset = timeZoneOffset,
     brand = brand,
     code = code,
     meal = meal?.let { meal ->
@@ -94,7 +94,7 @@ fun FoodDataDto.toEntity() = FoodDataEntity(
 fun FoodDataEntity.toDto() = FoodDataDto(
     id = id,
     type = Json.decodeFromString(type),
-    time = time,
+    time = time?.let { Instant.ofEpochSecond(it) },
     annotations = annotations
         ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
         .orEmpty(),
@@ -109,7 +109,7 @@ fun FoodDataEntity.toDto() = FoodDataDto(
         ?.let { Json.decodeFromString<List<String>>(it) }
         .orEmpty(),
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
-    timeZoneOffset = timeZoneOffset?.milliseconds,
+    timeZoneOffset = timeZoneOffset,
     brand = brand,
     code = code,
     meal = meal?.let { mealString ->

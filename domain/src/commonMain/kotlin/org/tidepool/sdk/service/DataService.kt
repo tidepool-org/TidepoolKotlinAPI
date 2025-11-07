@@ -11,6 +11,8 @@ import org.tidepool.sdk.model.data.ClientSoftware
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.DataType
+import org.tidepool.sdk.model.data.DeduplicatorDescriptor
+import org.tidepool.sdk.model.data.DeviceTag
 import org.tidepool.sdk.model.data.NewDataSet
 import org.tidepool.sdk.model.data.NewDataSource
 import org.tidepool.sdk.repository.DataRepository
@@ -18,6 +20,8 @@ import org.tidepool.sdk.repository.UserRepository
 import kotlin.time.Duration
 import java.time.Instant
 import java.util.Collections.emptyList
+import java.util.TimeZone
+import kotlin.time.Duration.Companion.milliseconds
 
 class DataService internal constructor(
     private val dataRepository: DataRepository,
@@ -85,6 +89,16 @@ class DataService internal constructor(
             )
         }
 
+    suspend fun getUserDataSets(): Result<List<DataSet>> =
+        tokenProvider.getToken().flatMap { token ->
+            userRepository.getCurrentUser(token).flatMap { user ->
+                dataRepository.getUserDataSets(
+                    userId = user.userId,
+                    sessionToken = token,
+                )
+            }
+        }
+
     // Data Sets operations
     suspend fun getUserDataSetsPaginator(
         userId: String,
@@ -120,7 +134,9 @@ class DataService internal constructor(
 
     suspend fun createDataSet(newDataSet: NewDataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap { token ->
+            println("DataService: Creating data set with token: ${token.take(5)}...")
             userRepository.getCurrentUser(token).flatMap { user ->
+                println("DataService: Creating data set for user: ${user.userId}")
                 dataRepository.createDataSet(
                     userId = user.userId,
                     newDataSet = newDataSet,
@@ -159,6 +175,7 @@ class DataService internal constructor(
         data: List<BaseData>,
     ): Result<List<BaseData>> =
         tokenProvider.getToken().flatMap {
+            println("DataService: Uploading data to data set $dataSetId")
             dataRepository.uploadDataToDataSet(
                 dataSetId = dataSetId,
                 data = data,
@@ -316,11 +333,57 @@ class DataService internal constructor(
             )
         }
 
-    suspend fun uploadData(datum: BaseData): Result<List<BaseData>> = datum.dataSetId
-        ?.let { dataSetId: String ->
+    suspend fun uploadData(data: List<BaseData>): Result<List<BaseData>> =
+        getDataSetId().flatMap { dataSetId ->
             uploadDataToDataSet(
                 dataSetId = dataSetId,
-                data = listOf(datum),
+                data = data,
             )
-        } ?: Result.failure(IllegalStateException("DataSet ID is null"))
+        }
+
+    suspend fun uploadData(data: BaseData): Result<List<BaseData>> = uploadData(listOf(data))
+
+    private suspend fun getDataSetId(): Result<String> {
+        println("DataService: Getting data set ID")
+        return getUserDataSets()
+            .flatMap {
+                it
+                    .filter { it.uploadId != null }
+                    .minByOrNull { it.uploadId!! }
+                    ?.let {
+                        println("DataService: Found existing data set with id: ${it.id}")
+                        Result.success(it)
+                    }
+                    ?: createDataSet(
+                        newDataSet = NewDataSet(
+                            client = ClientSoftware(
+                                name = "org.tidepool.loop",
+                                version = "TEST",
+                            ),
+                            dataSetType = "continuous",
+                            timezone = TimeZone.getDefault().id,
+                            timeZoneOffset = TimeZone.getDefault().rawOffset.milliseconds.inWholeMinutes.toInt(),
+                            deviceManufacturers = listOf(
+                                "test"
+                            ),
+                            deviceId = "test",
+                            time = Instant.now(),
+                            deduplicator = DeduplicatorDescriptor(
+                                name = "org.tidepool.deduplicator.dataset.delete.origin",
+                            ),
+                            deviceTags = listOf(
+                                DeviceTag.Bgm,
+                                DeviceTag.Cgm,
+                                DeviceTag.InsulinPump,
+                            ),
+                            deviceSerialNumber = "test",
+                            timeProcessing = "none",
+                        ),
+                    )
+            }.flatMap {
+                println("DataService: Created data set: ${it.id}")
+                it.id?.let { Result.success(it) }
+                    ?: Result.failure(IllegalStateException("No id"))
+            }
+    }
 }

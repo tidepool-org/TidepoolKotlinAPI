@@ -2,6 +2,7 @@ package org.tidepool.sdk
 
 import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.delay
+import org.tidepool.sdk.dto.ResponseDto
 import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketTimeoutException
@@ -69,9 +70,9 @@ suspend fun <T : Any> runWithRetry(
         onFailure = {
             if (maxRetries > 0 && it::class in retriableExceptions) {
                 val jitteredDelay = delay + Random.nextLong(-delay / 10, delay / 10)
-                
+
                 delay(jitteredDelay)
-                
+
                 runWithRetry(
                     block = block,
                     maxRetries = maxRetries - 1,

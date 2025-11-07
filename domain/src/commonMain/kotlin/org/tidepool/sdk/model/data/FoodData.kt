@@ -18,7 +18,7 @@ data class FoodData(
     override val deviceTime: String? = null,
     override val notes: List<String> = emptyList(),
     override val timeZone: TimeZone? = null,
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     val brand: String? = null,
     val code: String? = null,
     val meal: Meal? = null,

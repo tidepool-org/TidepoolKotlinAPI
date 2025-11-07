@@ -28,7 +28,7 @@ data class DataSet(
     val time: Instant? = null,
     val timeProcessing: String? = null,
     val timezone: String? = null,
-    val timezoneOffset: Duration? = null,
+    val timeZoneOffset: Int? = null,
     val type: String? = null,
     val uploadId: String? = null,
     val version: String? = null
@@ -56,7 +56,7 @@ data class NewDataSet(
     val time: Instant? = null,
     val timeProcessing: String? = null,
     val timezone: String? = null,
-    val timezoneOffset: Duration? = null
+    val timeZoneOffset: Int? = null
 )
 
 enum class DeviceTag {

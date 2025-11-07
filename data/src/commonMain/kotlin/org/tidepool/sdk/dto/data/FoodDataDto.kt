@@ -30,7 +30,7 @@ data class FoodDataDto(
     @Contextual
     override val timeZone: TimeZone? = null,
     @Contextual
-    override val timeZoneOffset: Duration? = null,
+    override val timeZoneOffset: Int? = null,
     
     @SerialName("brand")
     val brand: String? = null,

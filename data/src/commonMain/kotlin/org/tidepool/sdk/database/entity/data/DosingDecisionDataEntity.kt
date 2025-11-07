@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import org.tidepool.sdk.deserialization.InstantSerializer
+import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import java.time.Instant
@@ -20,7 +21,7 @@ data class DosingDecisionDataEntity(
     @ColumnInfo(name = "type")
     override var type: String,
     @ColumnInfo(name = "time")
-    override var time: Instant? = null,
+    override var time: Long? = null,
     @ColumnInfo(name = "annotations")
     override var annotations: String? = null, // JSON string
     @ColumnInfo(name = "associations")
@@ -38,8 +39,8 @@ data class DosingDecisionDataEntity(
     @ColumnInfo(name = "time_zone")
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
-    override var timeZoneOffset: Long? = null, // Duration in milliseconds
-    
+    override var timeZoneOffset: Int?, // Duration in minutes
+
     @ColumnInfo(name = "reason")
     var reason: String = "",
     @ColumnInfo(name = "carbs_on_board")
@@ -73,14 +74,23 @@ data class DosingDecisionDataEntity(
 
 fun DosingDecisionDataDto.toEntity(): DosingDecisionDataEntity {
     val json = Json {
-        SerializersModule {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        isLenient = true
+        explicitNulls = false
+        classDiscriminator =
+            "__type"  // Use different discriminator to avoid conflict with 'type' property
+        serializersModule = SerializersModule {
             contextual(Instant::class, InstantSerializer)
+            contextual(TimeZone::class, TimeZoneSerializer)
+            // Configure BaseData polymorphism
         }
     }
+
     return DosingDecisionDataEntity(
         id = id,
         type = json.encodeToString(type),
-        time = time,
+        time = time?.epochSecond,
         annotations = annotations.let { json.encodeToString(it) },
         associations = associations.let { json.encodeToString(it) },
         clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
@@ -89,11 +99,11 @@ fun DosingDecisionDataDto.toEntity(): DosingDecisionDataEntity {
         deviceTime = deviceTime,
         notes = notes.let { json.encodeToString(it) },
         timeZone = timeZone?.id,
-        timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
+        timeZoneOffset = timeZoneOffset,
         reason = reason,
         carbsOnBoard = carbsOnBoard?.let { json.encodeToString(it) },
         insulinOnBoard = insulinOnBoard?.let { json.encodeToString(it) },
-        recommendedBasal = recommendedBasal?.let { json.encodeToString(it) },
+        recommendedBasal = recommendedBasal?.let { Json.encodeToString(it) },
         recommendedBolus = recommendedBolus?.let { json.encodeToString(it) },
         requestedBolus = requestedBolus?.let { json.encodeToString(it) },
         scheduleTimeZoneOffset = scheduleTimeZoneOffset,
@@ -101,39 +111,31 @@ fun DosingDecisionDataDto.toEntity(): DosingDecisionDataEntity {
     )
 }
 
-fun DosingDecisionDataEntity.toDto(): DosingDecisionDataDto {
-    val json = Json {
-        SerializersModule {
-            contextual(Instant::class, InstantSerializer)
-        }
-    }
-
-    return DosingDecisionDataDto(
-        id = id,
-        type = json.decodeFromString(type),
-        time = time,
-        annotations = annotations
-            ?.let { json.decodeFromString<List<Map<String, String>>>(it) }
-            .orEmpty(),
-        associations = associations
-            ?.let { json.decodeFromString<List<AssociationDto>>(it) }
-            .orEmpty(),
-        clockDriftOffset = clockDriftOffset?.milliseconds,
-        conversionOffset = conversionOffset?.milliseconds,
-        dataSetId = dataSetId,
-        deviceTime = deviceTime,
-        notes = notes
-            ?.let { json.decodeFromString<List<String>>(it) }
-            .orEmpty(),
-        timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
-        timeZoneOffset = timeZoneOffset?.milliseconds,
-        reason = reason,
-        carbsOnBoard = carbsOnBoard?.let { json.decodeFromString(it) },
-        insulinOnBoard = insulinOnBoard?.let { json.decodeFromString(it) },
-        recommendedBasal = recommendedBasal?.let { json.decodeFromString(it) },
-        recommendedBolus = recommendedBolus?.let { json.decodeFromString(it) },
-        requestedBolus = requestedBolus?.let { json.decodeFromString(it) },
-        scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-        units = json.decodeFromString(units),
-    )
-}
+fun DosingDecisionDataEntity.toDto() = DosingDecisionDataDto(
+    id = id,
+    type = Json.decodeFromString(type),
+    time = time?.let { Instant.ofEpochSecond(it) },
+    annotations = annotations
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
+        .orEmpty(),
+    associations = associations
+        ?.let { Json.decodeFromString<List<AssociationDto>>(it) }
+        .orEmpty(),
+    clockDriftOffset = clockDriftOffset?.milliseconds,
+    conversionOffset = conversionOffset?.milliseconds,
+    dataSetId = dataSetId,
+    deviceTime = deviceTime,
+    notes = notes
+        ?.let { Json.decodeFromString<List<String>>(it) }
+        .orEmpty(),
+    timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
+    timeZoneOffset = timeZoneOffset,
+    reason = reason,
+    carbsOnBoard = carbsOnBoard?.let { Json.decodeFromString(it) },
+    insulinOnBoard = insulinOnBoard?.let { Json.decodeFromString(it) },
+    recommendedBasal = recommendedBasal?.let { Json.decodeFromString(it) },
+    recommendedBolus = recommendedBolus?.let { Json.decodeFromString(it) },
+    requestedBolus = requestedBolus?.let { Json.decodeFromString(it) },
+    scheduleTimeZoneOffset = scheduleTimeZoneOffset,
+    units = Json.decodeFromString(units),
+)

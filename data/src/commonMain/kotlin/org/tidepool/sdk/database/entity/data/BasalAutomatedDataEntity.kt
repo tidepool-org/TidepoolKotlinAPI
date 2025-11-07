@@ -17,7 +17,7 @@ data class BasalAutomatedDataEntity(
     @ColumnInfo(name = "type")
     override var type: String,
     @ColumnInfo(name = "time")
-    override var time: Instant? = null,
+    override var time: Long? = null,
     @ColumnInfo(name = "annotations")
     override var annotations: String? = null, // JSON string
     @ColumnInfo(name = "associations")
@@ -35,7 +35,7 @@ data class BasalAutomatedDataEntity(
     @ColumnInfo(name = "time_zone")
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
-    override var timeZoneOffset: Long? = null, // Duration in milliseconds
+    override var timeZoneOffset: Int? = null, // Duration In Minutes
     
     // BasalAutomatedDataDto specific fields
     @ColumnInfo(name = "delivery_type")
@@ -66,16 +66,16 @@ data class BasalAutomatedDataEntity(
 fun BasalAutomatedDataDto.toEntity() = BasalAutomatedDataEntity(
     id = id,
     type = Json.encodeToString(type),
-    time = time,
-    annotations = Json.encodeToString(annotations.orEmpty()),
-    associations = Json.encodeToString(associations.orEmpty()),
+    time = time?.epochSecond,
+    annotations = Json.encodeToString(annotations),
+    associations = Json.encodeToString(associations),
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
     conversionOffset = conversionOffset?.inWholeMilliseconds,
     dataSetId = dataSetId,
     deviceTime = deviceTime,
-    notes = Json.encodeToString(notes.orEmpty()),
+    notes = Json.encodeToString(notes),
     timeZone = timeZone?.id,
-    timeZoneOffset = timeZoneOffset?.inWholeMilliseconds,
+    timeZoneOffset = timeZoneOffset,
     deliveryType = Json.encodeToString(deliveryType),
     duration = duration,
     expectedDuration = expectedDuration,
@@ -86,7 +86,7 @@ fun BasalAutomatedDataDto.toEntity() = BasalAutomatedDataEntity(
 fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     id = id,
     type = Json.decodeFromString(type),
-    time = time,
+    time = time?.let { Instant.ofEpochSecond(it) },
     annotations = if (annotations.isNullOrBlank()) emptyList() else Json.decodeFromString(annotations!!),
     associations = if (associations.isNullOrBlank()) emptyList() else Json.decodeFromString(associations!!),
     clockDriftOffset = clockDriftOffset?.milliseconds,
@@ -95,7 +95,7 @@ fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     deviceTime = deviceTime,
     notes = if (notes.isNullOrBlank()) emptyList() else Json.decodeFromString(notes!!),
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
-    timeZoneOffset = timeZoneOffset?.milliseconds,
+    timeZoneOffset = timeZoneOffset,
     deliveryType = Json.decodeFromString(deliveryType),
     duration = duration,
     expectedDuration = expectedDuration,
