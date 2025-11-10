@@ -8,11 +8,14 @@ import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.model.data.BasalAutomatedData
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.BolusData
+import org.tidepool.sdk.model.data.CgmSettingsData
 import org.tidepool.sdk.model.data.ContinuousGlucoseData
+import org.tidepool.sdk.model.data.ControllerSettingsData
 import org.tidepool.sdk.model.data.DataType
 import org.tidepool.sdk.model.data.DosingDecisionData
 import org.tidepool.sdk.model.data.FoodData
 import org.tidepool.sdk.model.data.InsulinData
+import org.tidepool.sdk.model.data.PumpSettingsData
 import java.time.Instant
 import java.util.TimeZone
 import kotlin.reflect.KClass
@@ -73,10 +76,10 @@ abstract class BaseDataDto {
         Cbg(ContinuousGlucoseDataDto::class),
 
         @SerialName("cgmSettings")
-        CgmSettings(BaseDataDto::class),
+        CgmSettings(CgmSettingsDataDto::class),
 
         @SerialName("controllerSettings")
-        ControllerSettings(BaseDataDto::class),
+        ControllerSettings(ControllerSettingsDataDto::class),
 
         @SerialName("controllerStatus")
         ControllerStatus(BaseDataDto::class),
@@ -97,7 +100,7 @@ abstract class BaseDataDto {
         PhysicalActivity(BaseDataDto::class),
 
         @SerialName("pumpSettings")
-        PumpSettings(BaseDataDto::class),
+        PumpSettings(PumpSettingsDataDto::class),
 
         @SerialName("pumpStatus")
         PumpStatus(BaseDataDto::class),
@@ -111,13 +114,16 @@ abstract class BaseDataDto {
 }
 
 internal fun BaseDataDto.toDomain(): BaseData = when (this) {
-    is BasalAutomatedDataDto    -> toDomain()
-    is BolusDataDto             -> toDomain()
-    is ContinuousGlucoseDataDto -> toDomain()
-    is DosingDecisionDataDto    -> toDomain()
-    is FoodDataDto              -> toDomain()
-    is InsulinDataDto           -> toDomain()
-    else -> throw IllegalArgumentException("Unknown BaseDataDto subtype: ${this::class}")
+    is BasalAutomatedDataDto        -> toDomain()
+    is BolusDataDto                 -> toDomain()
+    is ContinuousGlucoseDataDto     -> toDomain()
+    is DosingDecisionDataDto        -> toDomain()
+    is FoodDataDto                  -> toDomain()
+    is InsulinDataDto               -> toDomain()
+    is CgmSettingsDataDto           -> toDomain()
+    is ControllerSettingsDataDto    -> toDomain()
+    is PumpSettingsDataDto          -> toDomain()
+    else -> throw IllegalArgumentException("Unknown BaseDataDto type: ${this::class.simpleName}")
 }
 
 fun BaseDataDto.DataTypeDto.toDomain(): DataType = when (this) {
@@ -142,12 +148,15 @@ fun BaseDataDto.DataTypeDto.toDomain(): DataType = when (this) {
 }
 
 internal fun BaseData.toDto(): BaseDataDto = when (this) {
-    is BasalAutomatedData    -> toDto()
-    is BolusData             -> toDto()
-    is ContinuousGlucoseData -> toDto()
-    is DosingDecisionData    -> toDto()
-    is FoodData              -> toDto()
-    is InsulinData           -> toDto()
+    is BasalAutomatedData       -> toDto()
+    is BolusData                -> toDto()
+    is ContinuousGlucoseData    -> toDto()
+    is DosingDecisionData       -> toDto()
+    is FoodData                 -> toDto()
+    is InsulinData              -> toDto()
+    is CgmSettingsData          -> toDto()
+    is ControllerSettingsData   -> toDto()
+    is PumpSettingsData         -> toDto()
 }
 
 internal fun DataType.toDto(): BaseDataDto.DataTypeDto = when (this) {
