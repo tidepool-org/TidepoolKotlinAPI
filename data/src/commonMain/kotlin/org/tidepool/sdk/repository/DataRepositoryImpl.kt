@@ -5,6 +5,7 @@ import org.tidepool.sdk.database.DataDao
 import org.tidepool.sdk.database.entity.data.BasalAutomatedDataEntity
 import org.tidepool.sdk.database.entity.data.BolusDataEntity
 import org.tidepool.sdk.database.entity.data.ContinuousGlucoseDataEntity
+import org.tidepool.sdk.database.entity.data.DeviceEventDataEntity
 import org.tidepool.sdk.database.entity.data.DosingDecisionDataEntity
 import org.tidepool.sdk.database.entity.data.FoodDataEntity
 import org.tidepool.sdk.database.entity.data.InsulinDataEntity
@@ -285,6 +286,7 @@ class DataRepositoryImpl(
                     is DosingDecisionDataEntity -> dataDao.insertDosingDecisionData(it)
                     is FoodDataEntity -> dataDao.insertFoodData(it)
                     is InsulinDataEntity -> dataDao.insertInsulinData(it)
+                    is DeviceEventDataEntity -> dataDao.insertEventData(it)
                 }
             }
         }

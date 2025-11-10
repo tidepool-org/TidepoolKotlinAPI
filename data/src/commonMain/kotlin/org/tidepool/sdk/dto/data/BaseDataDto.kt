@@ -12,6 +12,7 @@ import org.tidepool.sdk.model.data.CgmSettingsData
 import org.tidepool.sdk.model.data.ContinuousGlucoseData
 import org.tidepool.sdk.model.data.ControllerSettingsData
 import org.tidepool.sdk.model.data.DataType
+import org.tidepool.sdk.model.data.DeviceEventData
 import org.tidepool.sdk.model.data.DosingDecisionData
 import org.tidepool.sdk.model.data.FoodData
 import org.tidepool.sdk.model.data.InsulinData
@@ -85,7 +86,7 @@ abstract class BaseDataDto {
         ControllerStatus(BaseDataDto::class),
 
         @SerialName("deviceEvent")
-        DeviceEvent(BaseDataDto::class),
+        DeviceEvent(DeviceEventDataDto::class),
 
         @SerialName("dosingDecision")
         DosingDecision(DosingDecisionDataDto::class),
@@ -123,6 +124,7 @@ internal fun BaseDataDto.toDomain(): BaseData = when (this) {
     is CgmSettingsDataDto           -> toDomain()
     is ControllerSettingsDataDto    -> toDomain()
     is PumpSettingsDataDto          -> toDomain()
+    is DeviceEventDataDto           -> toDomain()
     else -> throw IllegalArgumentException("Unknown BaseDataDto type: ${this::class.simpleName}")
 }
 
@@ -157,6 +159,7 @@ internal fun BaseData.toDto(): BaseDataDto = when (this) {
     is CgmSettingsData          -> toDto()
     is ControllerSettingsData   -> toDto()
     is PumpSettingsData         -> toDto()
+    is DeviceEventData          -> toDto()
 }
 
 internal fun DataType.toDto(): BaseDataDto.DataTypeDto = when (this) {

@@ -9,6 +9,9 @@ import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
+import org.tidepool.sdk.dto.data.DeviceEventDataDto
+import org.tidepool.sdk.dto.data.CgmSettingsDataDto
+import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataType
 import java.time.Instant
@@ -31,31 +34,44 @@ sealed class BaseDataEntity(
 )
 
 internal fun BaseDataEntity.toDomain(): BaseData = when (this) {
-    is BasalAutomatedDataEntity    -> toDomain()
-    is BolusDataEntity             -> toDomain()
-    is ContinuousGlucoseDataEntity -> toDomain()
-    is DosingDecisionDataEntity    -> toDomain()
-    is FoodDataEntity              -> toDomain()
-    is InsulinDataEntity           -> toDomain()
+    is BasalAutomatedDataEntity     -> toDomain()
+    is BolusDataEntity              -> toDomain()
+    is ContinuousGlucoseDataEntity  -> toDomain()
+    is DosingDecisionDataEntity     -> toDomain()
+    is CgmSettingsDataEntity        -> toDomain()
+    is ControllerSettingsDataEntity -> toDomain()
+    is FoodDataEntity               -> toDomain()
+    is InsulinDataEntity            -> toDomain()
+    is DeviceEventDataEntity        -> toDomain()
+    is PumpSettingsDataEntity       -> toDomain()
 }
 
 internal fun BaseDataEntity.toDto(): BaseDataDto = when (this) {
-    is BasalAutomatedDataEntity    -> toDto()
-    is BolusDataEntity             -> toDto()
-    is ContinuousGlucoseDataEntity -> toDto()
-    is DosingDecisionDataEntity    -> toDto()
-    is FoodDataEntity              -> toDto()
-    is InsulinDataEntity           -> toDto()
+    is BasalAutomatedDataEntity     -> toDto()
+    is BolusDataEntity              -> toDto()
+    is ContinuousGlucoseDataEntity  -> toDto()
+    is DosingDecisionDataEntity     -> toDto()
+    is CgmSettingsDataEntity        -> toDto()
+    is ControllerSettingsDataEntity -> toDto()
+    is FoodDataEntity               -> toDto()
+    is InsulinDataEntity            -> toDto()
+    is DeviceEventDataEntity        -> toDto()
+    is PumpSettingsDataEntity       -> toDto()
 }
 
 fun BaseDataDto.toEntity(): BaseDataEntity = when (this) {
-    is BasalAutomatedDataDto    -> toEntity()
-    is BolusDataDto             -> toEntity()
-    is ContinuousGlucoseDataDto -> toEntity()
-    is DosingDecisionDataDto    -> toEntity()
-    is FoodDataDto              -> toEntity()
-    is InsulinDataDto           -> toEntity()
-    else -> throw IllegalArgumentException("Unknown BaseDataDto subtype: ${this::class}")
+    is BasalAutomatedDataDto        -> toEntity()
+    is BolusDataDto                 -> toEntity()
+    is ContinuousGlucoseDataDto     -> toEntity()
+    is DosingDecisionDataDto        -> toEntity()
+    is CgmSettingsDataDto           -> toEntity()
+    is ControllerSettingsDataDto    -> toEntity()
+    is FoodDataDto                  -> toEntity()
+    is InsulinDataDto               -> toEntity()
+    is DeviceEventDataDto           -> toEntity()
+    else                            -> throw IllegalArgumentException(
+        "Unknown BaseDataDto subtype: ${this::class}"
+    )
 }
 
 internal fun DataType.toEntity(): DataTypeEntity = when (this) {
