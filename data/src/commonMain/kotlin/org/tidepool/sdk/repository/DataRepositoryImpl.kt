@@ -69,6 +69,7 @@ class DataRepositoryImpl(
         }
         set(value) {
             field = value
+            keyValueStorage.putString(KEY_CACHED_DATA_SET_ID, value)
         }
 
     override suspend fun getDataForUser(
