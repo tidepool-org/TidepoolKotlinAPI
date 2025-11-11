@@ -10,7 +10,14 @@ import java.time.Instant
 
 interface DataRepository {
 
-    var cachedDataSetId: String?
+    /**
+     * Returns the cached data set id if available. If not available, ensures that at most one
+     * coroutine performs the discovery/creation via [create], while all other callers wait for
+     * the result. This provides a three-state behavior: Uninitialized, Loading, and Ready.
+     */
+    suspend fun awaitOrCreateCachedDataSetId(
+        create: suspend () -> Result<String>,
+    ): Result<String>
 
     suspend fun getDataForUser(
         userId: String,

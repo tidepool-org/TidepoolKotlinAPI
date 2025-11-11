@@ -343,11 +343,8 @@ class DataService internal constructor(
 
     suspend fun uploadData(data: BaseData): Result<List<BaseData>> = uploadData(listOf(data))
 
-    private suspend fun getDataSetId(): Result<String> {
-        println("DataService: Getting data set ID")
-        return dataRepository.cachedDataSetId?.let {
-            Result.success(it)
-        } ?: getUserDataSets()
+    private suspend fun getDataSetId() = dataRepository.awaitOrCreateCachedDataSetId {
+        getUserDataSets()
             .flatMap { dataSets ->
                 dataSets
                     .filter { it.uploadId != null }
@@ -386,9 +383,6 @@ class DataService internal constructor(
                 println("DataService: Created data set: ${it.id}")
                 it.id?.let { Result.success(it) }
                     ?: Result.failure(IllegalStateException("No id"))
-            }
-            .onSuccess {
-                dataRepository.cachedDataSetId = it
             }
     }
 }

@@ -45,6 +45,9 @@ import org.tidepool.sdk.model.data.NewDataSource
 import org.tidepool.sdk.runCatchingNetworkExceptions
 import java.time.Instant
 import kotlin.collections.toTypedArray
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class DataRepositoryImpl(
     private val dataApi: DataApi,
@@ -63,14 +66,57 @@ class DataRepositoryImpl(
 
     private val KEY_CACHED_DATA_SET_ID: String = "KEY_CACHED_DATA_SET_ID"
 
-    override var cachedDataSetId: String? = null
-        get() {
-            return field ?: keyValueStorage.getString(KEY_CACHED_DATA_SET_ID)
-        }
+    private var cachedDataSetId: String? = null
+        get() = field ?: keyValueStorage.getString(KEY_CACHED_DATA_SET_ID)
+            .also { field = it }
         set(value) {
             field = value
             keyValueStorage.putString(KEY_CACHED_DATA_SET_ID, value)
         }
+
+    private val dataSetIdMutex: Mutex = Mutex()
+    private var dataSetIdDeferred: CompletableDeferred<String>? = null
+
+    override suspend fun awaitOrCreateCachedDataSetId(
+        create: suspend () -> Result<String>,
+    ): Result<String> {
+        // Fast-path when already available
+        cachedDataSetId?.let { return Result.success(it) }
+
+        var isCreator = false
+        val localDeferred: CompletableDeferred<String> = dataSetIdMutex.withLock {
+            // Re-check after acquiring the lock
+            cachedDataSetId?.let { return Result.success(it) }
+            if (dataSetIdDeferred == null) {
+                dataSetIdDeferred = CompletableDeferred()
+                isCreator = true
+            }
+            dataSetIdDeferred!!
+        }
+
+        if (isCreator) {
+            val result = create()
+            dataSetIdMutex.withLock {
+                if (result.isSuccess) {
+                    val id = result.getOrThrow()
+                    cachedDataSetId = id
+                    dataSetIdDeferred?.complete(id)
+                } else {
+                    val throwable = result.exceptionOrNull()
+                        ?: IllegalStateException("Unknown error creating dataset id")
+                    dataSetIdDeferred?.completeExceptionally(throwable)
+                }
+                dataSetIdDeferred = null
+            }
+            return result
+        }
+
+        return try {
+            Result.success(localDeferred.await())
+        } catch (t: Throwable) {
+            Result.failure(t)
+        }
+    }
 
     override suspend fun getDataForUser(
         userId: String,
