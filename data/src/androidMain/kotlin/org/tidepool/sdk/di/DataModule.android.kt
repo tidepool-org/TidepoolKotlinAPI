@@ -22,6 +22,8 @@ import org.tidepool.sdk.api.createUserApi
 import de.jensklingenberg.ktorfit.Ktorfit
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.Logger
+import org.tidepool.sdk.AndroidKeyValueStorage
+import org.tidepool.sdk.repository.KeyValueStorage
 
 actual val platformDataModule: Module
     get() = module {
@@ -36,6 +38,9 @@ actual val platformDataModule: Module
         single<Logger> {
             Logger.ANDROID
         }
+        single<KeyValueStorage> {
+            AndroidKeyValueStorage(context = get())
+        }
     }
 
 actual fun provideAlertApi(ktorfit: Ktorfit) = ktorfit.createAlertApi()
@@ -44,6 +49,7 @@ actual fun provideBlobApi(ktorfit: Ktorfit) = ktorfit.createBlobApi()
 actual fun provideClinicApi(ktorfit: Ktorfit) = ktorfit.createClinicApi()
 actual fun provideConfirmationApi(ktorfit: Ktorfit) = ktorfit.createConfirmationApi()
 actual fun provideDataApi(ktorfit: Ktorfit) = ktorfit.createDataApi()
+
 //actual fun provideExportApi(ktorfit: Ktorfit) = ktorfit.createExportApi()
 actual fun provideGeneralApi(ktorfit: Ktorfit) = ktorfit.createGeneralApi()
 actual fun provideMessageApi(ktorfit: Ktorfit) = ktorfit.createMessageApi()

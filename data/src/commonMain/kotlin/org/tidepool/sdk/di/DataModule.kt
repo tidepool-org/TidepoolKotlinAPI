@@ -1,6 +1,5 @@
 package org.tidepool.sdk.di
 
-import android.net.http.HttpException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
@@ -25,9 +24,19 @@ import org.tidepool.sdk.api.PrescriptionApi
 import org.tidepool.sdk.api.SummaryApi
 import org.tidepool.sdk.api.TaskApi
 import org.tidepool.sdk.api.UserApi
-import org.tidepool.sdk.database.DataDao
+import org.tidepool.sdk.database.BasalAutomatedDataDao
+import org.tidepool.sdk.database.BolusDataDao
+import org.tidepool.sdk.database.CgmSettingsDataDao
+import org.tidepool.sdk.database.ControllerSettingsDataDao
+import org.tidepool.sdk.database.ContinuousGlucoseDataDao
+import org.tidepool.sdk.database.DeviceEventDataDao
+import org.tidepool.sdk.database.DosingDecisionDataDao
+import org.tidepool.sdk.database.FoodDataDao
+import org.tidepool.sdk.database.InsulinDataDao
 import org.tidepool.sdk.database.LoopKitDatabase
+import org.tidepool.sdk.database.PumpSettingsDataDao
 import org.tidepool.sdk.deserialization.InstantSerializer
+import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
 import org.tidepool.sdk.dto.data.BolusDataDto
@@ -86,7 +95,6 @@ import io.ktor.client.plugins.HttpCallValidator
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
-import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import java.util.TimeZone
 
 expect val platformDataModule: Module
@@ -207,8 +215,17 @@ public val dataModule = module {
     single<SummaryApi> { provideSummaryApi(get<Ktorfit>()) }
     single<TaskApi> { provideTaskApi(get<Ktorfit>()) }
     single<UserApi> { provideUserApi(get<Ktorfit>()) }
-    
-    single<DataDao> { get<LoopKitDatabase>().dataDao() }
+
+    single<BasalAutomatedDataDao> { get<LoopKitDatabase>().basalAutomatedDataDao() }
+    single<BolusDataDao> { get<LoopKitDatabase>().bolusDataDao() }
+    single<ContinuousGlucoseDataDao> { get<LoopKitDatabase>().continuousGlucoseDataDao() }
+    single<DosingDecisionDataDao> { get<LoopKitDatabase>().dosingDecisionDataDao() }
+    single<FoodDataDao> { get<LoopKitDatabase>().foodDataDao() }
+    single<InsulinDataDao> { get<LoopKitDatabase>().insulinDataDao() }
+    single<DeviceEventDataDao> { get<LoopKitDatabase>().deviceEventDataDao() }
+    single<CgmSettingsDataDao> { get<LoopKitDatabase>().cgmSettingsDataDao() }
+    single<ControllerSettingsDataDao> { get<LoopKitDatabase>().controllerSettingsDataDao() }
+    single<PumpSettingsDataDao> { get<LoopKitDatabase>().pumpSettingsDataDao() }
     
     singleOf(::AlertRepositoryImpl) bind AlertRepository::class
     singleOf(::AuthorizationRepositoryImpl) bind AuthorizationRepository::class

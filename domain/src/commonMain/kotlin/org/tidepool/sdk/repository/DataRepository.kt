@@ -10,6 +10,8 @@ import java.time.Instant
 
 interface DataRepository {
 
+    var cachedDataSetId: String?
+
     suspend fun getDataForUser(
         userId: String,
         uploadId: String? = null,
@@ -142,6 +144,4 @@ interface DataRepository {
         userId: String,
         sessionToken: String,
     ): Result<Unit>
-
-    fun getCachedDataSetId(): String?
 }

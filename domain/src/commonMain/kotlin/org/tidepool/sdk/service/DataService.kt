@@ -345,9 +345,11 @@ class DataService internal constructor(
 
     private suspend fun getDataSetId(): Result<String> {
         println("DataService: Getting data set ID")
-        return getUserDataSets()
-            .flatMap {
-                it
+        return dataRepository.cachedDataSetId?.let {
+            Result.success(it)
+        } ?: getUserDataSets()
+            .flatMap { dataSets ->
+                dataSets
                     .filter { it.uploadId != null }
                     .minByOrNull { it.uploadId!! }
                     ?.let {
@@ -384,6 +386,9 @@ class DataService internal constructor(
                 println("DataService: Created data set: ${it.id}")
                 it.id?.let { Result.success(it) }
                     ?: Result.failure(IllegalStateException("No id"))
+            }
+            .onSuccess {
+                dataRepository.cachedDataSetId = it
             }
     }
 }

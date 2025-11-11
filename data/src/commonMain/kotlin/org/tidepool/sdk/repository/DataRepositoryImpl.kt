@@ -1,27 +1,43 @@
 package org.tidepool.sdk.repository
 
 import org.tidepool.sdk.api.DataApi
-import org.tidepool.sdk.database.DataDao
+import org.tidepool.sdk.database.BasalAutomatedDataDao
+import org.tidepool.sdk.database.BolusDataDao
+import org.tidepool.sdk.database.CgmSettingsDataDao
+import org.tidepool.sdk.database.ControllerSettingsDataDao
+import org.tidepool.sdk.database.ContinuousGlucoseDataDao
+import org.tidepool.sdk.database.DeviceEventDataDao
+import org.tidepool.sdk.database.DosingDecisionDataDao
+import org.tidepool.sdk.database.FoodDataDao
+import org.tidepool.sdk.database.InsulinDataDao
+import org.tidepool.sdk.database.PumpSettingsDataDao
 import org.tidepool.sdk.database.entity.data.BasalAutomatedDataEntity
 import org.tidepool.sdk.database.entity.data.BolusDataEntity
+import org.tidepool.sdk.database.entity.data.CgmSettingsDataEntity
 import org.tidepool.sdk.database.entity.data.ContinuousGlucoseDataEntity
+import org.tidepool.sdk.database.entity.data.ControllerSettingsDataEntity
 import org.tidepool.sdk.database.entity.data.DeviceEventDataEntity
 import org.tidepool.sdk.database.entity.data.DosingDecisionDataEntity
 import org.tidepool.sdk.database.entity.data.FoodDataEntity
 import org.tidepool.sdk.database.entity.data.InsulinDataEntity
+import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
 import org.tidepool.sdk.database.entity.data.toEntity
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
 import org.tidepool.sdk.dto.data.BolusDataDto
+import org.tidepool.sdk.dto.data.CgmSettingsDataDto
 import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
+import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
+import org.tidepool.sdk.dto.data.DeviceEventDataDto
+import org.tidepool.sdk.dto.data.DosingDecisionDataDto
+import org.tidepool.sdk.dto.data.FoodDataDto
+import org.tidepool.sdk.dto.data.InsulinDataDto
+import org.tidepool.sdk.dto.data.PumpSettingsDataDto
 import org.tidepool.sdk.dto.data.toDomain
 import org.tidepool.sdk.dto.data.toDto
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataType
-import org.tidepool.sdk.dto.data.DosingDecisionDataDto
-import org.tidepool.sdk.dto.data.FoodDataDto
-import org.tidepool.sdk.dto.data.InsulinDataDto
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.NewDataSet
@@ -32,8 +48,28 @@ import kotlin.collections.toTypedArray
 
 class DataRepositoryImpl(
     private val dataApi: DataApi,
-    private val dataDao: DataDao,
+    private val basalAutomatedDataDao: BasalAutomatedDataDao,
+    private val bolusDataDao: BolusDataDao,
+    private val continuousGlucoseDataDao: ContinuousGlucoseDataDao,
+    private val dosingDecisionDataDao: DosingDecisionDataDao,
+    private val foodDataDao: FoodDataDao,
+    private val insulinDataDao: InsulinDataDao,
+    private val deviceEventDataDao: DeviceEventDataDao,
+    private val cgmSettingsDataDao: CgmSettingsDataDao,
+    private val controllerSettingsDataDao: ControllerSettingsDataDao,
+    private val pumpSettingsDataDao: PumpSettingsDataDao,
+    private val keyValueStorage: KeyValueStorage,
 ) : DataRepository {
+
+    private val KEY_CACHED_DATA_SET_ID: String = "KEY_CACHED_DATA_SET_ID"
+
+    override var cachedDataSetId: String? = null
+        get() {
+            return field ?: keyValueStorage.getString(KEY_CACHED_DATA_SET_ID)
+        }
+        set(value) {
+            field = value
+        }
 
     override suspend fun getDataForUser(
         userId: String,
@@ -264,12 +300,12 @@ class DataRepositoryImpl(
         sessionToken: String,
         userId: String,
     ): Result<Unit> = listOf(
-        dataDao.getAllBasalAutomatedData(),
-        dataDao.getAllBolusData(),
-        dataDao.getAllContinuousGlucoseData(),
-        dataDao.getAllDosingDecisionData(),
-        dataDao.getAllFoodData(),
-        dataDao.getAllInsulinData(),
+        basalAutomatedDataDao.getAll(),
+        bolusDataDao.getAll(),
+        continuousGlucoseDataDao.getAll(),
+        dosingDecisionDataDao.getAll(),
+        foodDataDao.getAll(),
+        insulinDataDao.getAll(),
     ).flatten().let { entities ->
         runCatchingNetworkExceptions {
             dataApi.uploadDataForUser(
@@ -278,22 +314,21 @@ class DataRepositoryImpl(
                 data = emptyList(), // entities.map { it.toDto() },
             )
         }.map {
-            entities.forEach { it ->
-                when (it) {
-                    is BasalAutomatedDataEntity -> dataDao.insertBasalAutomatedData(it)
-                    is BolusDataEntity -> dataDao.insertBolusData(it)
-                    is ContinuousGlucoseDataEntity -> dataDao.insertContinuousGlucoseData(it)
-                    is DosingDecisionDataEntity -> dataDao.insertDosingDecisionData(it)
-                    is FoodDataEntity -> dataDao.insertFoodData(it)
-                    is InsulinDataEntity -> dataDao.insertInsulinData(it)
-                    is DeviceEventDataEntity -> dataDao.insertEventData(it)
+            entities.forEach { entity ->
+                when (entity) {
+                    is BasalAutomatedDataEntity -> basalAutomatedDataDao.delete(entity)
+                    is BolusDataEntity -> bolusDataDao.delete(entity)
+                    is ContinuousGlucoseDataEntity -> continuousGlucoseDataDao.delete(entity)
+                    is DosingDecisionDataEntity -> dosingDecisionDataDao.delete(entity)
+                    is FoodDataEntity -> foodDataDao.delete(entity)
+                    is InsulinDataEntity -> insulinDataDao.delete(entity)
+                    is DeviceEventDataEntity -> deviceEventDataDao.delete(entity)
+                    is CgmSettingsDataEntity -> cgmSettingsDataDao.delete(entity)
+                    is ControllerSettingsDataEntity -> controllerSettingsDataDao.delete(entity)
+                    is PumpSettingsDataEntity -> pumpSettingsDataDao.delete(entity)
                 }
             }
         }
-    }
-
-    override fun getCachedDataSetId(): String? {
-        return null // TODO
     }
 
     private suspend fun Result<List<BaseDataDto>>.cacheOnFailure(
@@ -301,15 +336,19 @@ class DataRepositoryImpl(
     ) = fold(
         onSuccess = { Result.success(it) },
         onFailure = { ex ->
-            // TODO
             toUpload.forEach { dto ->
                 when (dto) {
-                    is BasalAutomatedDataDto -> dataDao.insertBasalAutomatedData(dto.toEntity())
-                    is BolusDataDto -> dataDao.insertBolusData(dto.toEntity())
-                    is ContinuousGlucoseDataDto -> dataDao.insertContinuousGlucoseData(dto.toEntity())
-                    is DosingDecisionDataDto -> dataDao.insertDosingDecisionData(dto.toEntity())
-                    is FoodDataDto -> dataDao.insertFoodData(dto.toEntity())
-                    is InsulinDataDto -> dataDao.insertInsulinData(dto.toEntity())
+                    is BasalAutomatedDataDto -> basalAutomatedDataDao.insert(dto.toEntity())
+                    is BolusDataDto -> bolusDataDao.insert(dto.toEntity())
+                    is ContinuousGlucoseDataDto -> continuousGlucoseDataDao.insert(dto.toEntity())
+                    is DosingDecisionDataDto -> dosingDecisionDataDao.insert(dto.toEntity())
+                    is FoodDataDto -> foodDataDao.insert(dto.toEntity())
+                    is InsulinDataDto -> insulinDataDao.insert(dto.toEntity())
+                    is DeviceEventDataDto -> deviceEventDataDao.insert(dto.toEntity())
+                    is CgmSettingsDataDto -> cgmSettingsDataDao.insert(dto.toEntity())
+                    is ControllerSettingsDataDto -> controllerSettingsDataDao.insert(dto.toEntity())
+                    is PumpSettingsDataDto -> pumpSettingsDataDao.insert(dto.toEntity())
+                    else -> println("DataRepository: Unknown data type: ${dto::class.simpleName}")
                 }
             }
             Result.failure(ex)
