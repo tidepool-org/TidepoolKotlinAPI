@@ -1,20 +1,27 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.AuthorizationApi
+import org.tidepool.sdk.di.provideAuthorizationApi
 import org.tidepool.sdk.dto.auth.toDto
 import org.tidepool.sdk.dto.metadata.users.PermissionDto
 import org.tidepool.sdk.dto.metadata.users.toDomain
 import org.tidepool.sdk.model.auth.ModifyUserPermissionsRequest
 import org.tidepool.sdk.model.metadata.users.Permission
+import org.tidepool.sdk.repository.EnvironmentRepository
 import org.tidepool.sdk.runCatchingNetworkExceptions
 
 /**
  * Implementation of AuthorizationRepository using the AuthorizationApi
  */
 class AuthorizationRepositoryImpl(
-    private val authorizationApi: AuthorizationApi
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
 ) : AuthorizationRepository {
-    
+
+    private val authorizationApi: AuthorizationApi
+        get() = provideAuthorizationApi(environmentRepository.getKtorfit(httpClient))
+
     override suspend fun getGroupsForUser(
         sessionToken: String,
         userId: String

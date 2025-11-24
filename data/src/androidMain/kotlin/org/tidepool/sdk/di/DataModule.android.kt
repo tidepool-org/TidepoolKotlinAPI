@@ -23,6 +23,8 @@ import de.jensklingenberg.ktorfit.Ktorfit
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.Logger
 import org.tidepool.sdk.AndroidKeyValueStorage
+import org.tidepool.sdk.DnsResolver
+import org.tidepool.sdk.DnsResolverImpl
 import org.tidepool.sdk.repository.KeyValueStorage
 
 actual val platformDataModule: Module
@@ -40,6 +42,9 @@ actual val platformDataModule: Module
         }
         single<KeyValueStorage> {
             AndroidKeyValueStorage(context = get())
+        }
+        single<DnsResolver> {
+            DnsResolverImpl()
         }
     }
 

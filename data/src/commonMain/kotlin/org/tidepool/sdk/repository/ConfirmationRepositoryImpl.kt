@@ -1,29 +1,36 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import kotlinx.serialization.json.JsonObject
 import org.tidepool.sdk.api.ConfirmationApi
+import org.tidepool.sdk.di.provideConfirmationApi
 import org.tidepool.sdk.dto.confirmation.AcceptanceDto
 import org.tidepool.sdk.dto.confirmation.ConfirmationDto
 import org.tidepool.sdk.dto.confirmation.ConfirmationLookupDto
 import org.tidepool.sdk.dto.confirmation.toDomain
-import org.tidepool.sdk.mapList
-import org.tidepool.sdk.model.confirmation.Confirmation
-import org.tidepool.sdk.model.confirmation.ConfirmationLookup
 import org.tidepool.sdk.dto.confirmation.ConfirmationUpsertDto
 import org.tidepool.sdk.dto.confirmation.InvitationDto
 import org.tidepool.sdk.dto.confirmation.PasswordChangeDto
 import org.tidepool.sdk.dto.metadata.users.PermissionDto
 import org.tidepool.sdk.dto.metadata.users.PermissionsDto
+import org.tidepool.sdk.model.confirmation.Confirmation
+import org.tidepool.sdk.model.confirmation.ConfirmationLookup
 import org.tidepool.sdk.model.metadata.users.Permission
+import org.tidepool.sdk.mapList
 import org.tidepool.sdk.repository.ConfirmationRepository
+import org.tidepool.sdk.repository.EnvironmentRepository
 import org.tidepool.sdk.runCatchingNetworkExceptions
 import org.tidepool.sdk.runWithRetry
 import java.security.Permissions
 
 class ConfirmationRepositoryImpl(
-    private val confirmationApi: ConfirmationApi,
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
 ) : ConfirmationRepository {
-    
+
+    private val confirmationApi: ConfirmationApi
+        get() = provideConfirmationApi(environmentRepository.getKtorfit(httpClient))
+
     // Account Signup Confirmations
     
     override suspend fun sendAccountSignupConfirmation(

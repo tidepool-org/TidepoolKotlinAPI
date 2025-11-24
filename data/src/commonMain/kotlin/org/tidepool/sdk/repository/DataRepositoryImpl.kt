@@ -1,6 +1,8 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.DataApi
+import org.tidepool.sdk.di.provideDataApi
 import org.tidepool.sdk.database.BasalAutomatedDataDao
 import org.tidepool.sdk.database.BolusDataDao
 import org.tidepool.sdk.database.CgmSettingsDataDao
@@ -48,9 +50,11 @@ import kotlin.collections.toTypedArray
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.tidepool.sdk.repository.EnvironmentRepository
 
 class DataRepositoryImpl(
-    private val dataApi: DataApi,
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
     private val basalAutomatedDataDao: BasalAutomatedDataDao,
     private val bolusDataDao: BolusDataDao,
     private val continuousGlucoseDataDao: ContinuousGlucoseDataDao,
@@ -65,6 +69,9 @@ class DataRepositoryImpl(
 ) : DataRepository {
 
     private val KEY_CACHED_DATA_SET_ID: String = "KEY_CACHED_DATA_SET_ID"
+
+    private val dataApi: DataApi
+        get() = provideDataApi(environmentRepository.getKtorfit(httpClient))
 
     private var cachedDataSetId: String? = null
         get() = field ?: keyValueStorage.getString(KEY_CACHED_DATA_SET_ID)

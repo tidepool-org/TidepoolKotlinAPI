@@ -1,12 +1,18 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.MetricsApi
+import org.tidepool.sdk.di.provideMetricsApi
 import org.tidepool.sdk.runCatchingNetworkExceptions
 
 class MetricsRepositoryImpl(
-    private val metricsApi: MetricsApi,
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
 ) : MetricsRepository {
-    
+
+    private val metricsApi: MetricsApi
+        get() = provideMetricsApi(environmentRepository.getKtorfit(httpClient))
+
     override suspend fun recordMetricsEventForUser(
         userId: String,
         eventName: String,

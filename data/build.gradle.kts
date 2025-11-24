@@ -73,6 +73,7 @@ kotlin {
             dependencies {
                 implementation("io.ktor:ktor-client-logging:3.3.1")
                 implementation("io.ktor:ktor-client-content-negotiation:3.3.1")
+                implementation("org.minidns:minidns-hla:1.1.1")
             }
         }
         val androidUnitTest by getting
