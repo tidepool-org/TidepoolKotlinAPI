@@ -13,6 +13,7 @@ import org.tidepool.sdk.service.BlobService
 import org.tidepool.sdk.service.ClinicService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
+import org.tidepool.sdk.service.EnvironmentService
 import org.tidepool.sdk.service.ExportService
 import org.tidepool.sdk.service.GeneralService
 import org.tidepool.sdk.service.MessageService
@@ -30,7 +31,6 @@ import org.tidepool.sdk.service.UserService
 //): TidepoolSDK
 
 class TidepoolSDK internal constructor(
-    val environment: Environment,
     private val tokenProvider: TokenProvider,
     private val platformModule: Module = module {},
 ) {
@@ -43,7 +43,6 @@ class TidepoolSDK internal constructor(
         modules(
             // Environment module
             module {
-                single<Environment> { environment }
                 single<TokenProvider> { tokenProvider }
                 // Provide Android context if available (for Android platform)
             },
@@ -61,6 +60,7 @@ class TidepoolSDK internal constructor(
     val confirmations: ConfirmationService by lazy { koin.get() }
     val clinics: ClinicService by lazy { koin.get() }
     val data: DataService by lazy { koin.get() }
+    val environment: EnvironmentService by lazy { koin.get() }
     val export: ExportService by lazy { koin.get() }
     val general: GeneralService by lazy { koin.get() }
     val messages: MessageService by lazy { koin.get() }

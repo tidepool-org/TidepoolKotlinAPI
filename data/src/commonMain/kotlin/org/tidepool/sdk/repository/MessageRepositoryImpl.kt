@@ -1,6 +1,8 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.MessageApi
+import org.tidepool.sdk.di.provideMessageApi
 import org.tidepool.sdk.dto.message.EditMessageDto
 import org.tidepool.sdk.dto.message.NewMessageDto
 import org.tidepool.sdk.dto.message.toDomain
@@ -11,9 +13,13 @@ import kotlinx.datetime.Instant
 import java.time.format.DateTimeFormatter
 
 class MessageRepositoryImpl(
-    private val messageApi: MessageApi,
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
 ) : MessageRepository {
-    
+
+    private val messageApi: MessageApi
+        get() = provideMessageApi(environmentRepository.getKtorfit(httpClient))
+
     override suspend fun listAllMessages(
         sessionToken: String,
         userId: String,

@@ -1,8 +1,10 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.BlobApi
 import org.tidepool.sdk.dto.blob.toDomain
 import org.tidepool.sdk.dto.blob.toDto
+import org.tidepool.sdk.di.provideBlobApi
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.blob.BlobStatus
 import org.tidepool.sdk.model.blob.DeviceLogContent
@@ -10,9 +12,13 @@ import org.tidepool.sdk.runCatchingNetworkExceptions
 import kotlinx.datetime.Instant
 
 class BlobRepositoryImpl(
-    private val blobApi: BlobApi,
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
 ) : BlobRepository {
-    
+
+    private val blobApi: BlobApi
+        get() = provideBlobApi(environmentRepository.getKtorfit(httpClient))
+
     override suspend fun listBlobs(
         userId: String,
         mediaType: String?,

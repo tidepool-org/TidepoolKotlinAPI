@@ -9,7 +9,6 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.tidepool.sdk.Environment
-import org.tidepool.sdk.EnvironmentInternal
 import org.tidepool.sdk.api.AlertApi
 import org.tidepool.sdk.api.AuthorizationApi
 import org.tidepool.sdk.api.BlobApi
@@ -95,6 +94,8 @@ import io.ktor.client.plugins.HttpCallValidator
 import io.ktor.client.plugins.ResponseException
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
+import org.tidepool.sdk.repository.EnvironmentRepository
+import org.tidepool.sdk.repository.EnvironmentRepositoryImpl
 import java.util.TimeZone
 
 expect val platformDataModule: Module
@@ -189,15 +190,15 @@ public val dataModule = module {
     }
 
     // Main API Ktorfit instance
-    single<Ktorfit> {
-        val environment: EnvironmentInternal = get<Environment>().toInternal()
-        val httpClient: HttpClient = get()
-
-        Ktorfit.Builder()
-            .baseUrl(environment.url)
-            .httpClient(httpClient)
-            .build()
-    }
+//    single<Ktorfit> {
+//        val environment: Environment = get<Environment>()
+//        val httpClient: HttpClient = get()
+//
+//        Ktorfit.Builder()
+//            .baseUrl(environment.url)
+//            .httpClient(httpClient)
+//            .build()
+//    }
 
     // API Service Implementations using expect/actual pattern
     single<AlertApi> { provideAlertApi(get<Ktorfit>()) }
@@ -233,6 +234,7 @@ public val dataModule = module {
     singleOf(::ClinicRepositoryImpl) bind ClinicRepository::class
     singleOf(::ConfirmationRepositoryImpl) bind ConfirmationRepository::class
     singleOf(::DataRepositoryImpl) bind DataRepository::class
+    singleOf(::EnvironmentRepositoryImpl) bind EnvironmentRepository::class
     singleOf(::ExportRepositoryImpl) bind ExportRepository::class
     singleOf(::GeneralRepositoryImpl) bind GeneralRepository::class
     singleOf(::MessageRepositoryImpl) bind MessageRepository::class
