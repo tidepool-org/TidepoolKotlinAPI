@@ -25,7 +25,11 @@ public class BloodGlucose {
         }
     }
     
-    public class GlucoseReading(val amount: Double, val units: Units) : Comparable<GlucoseReading> {
+    public class GlucoseReading(
+        val amount: Double,
+        val units: Units,
+        val time: Instant? = null,
+    ) : Comparable<GlucoseReading> {
         
         public fun inUnit(newUnit: Units): Double {
             return units.convert(amount, newUnit)
