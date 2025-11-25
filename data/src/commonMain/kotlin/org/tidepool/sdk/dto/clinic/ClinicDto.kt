@@ -124,7 +124,7 @@ fun ClinicDto.toDomain(): Clinic = Clinic(
     timezone = timezone
 )
 
-private fun BloodGlucoseDto.UnitsDto.toDomain(): BloodGlucose.Units = when (this) {
+fun BloodGlucoseDto.UnitsDto.toDomain(): BloodGlucose.Units = when (this) {
     BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter -> BloodGlucose.Units.MilligramsPerDeciliter
     BloodGlucoseDto.UnitsDto.MillimolesPerLiter -> BloodGlucose.Units.MillimolesPerLiter
 }
@@ -175,7 +175,7 @@ public fun Clinic.toDto(): ClinicDto = ClinicDto(
     timezone = timezone
 )
 
-private fun BloodGlucose.Units.toDto(): BloodGlucoseDto.UnitsDto = when (this) {
+fun BloodGlucose.Units.toDto(): BloodGlucoseDto.UnitsDto = when (this) {
     BloodGlucose.Units.MilligramsPerDeciliter -> BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter
     BloodGlucose.Units.MillimolesPerLiter -> BloodGlucoseDto.UnitsDto.MillimolesPerLiter
 }

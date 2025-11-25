@@ -28,6 +28,9 @@ data class DosingDecisionData(
     val requestedBolus: RequestedBolus? = null,
     val scheduleTimeZoneOffset: Int? = null,
     val units: Units = Units(),
+    val smbg: BloodGlucose.GlucoseReading? = null,
+    val bgHistorical: List<BloodGlucose.GlucoseReading>? = null,
+    val bgForecast: List<BloodGlucose.GlucoseReading>? = null,
 ) : BaseData(
     id = id,
     type = type,
@@ -47,19 +50,13 @@ data class DosingDecisionData(
         get() = TODO("backing object not implemented")
     val food: Nothing
         get() = TODO("backing object not implemented")
-    val smbg: Nothing
-        get() = TODO("schema \"bloodglucose.v1\" not implemented")
     val bgTargetSchedule: Nothing
         get() = TODO("schema \"targetstart.v1\" not implemented")
-    val bgHistorical: Nothing
-        get() = TODO("schema \"bloodglucose.v1\" not implemented")
-    val bgForecast: Nothing
-        get() = TODO("schema \"bloodglucose.v1\" not implemented")
     val warnings: Nothing
         get() = TODO("schema \"issue.v1\" not implemented")
     val errors: Nothing
         get() = TODO("schema \"issue.v1\" not implemented")
-    
+
     data class CarbsOnBoard(
         val time: Instant? = null,
         val amount: Double = -1.0,

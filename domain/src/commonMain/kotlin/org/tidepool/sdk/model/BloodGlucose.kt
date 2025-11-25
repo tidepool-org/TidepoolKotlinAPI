@@ -3,6 +3,7 @@ package org.tidepool.sdk.model
 import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
 import org.tidepool.sdk.model.BloodGlucose.Units.MilligramsPerDeciliter
 import org.tidepool.sdk.model.BloodGlucose.Units.MillimolesPerLiter
+import java.time.Instant
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 
@@ -21,7 +22,11 @@ public class BloodGlucose {
         }
     }
     
-    public class GlucoseReading(val amount: Double, val units: Units) : Comparable<GlucoseReading> {
+    public class GlucoseReading(
+        val amount: Double,
+        val units: Units,
+        val time: Instant? = null,
+    ) : Comparable<GlucoseReading> {
         
         public fun inUnit(newUnit: Units): Double {
             return units.convert(amount, newUnit)
