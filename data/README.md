@@ -136,8 +136,8 @@ val dataResult = dataRepository.getDataForUser(
         BaseDataDto.DataTypeDto.Cbg,
         BaseDataDto.DataTypeDto.Food
     ),
-    startDate = Instant.now().minus(Duration.ofDays(7)),
-    endDate = Instant.now()
+    startDate = Clock.System.now().minus(Duration.ofDays(7)),
+    endDate = Clock.System.now()
 )
 
 dataResult.fold(
