@@ -2,7 +2,6 @@ package org.tidepool.sdk
 
 import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.delay
-import org.tidepool.sdk.dto.ResponseDto
 import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketTimeoutException

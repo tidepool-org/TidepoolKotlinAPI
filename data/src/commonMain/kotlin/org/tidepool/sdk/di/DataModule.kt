@@ -77,7 +77,6 @@ import org.tidepool.sdk.repository.SummaryRepositoryImpl
 import org.tidepool.sdk.repository.TaskRepositoryImpl
 import org.tidepool.sdk.repository.UserRepositoryImpl
 import org.tidepool.sdk.repository.AuthorizationRepositoryImpl
-import org.tidepool.sdk.toInternal
 import kotlinx.datetime.Instant
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
