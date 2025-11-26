@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.blob.BlobMetadata
 import org.tidepool.sdk.model.blob.BlobStatus
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Serializable
 data class BlobMetadataDto(

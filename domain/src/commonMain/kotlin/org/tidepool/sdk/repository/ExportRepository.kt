@@ -3,7 +3,7 @@ package org.tidepool.sdk.repository
 import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.export.ExportData
 import org.tidepool.sdk.model.export.ExportFormat
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 interface ExportRepository {
     

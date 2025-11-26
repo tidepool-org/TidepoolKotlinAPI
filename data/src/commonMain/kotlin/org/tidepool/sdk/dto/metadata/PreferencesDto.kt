@@ -4,7 +4,7 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Serializable
 data class PreferencesDto(

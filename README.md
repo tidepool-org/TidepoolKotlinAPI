@@ -39,8 +39,8 @@ userResult.fold(
 val dataResult = sdk.getUserData(
     userId = "user-id",
     types = listOf(DataType.Cbg, DataType.Bolus),
-    startDate = Instant.now().minus(Duration.ofDays(7)),
-    endDate = Instant.now()
+    startDate = Clock.System.now().minus(Duration.ofDays(7)),
+    endDate = Clock.System.now()
 )
 
 // Get care partner invitations

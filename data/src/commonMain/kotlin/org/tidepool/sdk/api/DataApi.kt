@@ -14,7 +14,6 @@ import de.jensklingenberg.ktorfit.http.PUT
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
 import org.tidepool.sdk.dto.ResponseDto
-import java.time.Instant
 
 interface DataApi {
     
@@ -25,8 +24,8 @@ interface DataApi {
         @Query("uploadId") uploadId: String? = null,
         @Query("deviceId") deviceId: String? = null,
         @Query("type", encoded = true) types: CommaSeparatedArray<BaseDataDto.DataTypeDto>? = null,
-        @Query("startDate") startDate: Instant? = null,
-        @Query("endDate") endDate: Instant? = null,
+        @Query("startDate") startDate: String? = null,
+        @Query("endDate") endDate: String? = null,
         @Query("latest") latest: Boolean? = null,
         @Query("dexcom") dexcom: Boolean? = null,
         @Query("carelink") carelink: Boolean? = null,
@@ -40,8 +39,8 @@ interface DataApi {
         @Query("uploadId") uploadId: String? = null,
         @Query("deviceId") deviceId: String? = null,
         @Query("type", encoded = true) types: CommaSeparatedArray<BaseDataDto.DataTypeDto>? = null,
-        @Query("startDate") startDate: Instant? = null,
-        @Query("endDate") endDate: Instant? = null,
+        @Query("startDate") startDate: String? = null,
+        @Query("endDate") endDate: String? = null,
         @Query("latest") latest: Boolean? = null,
         @Query("dexcom") dexcom: Boolean? = null,
         @Query("carelink") carelink: Boolean? = null,

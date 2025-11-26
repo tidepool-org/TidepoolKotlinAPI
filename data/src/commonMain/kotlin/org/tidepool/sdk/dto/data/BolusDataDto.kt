@@ -9,7 +9,7 @@ import org.tidepool.sdk.dto.toDto
 import org.tidepool.sdk.model.data.BolusData
 import org.tidepool.sdk.model.data.BolusSubtype
 import org.tidepool.sdk.model.data.DeliveryContext
-import java.time.Instant
+import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
 

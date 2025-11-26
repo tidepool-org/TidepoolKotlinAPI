@@ -2,19 +2,21 @@ package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.flatMap
-import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.messages.Message
 import org.tidepool.sdk.repository.MessageRepository
 import org.tidepool.sdk.repository.UserRepository
-import java.time.Instant
+import kotlinx.datetime.Instant
 import java.util.UUID
+import kotlinx.datetime.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 class MessageService internal constructor(
     private val messageRepository: MessageRepository,
     private val tokenProvider: TokenProvider,
     private val userRepository: UserRepository,
 ) {
-    
+
     suspend fun listAllMessages(
         userId: String,
         startTime: Instant? = null,
@@ -27,7 +29,7 @@ class MessageService internal constructor(
             endTime = endTime,
         )
     }
-    
+
     suspend fun listTopLevelMessages(
         userId: String,
         startTime: Instant? = null,
@@ -40,11 +42,11 @@ class MessageService internal constructor(
             endTime = endTime,
         )
     }
-    
+
     suspend fun createMessage(
         userId: String,
         messageText: String,
-        timestamp: Instant = Instant.now(),
+        timestamp: Instant = Clock.System.now(),
         guid: String = UUID.randomUUID().toString(),
     ): Result<String> = tokenProvider.getToken().flatMap {
         messageRepository.createMessage(
@@ -55,11 +57,11 @@ class MessageService internal constructor(
             guid = guid,
         )
     }
-    
+
     suspend fun replyToMessage(
         messageId: String,
         messageText: String,
-        timestamp: Instant = Instant.now(),
+        timestamp: Instant = Clock.System.now(),
         guid: String = UUID.randomUUID().toString(),
     ): Result<String> = tokenProvider.getToken().flatMap {
         messageRepository.replyToMessage(
@@ -70,7 +72,7 @@ class MessageService internal constructor(
             guid = guid,
         )
     }
-    
+
     suspend fun findMessageById(
         messageId: String,
     ): Result<Message> = tokenProvider.getToken().flatMap {
@@ -79,7 +81,7 @@ class MessageService internal constructor(
             messageId = messageId,
         )
     }
-    
+
     suspend fun getMessageThread(
         messageId: String,
     ): Result<List<Message>> = tokenProvider.getToken().flatMap {
@@ -88,7 +90,7 @@ class MessageService internal constructor(
             messageId = messageId,
         )
     }
-    
+
     suspend fun updateMessage(
         messageId: String,
         messageText: String? = null,
@@ -101,7 +103,7 @@ class MessageService internal constructor(
             timestamp = timestamp,
         )
     }
-    
+
     suspend fun deleteMessage(
         messageId: String,
     ): Result<Unit> = tokenProvider.getToken().flatMap {
@@ -110,7 +112,7 @@ class MessageService internal constructor(
             messageId = messageId,
         )
     }
-    
+
     suspend fun getCurrentUserMessages(
         startTime: Instant? = null,
         endTime: Instant? = null,
@@ -124,7 +126,7 @@ class MessageService internal constructor(
             )
         }
     }
-    
+
     suspend fun getCurrentUserTopLevelMessages(
         startTime: Instant? = null,
         endTime: Instant? = null,
@@ -138,10 +140,10 @@ class MessageService internal constructor(
             )
         }
     }
-    
+
     suspend fun createMessageForCurrentUser(
         messageText: String,
-        timestamp: Instant = Instant.now(),
+        timestamp: Instant = Clock.System.now(),
         guid: String = UUID.randomUUID().toString(),
     ): Result<String> = tokenProvider.getToken().flatMap { token ->
         userRepository.getCurrentUser(sessionToken = token).flatMap { user ->

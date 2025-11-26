@@ -11,7 +11,6 @@ import de.jensklingenberg.ktorfit.http.Header
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
-import java.time.Instant
 
 interface BlobApi {
     
@@ -63,16 +62,16 @@ interface BlobApi {
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("userId") userId: String,
         @Header("Digest") digest: String,
-        @Header("X-Logs-Start-At-Time") startAtTime: Instant,
-        @Header("X-Logs-End-At-Time") endAtTime: Instant,
-        @Body logs: List<DeviceLogContentDto>
+        @Header("X-Logs-Start-At-Time") startAtTime: String,
+        @Header("X-Logs-End-At-Time") endAtTime: String,
+        @Body logs: List<DeviceLogContentDto>,
     ): DeviceLogsMetadataDto
     
     @GET("v1/users/{userId}/device_logs")
     suspend fun listDeviceLogs(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("userId") userId: String,
-        @Query("startAtTime") startAtTime: Instant,
-        @Query("endAtTime") endAtTime: Instant,
+        @Query("startAtTime") startAtTime: String,
+        @Query("endAtTime") endAtTime: String,
     ): List<DeviceLogsMetadataDto>
 }

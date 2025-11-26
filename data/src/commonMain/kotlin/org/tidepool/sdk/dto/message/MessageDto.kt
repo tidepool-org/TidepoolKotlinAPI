@@ -1,10 +1,11 @@
 package org.tidepool.sdk.dto.message
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.messages.Message
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Serializable
 data class MessageDto(
@@ -25,9 +26,9 @@ data class MessageDto(
         @SerialName("groupid")
         val groupId: String = "",
         @SerialName("timestamp")
-        @Contextual val timestamp: Instant = Instant.now(),
+        @Contextual val timestamp: Instant = Clock.System.now(),
         @SerialName("createdtime")
-        @Contextual val createdTime: Instant = Instant.now(),
+        @Contextual val createdTime: Instant = Clock.System.now(),
         @SerialName("modifiedtime")
         @Contextual val modifiedTime: Instant? = null,
         @SerialName("messagetext")

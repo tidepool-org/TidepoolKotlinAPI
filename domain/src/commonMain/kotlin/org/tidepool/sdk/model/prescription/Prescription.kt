@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.prescription
 
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 data class Prescription(
     val id: String,

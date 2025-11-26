@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.data
 
-import java.time.Instant
+import kotlinx.datetime.Instant
 import kotlin.time.Duration
 
 data class DataSet(

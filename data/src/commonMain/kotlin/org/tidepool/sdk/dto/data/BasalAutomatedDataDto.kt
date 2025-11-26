@@ -7,7 +7,7 @@ import org.tidepool.sdk.model.data.BasalAutomatedData
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.toDomain
 import org.tidepool.sdk.dto.toDto
-import java.time.Instant
+import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
 

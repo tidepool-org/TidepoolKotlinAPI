@@ -1,6 +1,7 @@
 package org.tidepool.sdk.model.messages
 
-import java.time.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 
 data class Message(
     val id: String = "",
@@ -8,8 +9,8 @@ data class Message(
     val parentMessageId: String? = null,
     val userId: String = "",
     val groupId: String = "",
-    val timestamp: Instant = Instant.now(),
-    val createdTime: Instant = Instant.now(),
+    val timestamp: Instant = Clock.System.now(),
+    val createdTime: Instant = Clock.System.now(),
     val modifiedTime: Instant? = null,
     val messageText: String = "",
     val userName: String? = null,

@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
-import java.time.Instant
+import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -66,7 +66,7 @@ data class BasalAutomatedDataEntity(
 fun BasalAutomatedDataDto.toEntity() = BasalAutomatedDataEntity(
     id = id,
     type = Json.encodeToString(type),
-    time = time?.epochSecond,
+    time = time?.epochSeconds,
     annotations = Json.encodeToString(annotations),
     associations = Json.encodeToString(associations),
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
@@ -86,7 +86,7 @@ fun BasalAutomatedDataDto.toEntity() = BasalAutomatedDataEntity(
 fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     id = id,
     type = Json.decodeFromString(type),
-    time = time?.let { Instant.ofEpochSecond(it) },
+    time = time?.let { Instant.fromEpochSeconds(it) },
     annotations = if (annotations.isNullOrBlank()) emptyList() else Json.decodeFromString(annotations!!),
     associations = if (associations.isNullOrBlank()) emptyList() else Json.decodeFromString(associations!!),
     clockDriftOffset = clockDriftOffset?.milliseconds,

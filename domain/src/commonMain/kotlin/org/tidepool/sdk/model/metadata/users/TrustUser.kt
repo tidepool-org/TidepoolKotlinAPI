@@ -1,7 +1,7 @@
 package org.tidepool.sdk.model.metadata.users
 
 import org.tidepool.sdk.model.metadata.UserProfile
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 sealed class TrustUser(
     override val emailVerified: Boolean = false,

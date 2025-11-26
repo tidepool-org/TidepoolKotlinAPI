@@ -1,15 +1,13 @@
 package org.tidepool.sdk.repository
 
 import org.tidepool.sdk.api.BlobApi
-import org.tidepool.sdk.dto.blob.BlobStatusDto
-import org.tidepool.sdk.dto.blob.DeviceLogContentDto
 import org.tidepool.sdk.dto.blob.toDomain
 import org.tidepool.sdk.dto.blob.toDto
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.blob.BlobStatus
 import org.tidepool.sdk.model.blob.DeviceLogContent
 import org.tidepool.sdk.runCatchingNetworkExceptions
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 class BlobRepositoryImpl(
     private val blobApi: BlobApi,
@@ -90,8 +88,8 @@ class BlobRepositoryImpl(
             sessionToken = sessionToken,
             userId = userId,
             digest = digest,
-            startAtTime = startAtTime,
-            endAtTime = endAtTime,
+            startAtTime = startAtTime.toString(),
+            endAtTime = endAtTime.toString(),
             logs = logs.map { it.toDto() },
         )
     }.map { it.toDomain() }
@@ -105,8 +103,8 @@ class BlobRepositoryImpl(
         blobApi.listDeviceLogs(
             sessionToken = sessionToken,
             userId = userId,
-            startAtTime = startAtTime,
-            endAtTime = endAtTime
+            startAtTime = startAtTime.toString(),
+            endAtTime = endAtTime.toString()
         )
     }.mapList { it.toDomain() }
 }

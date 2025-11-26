@@ -4,7 +4,7 @@ import org.tidepool.sdk.model.blob.BlobMetadata
 import org.tidepool.sdk.model.blob.BlobStatus
 import org.tidepool.sdk.model.blob.DeviceLogContent
 import org.tidepool.sdk.model.blob.DeviceLogsMetadata
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 interface BlobRepository {
     

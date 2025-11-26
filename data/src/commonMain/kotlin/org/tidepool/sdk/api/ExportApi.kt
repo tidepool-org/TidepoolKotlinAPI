@@ -4,7 +4,7 @@ import de.jensklingenberg.ktorfit.http.GET
 import de.jensklingenberg.ktorfit.http.Header
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 interface ExportApi {
     

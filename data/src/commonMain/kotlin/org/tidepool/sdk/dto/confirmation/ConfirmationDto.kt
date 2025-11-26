@@ -1,5 +1,6 @@
 package org.tidepool.sdk.dto.confirmation
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -8,7 +9,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import org.tidepool.sdk.model.confirmation.Confirmation
 import org.tidepool.sdk.dto.metadata.UserProfileDto
 import org.tidepool.sdk.model.metadata.UserProfile
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Serializable
 data class ConfirmationDto(
@@ -24,7 +25,7 @@ data class ConfirmationDto(
     val creatorId: String = "",
     @Contextual
     @SerialName("created")
-    val created: Instant = Instant.now(),
+    val created: Instant = Clock.System.now(),
     @Contextual
     @SerialName("modified")
     val modified: Instant? = null,

@@ -7,7 +7,7 @@ import org.tidepool.sdk.model.blob.BlobStatus
 import org.tidepool.sdk.model.blob.DeviceLogContent
 import org.tidepool.sdk.model.blob.DeviceLogsMetadata
 import org.tidepool.sdk.repository.BlobRepository
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 class BlobService internal constructor(
     private val blobRepository: BlobRepository,

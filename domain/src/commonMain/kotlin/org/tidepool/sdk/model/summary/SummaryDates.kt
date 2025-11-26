@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.summary
 
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 data class SummaryDates(
     val lastUpdatedDate: Instant,

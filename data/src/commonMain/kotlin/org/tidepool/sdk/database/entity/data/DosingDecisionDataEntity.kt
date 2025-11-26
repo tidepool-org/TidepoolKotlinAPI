@@ -9,7 +9,7 @@ import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
-import java.time.Instant
+import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -90,7 +90,7 @@ fun DosingDecisionDataDto.toEntity(): DosingDecisionDataEntity {
     return DosingDecisionDataEntity(
         id = id,
         type = json.encodeToString(type),
-        time = time?.epochSecond,
+        time = time?.epochSeconds,
         annotations = annotations.let { json.encodeToString(it) },
         associations = associations.let { json.encodeToString(it) },
         clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
@@ -114,7 +114,7 @@ fun DosingDecisionDataDto.toEntity(): DosingDecisionDataEntity {
 fun DosingDecisionDataEntity.toDto() = DosingDecisionDataDto(
     id = id,
     type = Json.decodeFromString(type),
-    time = time?.let { Instant.ofEpochSecond(it) },
+    time = time?.let { Instant.fromEpochSeconds(it) },
     annotations = annotations
         ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
         .orEmpty(),

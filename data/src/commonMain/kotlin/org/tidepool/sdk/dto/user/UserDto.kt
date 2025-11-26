@@ -6,7 +6,7 @@ import kotlinx.serialization.SerialName
 import org.tidepool.sdk.model.metadata.users.User
 import org.tidepool.sdk.dto.metadata.UserProfileDto
 import org.tidepool.sdk.dto.metadata.toDomain
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Serializable
 open class UserDto(

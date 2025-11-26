@@ -3,7 +3,7 @@ package org.tidepool.sdk.dto.data
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import java.time.Instant
+import kotlinx.datetime.Instant
 import kotlin.time.Duration
 import org.tidepool.sdk.model.data.ClientSoftware
 import org.tidepool.sdk.model.data.DataSet

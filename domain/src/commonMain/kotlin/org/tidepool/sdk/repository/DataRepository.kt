@@ -6,7 +6,7 @@ import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.DataType
 import org.tidepool.sdk.model.data.NewDataSet
 import org.tidepool.sdk.model.data.NewDataSource
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 interface DataRepository {
 

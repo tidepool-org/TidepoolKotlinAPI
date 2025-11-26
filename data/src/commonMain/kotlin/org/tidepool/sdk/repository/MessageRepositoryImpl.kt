@@ -7,7 +7,7 @@ import org.tidepool.sdk.dto.message.toDomain
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.messages.Message
 import org.tidepool.sdk.runCatchingNetworkExceptions
-import java.time.Instant
+import kotlinx.datetime.Instant
 import java.time.format.DateTimeFormatter
 
 class MessageRepositoryImpl(
@@ -23,8 +23,8 @@ class MessageRepositoryImpl(
         messageApi.listAllMessages(
             sessionToken = sessionToken,
             userId = userId,
-            startTime = startTime?.let { DateTimeFormatter.ISO_INSTANT.format(it) },
-            endTime = endTime?.let { DateTimeFormatter.ISO_INSTANT.format(it) },
+            startTime = startTime?.toString(),
+            endTime = endTime?.toString(),
         ).messages
     }.mapList { it.toDomain() }
     
@@ -37,8 +37,8 @@ class MessageRepositoryImpl(
         messageApi.listTopLevelMessages(
             sessionToken = sessionToken,
             userId = userId,
-            startTime = startTime?.let { DateTimeFormatter.ISO_INSTANT.format(it) },
-            endTime = endTime?.let { DateTimeFormatter.ISO_INSTANT.format(it) },
+            startTime = startTime?.toString(),
+            endTime = endTime?.toString(),
         ).messages
     }.mapList { it.toDomain() }
     

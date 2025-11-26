@@ -11,7 +11,6 @@ import de.jensklingenberg.ktorfit.http.PATCH
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
-import java.time.Instant
 
 interface ClinicApi {
     
@@ -21,9 +20,9 @@ interface ClinicApi {
         @Query("limit") limit: Int? = null,
         @Query("offset") offset: Int? = null,
         @Query("shareCode") shareCode: String? = null,
-        @Query("createdTimeStart") createdTimeStart: Instant? = null,
-        @Query("createdTimeEnd") createdTimeEnd: Instant? = null,
-        @Query("ehrEnabled") ehrEnabled: Boolean? = null
+        @Query("createdTimeStart") createdTimeStart: String? = null,
+        @Query("createdTimeEnd") createdTimeEnd: String? = null,
+        @Query("ehrEnabled") ehrEnabled: Boolean? = null,
     ): List<ClinicDto>
     
     @POST("v1/clinics")

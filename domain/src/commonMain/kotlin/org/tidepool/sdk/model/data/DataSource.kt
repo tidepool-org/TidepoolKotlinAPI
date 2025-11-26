@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.data
 
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 data class DataSource(
     val createdTime: Instant? = null,

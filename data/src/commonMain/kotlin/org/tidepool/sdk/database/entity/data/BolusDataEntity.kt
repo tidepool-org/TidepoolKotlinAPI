@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.BolusDataDto
-import java.time.Instant
+import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -60,7 +60,7 @@ data class BolusDataEntity(
 fun BolusDataDto.toEntity() = BolusDataEntity(
     id = id,
     type = Json.encodeToString(type),
-    time = time?.epochSecond,
+    time = time?.epochSeconds,
     annotations = Json.encodeToString(annotations),
     associations = Json.encodeToString(associations),
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
@@ -77,7 +77,7 @@ fun BolusDataDto.toEntity() = BolusDataEntity(
 fun BolusDataEntity.toDto() = BolusDataDto(
     id = id,
     type = Json.decodeFromString(type),
-    time = time?.let { Instant.ofEpochSecond(it) },
+    time = time?.let { Instant.fromEpochSeconds(it) },
     annotations = annotations
         ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
         .orEmpty(),

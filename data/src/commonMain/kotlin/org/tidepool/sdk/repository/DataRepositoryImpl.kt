@@ -43,7 +43,7 @@ import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.NewDataSet
 import org.tidepool.sdk.model.data.NewDataSource
 import org.tidepool.sdk.runCatchingNetworkExceptions
-import java.time.Instant
+import kotlinx.datetime.Instant
 import kotlin.collections.toTypedArray
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
@@ -142,8 +142,8 @@ class DataRepositoryImpl(
             uploadId = uploadId,
             deviceId = deviceId,
             types = typesParam,
-            startDate = startDate,
-            endDate = endDate,
+            startDate = startDate.toString(),
+            endDate = endDate.toString(),
             latest = latest,
             dexcom = dexcom,
             carelink = carelink,

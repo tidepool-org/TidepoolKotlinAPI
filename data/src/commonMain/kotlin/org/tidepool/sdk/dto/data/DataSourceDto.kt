@@ -4,7 +4,7 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.data.DataSource
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Serializable
 data class DataSourceDto(

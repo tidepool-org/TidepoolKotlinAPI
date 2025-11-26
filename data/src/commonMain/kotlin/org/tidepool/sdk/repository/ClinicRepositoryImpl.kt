@@ -9,7 +9,7 @@ import org.tidepool.sdk.model.clinic.Clinic
 import org.tidepool.sdk.model.clinic.Clinician
 import org.tidepool.sdk.model.clinic.Patient
 import org.tidepool.sdk.runCatchingNetworkExceptions
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 class ClinicRepositoryImpl(
     private val clinicApi: ClinicApi,
@@ -29,8 +29,8 @@ class ClinicRepositoryImpl(
             limit = limit,
             offset = offset,
             shareCode = shareCode,
-            createdTimeStart = createdTimeStart,
-            createdTimeEnd = createdTimeEnd,
+            createdTimeStart = createdTimeStart?.toString(),
+            createdTimeEnd = createdTimeEnd?.toString(),
             ehrEnabled = ehrEnabled,
         )
     }.mapList { it.toDomain() }

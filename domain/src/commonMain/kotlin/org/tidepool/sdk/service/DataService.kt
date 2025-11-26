@@ -1,6 +1,7 @@
 package org.tidepool.sdk.service
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.datetime.Clock
 import org.tidepool.sdk.AppLifecycleProvider
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
@@ -18,7 +19,7 @@ import org.tidepool.sdk.model.data.NewDataSource
 import org.tidepool.sdk.repository.DataRepository
 import org.tidepool.sdk.repository.UserRepository
 import kotlin.time.Duration
-import java.time.Instant
+import kotlinx.datetime.Instant
 import java.util.Collections.emptyList
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
@@ -366,7 +367,7 @@ class DataService internal constructor(
                                 "test"
                             ),
                             deviceId = "test",
-                            time = Instant.now(),
+                            time = Clock.System.now(),
                             deduplicator = DeduplicatorDescriptor(
                                 name = "org.tidepool.deduplicator.dataset.delete.origin",
                             ),

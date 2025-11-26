@@ -8,7 +8,7 @@ import org.tidepool.sdk.model.prescription.PrescriptionStatus
 import org.tidepool.sdk.model.prescription.UpdatePrescription
 import org.tidepool.sdk.repository.PrescriptionRepository
 import org.tidepool.sdk.repository.UserRepository
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 class PrescriptionService internal constructor(
     private val prescriptionRepository: PrescriptionRepository,

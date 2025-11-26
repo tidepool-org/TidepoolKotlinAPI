@@ -8,7 +8,7 @@ import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.clinic.Clinic
 import org.tidepool.sdk.model.clinic.ClinicSize
 import org.tidepool.sdk.model.clinic.ClinicType
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 @Serializable
 data class ClinicDto(

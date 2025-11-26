@@ -51,6 +51,8 @@ kotlin {
                 // Coroutines
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
 
+                // DateTime
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
 
                 // Room KMP dependencies for local storage
                 implementation("androidx.room:room-runtime:2.8.1")
