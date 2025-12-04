@@ -51,20 +51,20 @@ data class DosingDecisionDataDto(
     val scheduleTimeZoneOffset: Int? = null,
     @SerialName("units")
     val units: UnitsDto = UnitsDto(),
+    @SerialName("smbg")
+    val smbg: BloodGlucoseDto.GlucoseReadingDto? = null,
+    @SerialName("bgHistorical")
+    val bgHistorical: List<BloodGlucoseDto.GlucoseReadingDto>? = null,
+    @SerialName("bgForecast")
+    val bgForecast: List<BloodGlucoseDto.GlucoseReadingDto>? = null,
 ) : BaseDataDto() {
     
     val originalFood: Nothing
         get() = TODO("backing object not implemented")
     val food: Nothing
         get() = TODO("backing object not implemented")
-    val smbg: Nothing
-        get() = TODO("schema \"bloodglucose.v1\" not implemented")
     val bgTargetSchedule: Nothing
         get() = TODO("schema \"targetstart.v1\" not implemented")
-    val bgHistorical: Nothing
-        get() = TODO("schema \"bloodglucose.v1\" not implemented")
-    val bgForecast: Nothing
-        get() = TODO("schema \"bloodglucose.v1\" not implemented")
     val warnings: Nothing
         get() = TODO("schema \"issue.v1\" not implemented")
     val errors: Nothing
@@ -195,6 +195,9 @@ fun DosingDecisionDataDto.toDomain(): DosingDecisionData = DosingDecisionData(
     requestedBolus = requestedBolus?.toDomain(),
     scheduleTimeZoneOffset = scheduleTimeZoneOffset,
     units = units.toDomain(),
+    smbg = smbg?.toDomain(),
+    bgHistorical = bgHistorical?.map { it.toDomain() },
+    bgForecast = bgForecast?.map { it.toDomain() },
 )
 
 fun DosingDecisionData.toDto(): DosingDecisionDataDto = DosingDecisionDataDto(
@@ -218,6 +221,9 @@ fun DosingDecisionData.toDto(): DosingDecisionDataDto = DosingDecisionDataDto(
     requestedBolus = requestedBolus?.toDto(),
     scheduleTimeZoneOffset = scheduleTimeZoneOffset,
     units = units.toDto(),
+    smbg = smbg?.toDto(),
+    bgHistorical = bgHistorical?.map { it.toDto() },
+    bgForecast = bgForecast?.map { it.toDto() },
 )
 
 fun InsulinOnBoardDto.toDomain() = DosingDecisionData.InsulinOnBoard(

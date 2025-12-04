@@ -12,6 +12,7 @@ import org.tidepool.sdk.dto.data.InsulinDataDto
 import org.tidepool.sdk.dto.data.DeviceEventDataDto
 import org.tidepool.sdk.dto.data.CgmSettingsDataDto
 import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
+import org.tidepool.sdk.dto.data.PumpSettingsDataDto
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataType
 import kotlinx.datetime.Instant
@@ -69,6 +70,7 @@ fun BaseDataDto.toEntity(): BaseDataEntity = when (this) {
     is FoodDataDto                  -> toEntity()
     is InsulinDataDto               -> toEntity()
     is DeviceEventDataDto           -> toEntity()
+    is PumpSettingsDataDto          -> toEntity()
     else                            -> throw IllegalArgumentException(
         "Unknown BaseDataDto subtype: ${this::class}"
     )

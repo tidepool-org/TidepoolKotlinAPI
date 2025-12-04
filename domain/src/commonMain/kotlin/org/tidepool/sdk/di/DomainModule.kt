@@ -8,6 +8,7 @@ import org.tidepool.sdk.service.BlobService
 import org.tidepool.sdk.service.ClinicService
 import org.tidepool.sdk.service.ConfirmationService
 import org.tidepool.sdk.service.DataService
+import org.tidepool.sdk.service.EnvironmentService
 import org.tidepool.sdk.service.ExportService
 import org.tidepool.sdk.service.GeneralService
 import org.tidepool.sdk.service.MessageService
@@ -25,6 +26,7 @@ val domainModule = module {
     singleOf(::ClinicService)
     singleOf(::ConfirmationService)
     singleOf(::DataService)
+    singleOf(::EnvironmentService)
     singleOf(::ExportService)
     singleOf(::GeneralService)
     singleOf(::MessageService)

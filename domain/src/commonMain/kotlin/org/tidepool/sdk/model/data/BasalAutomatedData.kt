@@ -7,7 +7,7 @@ import kotlin.time.Duration
 
 data class BasalAutomatedData(
     override val id: String,
-    override val type: DataType = DataType.Alert,
+    override val type: DataType = DataType.Basal,
     override val time: Instant? = null,
     override val annotations: List<Map<String, String>> = emptyList(),
     override val associations: List<Association> = emptyList(),

@@ -44,11 +44,15 @@ data class ContinuousGlucoseData(
     //     trend: BloodGlucose.Trend?,
     //     trendRate: Double?
     // ) : this(reading?.amount, reading?.units, trend, trendRate)
-    
+
     val reading: GlucoseReading? by lazy {
         value?.let { value ->
             units?.let { units ->
-                GlucoseReading(value, units)
+                GlucoseReading(
+                    amount = value,
+                    units = units,
+                    time = time,
+                )
             }
         }
     }

@@ -39,6 +39,9 @@ class BloodGlucoseDto {
         val amount: Double,
         @SerialName("units")
         val units: UnitsDto,
+        @SerialName("time")
+        @Contextual
+        val time: Instant? = null,
     ) : Comparable<GlucoseReadingDto> {
         
         fun inUnit(newUnit: UnitsDto) = units.convert(amount, newUnit)
@@ -52,7 +55,11 @@ class BloodGlucoseDto {
             copy(amount = amount - other.inUnit(units))
         
         fun copy(amount: Double = this.amount, units: UnitsDto = this.units) =
-            GlucoseReadingDto(amount, units)
+            GlucoseReadingDto(
+                amount = amount,
+                units = units,
+                time = time,
+            )
         
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -224,4 +231,16 @@ fun DosingDecisionData.Units.toDto() = DosingDecisionDataDto.UnitsDto(
     bg = bg.toDto(),
     carb = carb.toDto(),
     insulin = insulin.toDto()
+)
+
+fun BloodGlucose.GlucoseReading.toDto() = GlucoseReadingDto(
+    amount = amount,
+    units = units.toDto(),
+    time = time,
+)
+
+fun GlucoseReadingDto.toDomain() = BloodGlucose.GlucoseReading(
+    amount = amount,
+    units = units.toDomain(),
+    time = time,
 )

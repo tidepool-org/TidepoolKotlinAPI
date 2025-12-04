@@ -46,7 +46,7 @@ data class ContinuousGlucoseDataDto(
     val reading: GlucoseReadingDto? by lazy {
         value?.let { value ->
             units?.let { units ->
-                GlucoseReadingDto(value, units)
+                GlucoseReadingDto(value, units, time)
             }
         }
     }

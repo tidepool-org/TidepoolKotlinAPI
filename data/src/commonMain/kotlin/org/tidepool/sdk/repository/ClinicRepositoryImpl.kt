@@ -1,6 +1,8 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.ClinicApi
+import org.tidepool.sdk.di.provideClinicApi
 import org.tidepool.sdk.dto.clinic.ClinicianDto
 import org.tidepool.sdk.dto.clinic.toDomain
 import org.tidepool.sdk.dto.clinic.toDto
@@ -12,9 +14,13 @@ import org.tidepool.sdk.runCatchingNetworkExceptions
 import kotlinx.datetime.Instant
 
 class ClinicRepositoryImpl(
-    private val clinicApi: ClinicApi,
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
 ) : ClinicRepository {
-    
+
+    private val clinicApi: ClinicApi
+        get() = provideClinicApi(environmentRepository.getKtorfit(httpClient))
+
     override suspend fun listClinics(
         sessionToken: String,
         limit: Int?,

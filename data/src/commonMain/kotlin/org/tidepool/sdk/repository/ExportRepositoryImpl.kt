@@ -10,7 +10,6 @@ import kotlinx.datetime.Instant
 import kotlin.toString
 
 class ExportRepositoryImpl(
-    private val exportApi: ExportApi,
 ) : ExportRepository {
     
 //    override suspend fun exportUserData(

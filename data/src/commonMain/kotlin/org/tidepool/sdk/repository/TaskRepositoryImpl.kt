@@ -1,8 +1,10 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.TaskApi
 import org.tidepool.sdk.dto.task.toDomain
 import org.tidepool.sdk.dto.task.toDto
+import org.tidepool.sdk.di.provideTaskApi
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.task.NewTask
 import org.tidepool.sdk.model.task.Task
@@ -11,9 +13,13 @@ import org.tidepool.sdk.model.task.UpdateTask
 import org.tidepool.sdk.runCatchingNetworkExceptions
 
 class TaskRepositoryImpl(
-    private val taskApi: TaskApi,
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
 ) : TaskRepository {
-    
+
+    private val taskApi: TaskApi
+        get() = provideTaskApi(environmentRepository.getKtorfit(httpClient))
+
     override suspend fun getTasks(
         sessionToken: String,
         name: String?,

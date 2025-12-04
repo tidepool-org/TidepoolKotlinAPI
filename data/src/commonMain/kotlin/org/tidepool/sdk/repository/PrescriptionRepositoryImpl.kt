@@ -1,6 +1,8 @@
 package org.tidepool.sdk.repository
 
+import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.PrescriptionApi
+import org.tidepool.sdk.di.providePrescriptionApi
 import org.tidepool.sdk.dto.prescription.NewPrescriptionDto
 import org.tidepool.sdk.dto.prescription.toDomain
 import org.tidepool.sdk.dto.prescription.toDto
@@ -11,9 +13,13 @@ import org.tidepool.sdk.model.prescription.UpdatePrescription
 import org.tidepool.sdk.runCatchingNetworkExceptions
 
 class PrescriptionRepositoryImpl(
-    private val prescriptionApi: PrescriptionApi,
+    private val environmentRepository: EnvironmentRepository,
+    private val httpClient: HttpClient,
 ) : PrescriptionRepository {
-    
+
+    private val prescriptionApi: PrescriptionApi
+        get() = providePrescriptionApi(environmentRepository.getKtorfit(httpClient))
+
     override suspend fun createPrescription(
         sessionToken: String,
         newPrescription: NewPrescription,

@@ -9,7 +9,7 @@ import kotlin.time.Duration
 // line 2330
 data class BolusData(
     override val id: String,
-    override val type: DataType = DataType.Alert,
+    override val type: DataType = DataType.Bolus,
     override val time: Instant? = null,
     override val annotations: List<Map<String, String>> = emptyList(),
     override val associations: List<Association> = emptyList(),

@@ -8,7 +8,7 @@ import kotlin.time.Duration
 // schema insulin.v1
 data class InsulinData(
     override val id: String,
-    override val type: DataType = DataType.Alert,
+    override val type: DataType = DataType.Insulin,
     override val time: Instant? = null,
     override val annotations: List<Map<String, String>> = emptyList(),
     override val associations: List<Association> = emptyList(),
