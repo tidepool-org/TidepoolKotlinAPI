@@ -188,17 +188,6 @@ public val dataModule = module {
         }
     }
 
-    // Main API Ktorfit instance
-//    single<Ktorfit> {
-//        val environment: Environment = get<Environment>()
-//        val httpClient: HttpClient = get()
-//
-//        Ktorfit.Builder()
-//            .baseUrl(environment.url)
-//            .httpClient(httpClient)
-//            .build()
-//    }
-
     // API Service Implementations using expect/actual pattern
     single<AlertApi> { provideAlertApi(get<Ktorfit>()) }
     single<AuthorizationApi> { provideAuthorizationApi(get<Ktorfit>()) }
