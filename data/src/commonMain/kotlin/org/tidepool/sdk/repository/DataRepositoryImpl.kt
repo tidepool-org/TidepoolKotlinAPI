@@ -1,5 +1,6 @@
 package org.tidepool.sdk.repository
 
+import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.DataApi
 import org.tidepool.sdk.di.provideDataApi
@@ -402,7 +403,7 @@ class DataRepositoryImpl(
                     is CgmSettingsDataDto -> cgmSettingsDataDao.insert(dto.toEntity())
                     is ControllerSettingsDataDto -> controllerSettingsDataDao.insert(dto.toEntity())
                     is PumpSettingsDataDto -> pumpSettingsDataDao.insert(dto.toEntity())
-                    else -> println("DataRepository: Unknown data type: ${dto::class.simpleName}")
+                    else -> Logger.w(toUpload.javaClass.simpleName) { "Unknown data type: ${dto::class.simpleName}" }
                 }
             }
             Result.failure(ex)

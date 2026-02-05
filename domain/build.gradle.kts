@@ -23,6 +23,7 @@ kotlin {
                 implementation("io.insert-koin:koin-core:4.1.0")
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.0")
                 implementation("com.benasher44:uuid:0.8.4")
+                implementation("co.touchlab:kermit:2.0.4")
             }
         }
 

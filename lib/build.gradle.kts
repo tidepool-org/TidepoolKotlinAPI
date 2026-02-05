@@ -66,6 +66,8 @@ kotlin {
                 // Koin dependency injection
                 implementation("io.insert-koin:koin-core:4.1.0")
                 implementation("io.insert-koin:koin-annotations:2.1.0")
+
+                implementation("co.touchlab:kermit:2.0.4")
             }
         }
 

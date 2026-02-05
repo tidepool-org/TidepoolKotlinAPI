@@ -1,5 +1,6 @@
 package org.tidepool.sdk.service
 
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.datetime.Clock
 import org.tidepool.sdk.AppLifecycleProvider
@@ -135,9 +136,9 @@ class DataService internal constructor(
 
     suspend fun createDataSet(newDataSet: NewDataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap { token ->
-            println("DataService: Creating data set with token: ${token.take(5)}...")
+            Logger.d(javaClass.simpleName) { "Creating data set with token: ${token.take(5)}..." }
             userRepository.getCurrentUser(token).flatMap { user ->
-                println("DataService: Creating data set for user: ${user.userId}")
+                Logger.d(javaClass.simpleName) { "Creating data set for user: ${user.userId}" }
                 dataRepository.createDataSet(
                     userId = user.userId,
                     newDataSet = newDataSet,
@@ -176,7 +177,7 @@ class DataService internal constructor(
         data: List<BaseData>,
     ): Result<List<BaseData>> =
         tokenProvider.getToken().flatMap {
-            println("DataService: Uploading data to data set $dataSetId")
+            Logger.d(javaClass.simpleName) { "Uploading data to data set $dataSetId" }
             dataRepository.uploadDataToDataSet(
                 dataSetId = dataSetId,
                 data = data,
@@ -351,7 +352,7 @@ class DataService internal constructor(
                     .filter { it.uploadId != null }
                     .minByOrNull { it.uploadId!! }
                     ?.let {
-                        println("DataService: Found existing data set with id: ${it.id}")
+                        Logger.d(javaClass.simpleName) { "Found existing data set with id: ${it.id}" }
                         Result.success(it)
                     }
                     ?: createDataSet(
@@ -381,7 +382,7 @@ class DataService internal constructor(
                         ),
                     )
             }.flatMap {
-                println("DataService: Created data set: ${it.id}")
+                Logger.d(javaClass.simpleName) { "Created data set: ${it.id}" }
                 it.id?.let { Result.success(it) }
                     ?: Result.failure(IllegalStateException("No id"))
             }
