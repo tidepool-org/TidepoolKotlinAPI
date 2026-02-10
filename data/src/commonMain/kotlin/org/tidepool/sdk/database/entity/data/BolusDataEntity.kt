@@ -42,6 +42,8 @@ data class BolusDataEntity(
     var subType: String = "normal",
     @ColumnInfo(name = "delivery_context")
     var deliveryContext: String = "",
+    @ColumnInfo(name = "normal")
+    var normal: Double? = null,
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -72,6 +74,7 @@ fun BolusDataDto.toEntity() = BolusDataEntity(
     timeZoneOffset = timeZoneOffset,
     subType = Json.encodeToString(subType),
     deliveryContext = Json.encodeToString(deliveryContext),
+    normal = normal,
 )
 
 fun BolusDataEntity.toDto() = BolusDataDto(
@@ -95,4 +98,5 @@ fun BolusDataEntity.toDto() = BolusDataDto(
     timeZoneOffset = timeZoneOffset,
     subType = Json.decodeFromString(subType),
     deliveryContext = Json.decodeFromString(deliveryContext),
+    normal = normal,
 )

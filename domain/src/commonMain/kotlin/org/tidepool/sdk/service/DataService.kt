@@ -31,6 +31,7 @@ class DataService internal constructor(
     private val tokenProvider: TokenProvider,
 ) {
 
+    private val TAG = javaClass.simpleName
     fun startLifecycleAwareRecurrentUpload(
         lifecycleProvider: AppLifecycleProvider,
         scope: CoroutineScope,
@@ -44,11 +45,18 @@ class DataService internal constructor(
             period = period,
             delay = delay,
             action = {
-                tokenProvider.getToken().flatMap {
-                    dataRepository.uploadCachedData(
-                        userId = userRepository.getCurrentUser(it).getOrThrow().userId,
-                        sessionToken = it,
-                    )
+                Logger.d(TAG) { "Uploading cached data" }
+                tokenProvider.getToken().flatMap { sessionToken ->
+                    getDataSetId().flatMap { dataSetId ->
+                        dataRepository.uploadCachedData(
+                            userId = userRepository.getCurrentUser(sessionToken)
+                                .getOrThrow().userId,
+                            sessionToken = sessionToken,
+                            dataSetId = dataSetId,
+                        )
+                    }
+                        .onSuccess { Logger.d(TAG) { "Cached data uploaded successfully" } }
+                        .onFailure { Logger.e(TAG, it) { "Failed to upload cached data: " } }
                 }
             },
         )
@@ -136,9 +144,9 @@ class DataService internal constructor(
 
     suspend fun createDataSet(newDataSet: NewDataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap { token ->
-            Logger.d(javaClass.simpleName) { "Creating data set with token: ${token.take(5)}..." }
+            Logger.d(TAG) { "Creating data set with token: ${token.take(5)}..." }
             userRepository.getCurrentUser(token).flatMap { user ->
-                Logger.d(javaClass.simpleName) { "Creating data set for user: ${user.userId}" }
+                Logger.d(TAG) { "Creating data set for user: ${user.userId}" }
                 dataRepository.createDataSet(
                     userId = user.userId,
                     newDataSet = newDataSet,
@@ -173,13 +181,10 @@ class DataService internal constructor(
         }
 
     suspend fun uploadDataToDataSet(
-        dataSetId: String,
         data: List<BaseData>,
     ): Result<List<BaseData>> =
         tokenProvider.getToken().flatMap {
-            Logger.d(javaClass.simpleName) { "Uploading data to data set $dataSetId" }
             dataRepository.uploadDataToDataSet(
-                dataSetId = dataSetId,
                 data = data,
                 sessionToken = it,
             )
@@ -335,13 +340,13 @@ class DataService internal constructor(
             )
         }
 
-    suspend fun uploadData(data: List<BaseData>): Result<List<BaseData>> =
-        getDataSetId().flatMap { dataSetId ->
-            uploadDataToDataSet(
-                dataSetId = dataSetId,
-                data = data,
-            )
-        }
+    suspend fun uploadData(data: List<BaseData>): Result<List<BaseData>> = if (data.isEmpty()) {
+        Result.failure(IllegalArgumentException("Data list is empty"))
+    } else {
+        uploadDataToDataSet(data = data)
+            .onSuccess { Logger.d(TAG) { "${data.map { it.javaClass.simpleName }} saved for upload" } }
+            .onFailure { Logger.e(TAG, it) { "Saving ${data.map { it.javaClass.simpleName }} failed: " } }
+    }
 
     suspend fun uploadData(data: BaseData): Result<List<BaseData>> = uploadData(listOf(data))
 
@@ -352,7 +357,7 @@ class DataService internal constructor(
                     .filter { it.uploadId != null }
                     .minByOrNull { it.uploadId!! }
                     ?.let {
-                        Logger.d(javaClass.simpleName) { "Found existing data set with id: ${it.id}" }
+                        Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
                         Result.success(it)
                     }
                     ?: createDataSet(
@@ -382,9 +387,13 @@ class DataService internal constructor(
                         ),
                     )
             }.flatMap {
-                Logger.d(javaClass.simpleName) { "Created data set: ${it.id}" }
+                Logger.d(TAG) { "Created data set: ${it.id}" }
                 it.id?.let { Result.success(it) }
                     ?: Result.failure(IllegalStateException("No id"))
             }
+    }
+
+    fun clearUserDataSetId() {
+        dataRepository.clearCachedDataSetId()
     }
 }

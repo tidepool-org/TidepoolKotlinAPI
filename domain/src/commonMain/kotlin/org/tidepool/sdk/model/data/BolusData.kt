@@ -22,6 +22,7 @@ data class BolusData(
     override val timeZoneOffset: Int? = null,
     val subType: BolusSubtype = BolusSubtype.Normal,
     val deliveryContext: DeliveryContext,
+    val normal: Double? = null,
 ) : BaseData(
     id = id,
     type = type,

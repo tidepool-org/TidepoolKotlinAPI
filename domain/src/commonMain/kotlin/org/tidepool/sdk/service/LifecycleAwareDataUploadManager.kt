@@ -1,5 +1,6 @@
 package org.tidepool.sdk.service
 
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -91,10 +92,9 @@ class LifecycleAwareDataUploadManager(
         while (scope.isActive && lifecycleProvider.isInForeground()) {
             try {
                 action()
+                Logger.v(javaClass.simpleName) { "Upload successful" }
             } catch (e: Exception) {
-                // Log error but continue uploads
-                // In production, you might want to implement exponential backoff
-                // or provide error handling callbacks
+                Logger.e(javaClass.simpleName, e) { "Error during upload" }
             }
             
             // Break early if we went to background during the delay

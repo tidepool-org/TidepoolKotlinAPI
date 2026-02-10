@@ -11,9 +11,9 @@ data class AssociationDto(
     
     val id: String?,
     @SerialName("url")
-    val url: String?,
+    val url: String? = null,
     @SerialName("reason")
-    val reason: String?,
+    val reason: String? = null,
 ) {
     @Serializable
     enum class AssociationTypeDto {
