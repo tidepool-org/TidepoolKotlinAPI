@@ -357,6 +357,9 @@ class DataRepositoryImpl(
         foodDataDao.getAll(),
         insulinDataDao.getAll(),
     ).flatten().let { entities ->
+        if (entities.isEmpty()) {
+            return@let Result.success(Unit)
+        }
         Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities to data set $dataSetId" }
         runCatchingNetworkExceptions {
             dataApi.uploadDataToDataSet(
