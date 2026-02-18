@@ -10,7 +10,7 @@ sealed class BaseData(
     open val id: String,
     open val type: DataType = DataType.Alert,
     open val time: Instant? = null,
-    open val annotations: List<Map<String, String>> = emptyList(),
+    open val annotations: List<Map<String, String>>? = null,
     open val associations: List<Association> = emptyList(),
     open val clockDriftOffset: Duration? = null,
     open val conversionOffset: Duration? = null,

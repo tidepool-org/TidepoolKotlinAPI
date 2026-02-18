@@ -89,7 +89,9 @@ fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     id = id,
     type = Json.decodeFromString(type),
     time = time?.let { Instant.fromEpochSeconds(it) },
-    annotations = if (annotations.isNullOrBlank()) emptyList() else Json.decodeFromString(annotations!!),
+    annotations = annotations
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) },
     associations = if (associations.isNullOrBlank()) emptyList() else Json.decodeFromString(associations!!),
     clockDriftOffset = clockDriftOffset?.milliseconds,
     conversionOffset = conversionOffset?.milliseconds,

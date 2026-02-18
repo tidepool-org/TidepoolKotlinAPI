@@ -19,7 +19,7 @@ data class BasalAutomatedDataDto(
     override val type: DataTypeDto = DataTypeDto.Alert,
     @Contextual
     override val time: Instant? = null,
-    override val annotations: List<Map<String, String>> = emptyList(),
+    override val annotations: List<Map<String, String>>? = null,
     override val associations: List<AssociationDto> = emptyList(),
     @Contextual
     override val clockDriftOffset: Duration? = null,
@@ -133,7 +133,7 @@ fun BasalAutomatedData.toDto(): BasalAutomatedDataDto = BasalAutomatedDataDto(
     id = id,
     type = type.toDto(),
     time = time,
-    annotations = annotations,
+    annotations = annotations?.takeUnless { it.isEmpty() },
     associations = associations.map { it.toDto() },
     clockDriftOffset = clockDriftOffset,
     conversionOffset = conversionOffset,

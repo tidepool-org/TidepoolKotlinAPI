@@ -211,6 +211,9 @@ class DataRepositoryImpl(
         data: List<BaseData>,
         sessionToken: String,
     ): Result<List<BaseData>> {
+        Logger.d(javaClass.simpleName) {
+            "uploadDataToDataSet(): ${data.map { it.javaClass.simpleName }}"
+        }
         val dtos = data.map { it.toDto() }
         if (data.isNotEmpty() && dtos.isEmpty()) {
             return Result.failure(Throwable("Mapping data to DTO failed"))
@@ -357,10 +360,10 @@ class DataRepositoryImpl(
         foodDataDao.getAll(),
         insulinDataDao.getAll(),
     ).flatten().let { entities ->
+        Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities" }
         if (entities.isEmpty()) {
             return@let Result.success(Unit)
         }
-        Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities to data set $dataSetId" }
         runCatchingNetworkExceptions {
             dataApi.uploadDataToDataSet(
                 sessionToken = sessionToken,

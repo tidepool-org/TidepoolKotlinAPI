@@ -32,7 +32,7 @@ abstract class BaseDataDto {
     @SerialName("time")
     abstract val time: Instant?
     @SerialName("annotations")
-    abstract val annotations: List<Map<String, String>>
+    abstract val annotations: List<Map<String, String>>?
     @SerialName("associations")
     abstract val associations: List<AssociationDto>
     @SerialName("clockDriftOffset")
