@@ -92,7 +92,6 @@ class LifecycleAwareDataUploadManager(
         while (scope.isActive && lifecycleProvider.isInForeground()) {
             try {
                 action()
-                Logger.v(javaClass.simpleName) { "Upload successful" }
             } catch (e: Exception) {
                 Logger.e(javaClass.simpleName, e) { "Error during upload" }
             }

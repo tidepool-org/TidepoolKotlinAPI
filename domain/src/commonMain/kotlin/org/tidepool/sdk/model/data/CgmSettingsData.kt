@@ -9,7 +9,7 @@ data class CgmSettingsData(
     override val id: String,
     override val type: DataType = DataType.CgmSettings,
     override val time: Instant? = null,
-    override val annotations: List<Map<String, String>> = emptyList(),
+    override val annotations: List<Map<String, String>>? = null,
     override val associations: List<Association> = emptyList(),
     override val clockDriftOffset: Duration? = null,
     override val conversionOffset: Duration? = null,

@@ -45,9 +45,11 @@ class DataService internal constructor(
             period = period,
             delay = delay,
             action = {
-                Logger.d(TAG) { "Uploading cached data" }
+                Logger.d("DataService") { "Uploading cached data" }
                 tokenProvider.getToken().flatMap { sessionToken ->
+                    Logger.v("DataService") { "Have token" }
                     getDataSetId().flatMap { dataSetId ->
+                        Logger.i("DataService") { "Have data set id" }
                         dataRepository.uploadCachedData(
                             userId = userRepository.getCurrentUser(sessionToken)
                                 .getOrThrow().userId,
@@ -343,9 +345,21 @@ class DataService internal constructor(
     suspend fun uploadData(data: List<BaseData>): Result<List<BaseData>> = if (data.isEmpty()) {
         Result.failure(IllegalArgumentException("Data list is empty"))
     } else {
-        uploadDataToDataSet(data = data)
-            .onSuccess { Logger.d(TAG) { "${data.map { it.javaClass.simpleName }} saved for upload" } }
-            .onFailure { Logger.e(TAG, it) { "Saving ${data.map { it.javaClass.simpleName }} failed: " } }
+        tokenProvider.getToken().flatMap {
+            uploadDataToDataSet(data = data)
+                .onSuccess {
+                    Logger.d(TAG) { "${data.map { it.javaClass.simpleName }} saved for upload" }
+                    Logger.v(TAG) {
+                        "${data.map { "${it.javaClass.simpleName}: ${it.annotations}" }} saved for upload"
+                    }
+                }
+                .onFailure {
+                    Logger.e(
+                        TAG,
+                        it
+                    ) { "Saving ${data.map { it.javaClass.simpleName }} failed: " }
+                }
+        }
     }
 
     suspend fun uploadData(data: BaseData): Result<List<BaseData>> = uploadData(listOf(data))

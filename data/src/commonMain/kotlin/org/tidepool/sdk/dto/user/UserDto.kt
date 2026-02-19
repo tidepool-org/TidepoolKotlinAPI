@@ -20,7 +20,7 @@ open class UserDto(
     @SerialName("userid")
     val userId: String = "",
     @SerialName("username")
-    val userName: String? = null,
+    val username: String? = null,
     @SerialName("roles")
     val roles: List<String>? = null,
     @Contextual
@@ -47,6 +47,7 @@ fun UserDto.toDomain(): User = User(
     emails = emails,
     termsAccepted = termsAccepted,
     userId = userId,
+    username = username,
     roles = roles,
     createdTime = createdTime,
     createdUserId = createdUserId,

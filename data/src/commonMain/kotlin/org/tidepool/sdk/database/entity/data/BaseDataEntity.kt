@@ -2,6 +2,7 @@ package org.tidepool.sdk.database.entity.data
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import co.touchlab.kermit.Logger
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
 import org.tidepool.sdk.dto.data.BolusDataDto
@@ -47,17 +48,20 @@ internal fun BaseDataEntity.toDomain(): BaseData = when (this) {
     is PumpSettingsDataEntity       -> toDomain()
 }
 
-internal fun BaseDataEntity.toDto(): BaseDataDto = when (this) {
-    is BasalAutomatedDataEntity     -> toDto()
-    is BolusDataEntity              -> toDto()
-    is ContinuousGlucoseDataEntity  -> toDto()
-    is DosingDecisionDataEntity     -> toDto()
-    is CgmSettingsDataEntity        -> toDto()
-    is ControllerSettingsDataEntity -> toDto()
-    is FoodDataEntity               -> toDto()
-    is InsulinDataEntity            -> toDto()
-    is DeviceEventDataEntity        -> toDto()
-    is PumpSettingsDataEntity       -> toDto()
+internal fun BaseDataEntity.toDto(): BaseDataDto {
+    Logger.d("BaseDataEntity") { "toDto(): ${javaClass.simpleName}, ${annotations?.let { "\"$it\"" }}"}
+    return when (this) {
+        is BasalAutomatedDataEntity -> toDto()
+        is BolusDataEntity -> toDto()
+        is ContinuousGlucoseDataEntity -> toDto()
+        is DosingDecisionDataEntity -> toDto()
+        is CgmSettingsDataEntity -> toDto()
+        is ControllerSettingsDataEntity -> toDto()
+        is FoodDataEntity -> toDto()
+        is InsulinDataEntity -> toDto()
+        is DeviceEventDataEntity -> toDto()
+        is PumpSettingsDataEntity -> toDto()
+    }
 }
 
 fun BaseDataDto.toEntity(): BaseDataEntity = when (this) {
