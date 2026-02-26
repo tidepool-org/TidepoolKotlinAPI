@@ -116,8 +116,8 @@ fun DosingDecisionDataEntity.toDto() = DosingDecisionDataDto(
     type = Json.decodeFromString(type),
     time = time?.let { Instant.fromEpochSeconds(it) },
     annotations = annotations
-        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
-        .orEmpty(),
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) },
     associations = associations
         ?.let { Json.decodeFromString<List<AssociationDto>>(it) }
         .orEmpty(),

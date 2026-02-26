@@ -57,7 +57,7 @@ fun PumpSettingsDataDto.toEntity() = PumpSettingsDataEntity(
     id = id,
     type = Json.encodeToString(type),
     time = time?.epochSeconds,
-    annotations = annotations.let { Json.encodeToString(it) },
+    annotations = annotations?.let { Json.encodeToString(it) },
     associations = associations.let { Json.encodeToString(it) },
     clockDriftOffset = clockDriftOffset?.inWholeMilliseconds,
     conversionOffset = conversionOffset?.inWholeMilliseconds,
@@ -73,8 +73,8 @@ fun PumpSettingsDataEntity.toDto() = PumpSettingsDataDto(
     type = Json.decodeFromString(type),
     time = time?.let { Instant.fromEpochSeconds(it) },
     annotations = annotations
-        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) }
-        .orEmpty(),
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) },
     associations = associations
         ?.let { Json.decodeFromString<List<AssociationDto>>(it) }
         .orEmpty(),

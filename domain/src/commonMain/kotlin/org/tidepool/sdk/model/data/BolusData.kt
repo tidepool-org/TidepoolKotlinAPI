@@ -11,7 +11,7 @@ data class BolusData(
     override val id: String,
     override val type: DataType = DataType.Bolus,
     override val time: Instant? = null,
-    override val annotations: List<Map<String, String>> = emptyList(),
+    override val annotations: List<Map<String, String>>? = null,
     override val associations: List<Association> = emptyList(),
     override val clockDriftOffset: Duration? = null,
     override val conversionOffset: Duration? = null,
@@ -22,6 +22,7 @@ data class BolusData(
     override val timeZoneOffset: Int? = null,
     val subType: BolusSubtype = BolusSubtype.Normal,
     val deliveryContext: DeliveryContext,
+    val normal: Double? = null,
 ) : BaseData(
     id = id,
     type = type,

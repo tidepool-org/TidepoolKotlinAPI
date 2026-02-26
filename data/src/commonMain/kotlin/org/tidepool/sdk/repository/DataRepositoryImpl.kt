@@ -1,5 +1,6 @@
 package org.tidepool.sdk.repository
 
+import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.DataApi
 import org.tidepool.sdk.di.provideDataApi
@@ -50,7 +51,7 @@ import kotlin.collections.toTypedArray
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import org.tidepool.sdk.repository.EnvironmentRepository
+import org.tidepool.sdk.database.entity.data.toDto
 
 class DataRepositoryImpl(
     private val environmentRepository: EnvironmentRepository,
@@ -207,21 +208,18 @@ class DataRepositoryImpl(
     }
 
     override suspend fun uploadDataToDataSet(
-        dataSetId: String,
         data: List<BaseData>,
         sessionToken: String,
     ): Result<List<BaseData>> {
-        val dtos = data.map { it.toDto() }
-        return runCatchingNetworkExceptions {
-            dataApi.uploadDataToDataSet(
-                sessionToken = sessionToken,
-                dataSetId = dataSetId,
-                data = dtos,
-            )
+        Logger.d(javaClass.simpleName) {
+            "uploadDataToDataSet(): ${data.map { it.javaClass.simpleName }}"
         }
-            .map { it.data }
-            .cacheOnFailure(dtos)
-            .mapList { it.toDomain() }
+        val dtos = data.map { it.toDto() }
+        if (data.isNotEmpty() && dtos.isEmpty()) {
+            return Result.failure(Throwable("Mapping data to DTO failed"))
+        }
+        dtos.cache()
+        return Result.success(data)
     }
 
     override suspend fun deleteDataSetData(
@@ -351,8 +349,9 @@ class DataRepositoryImpl(
     }
 
     override suspend fun uploadCachedData(
-        sessionToken: String,
         userId: String,
+        sessionToken: String,
+        dataSetId: String,
     ): Result<Unit> = listOf(
         basalAutomatedDataDao.getAll(),
         bolusDataDao.getAll(),
@@ -361,11 +360,15 @@ class DataRepositoryImpl(
         foodDataDao.getAll(),
         insulinDataDao.getAll(),
     ).flatten().let { entities ->
+        Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities" }
+        if (entities.isEmpty()) {
+            return@let Result.success(Unit)
+        }
         runCatchingNetworkExceptions {
-            dataApi.uploadDataForUser(
+            dataApi.uploadDataToDataSet(
                 sessionToken = sessionToken,
-                userId = userId,
-                data = emptyList(), // entities.map { it.toDto() },
+                dataSetId = dataSetId,
+                data = entities.map { it.toDto() },
             )
         }.map {
             entities.forEach { entity ->
@@ -385,27 +388,33 @@ class DataRepositoryImpl(
         }
     }
 
+    override fun clearCachedDataSetId() {
+        cachedDataSetId = null
+    }
+
     private suspend fun Result<List<BaseDataDto>>.cacheOnFailure(
         toUpload: List<BaseDataDto>,
     ) = fold(
         onSuccess = { Result.success(it) },
         onFailure = { ex ->
-            toUpload.forEach { dto ->
-                when (dto) {
-                    is BasalAutomatedDataDto -> basalAutomatedDataDao.insert(dto.toEntity())
-                    is BolusDataDto -> bolusDataDao.insert(dto.toEntity())
-                    is ContinuousGlucoseDataDto -> continuousGlucoseDataDao.insert(dto.toEntity())
-                    is DosingDecisionDataDto -> dosingDecisionDataDao.insert(dto.toEntity())
-                    is FoodDataDto -> foodDataDao.insert(dto.toEntity())
-                    is InsulinDataDto -> insulinDataDao.insert(dto.toEntity())
-                    is DeviceEventDataDto -> deviceEventDataDao.insert(dto.toEntity())
-                    is CgmSettingsDataDto -> cgmSettingsDataDao.insert(dto.toEntity())
-                    is ControllerSettingsDataDto -> controllerSettingsDataDao.insert(dto.toEntity())
-                    is PumpSettingsDataDto -> pumpSettingsDataDao.insert(dto.toEntity())
-                    else -> println("DataRepository: Unknown data type: ${dto::class.simpleName}")
-                }
-            }
+            toUpload.cache()
             Result.failure(ex)
         },
     )
+
+    private suspend fun List<BaseDataDto>.cache() = forEach { dto ->
+        when (dto) {
+            is BasalAutomatedDataDto -> basalAutomatedDataDao.insert(dto.toEntity())
+            is BolusDataDto -> bolusDataDao.insert(dto.toEntity())
+            is ContinuousGlucoseDataDto -> continuousGlucoseDataDao.insert(dto.toEntity())
+            is DosingDecisionDataDto -> dosingDecisionDataDao.insert(dto.toEntity())
+            is FoodDataDto -> foodDataDao.insert(dto.toEntity())
+            is InsulinDataDto -> insulinDataDao.insert(dto.toEntity())
+            is DeviceEventDataDto -> deviceEventDataDao.insert(dto.toEntity())
+            is CgmSettingsDataDto -> cgmSettingsDataDao.insert(dto.toEntity())
+            is ControllerSettingsDataDto -> controllerSettingsDataDao.insert(dto.toEntity())
+            is PumpSettingsDataDto -> pumpSettingsDataDao.insert(dto.toEntity())
+            else -> Logger.w(javaClass.simpleName) { "Unknown data type: ${dto::class.simpleName}" }
+        }
+    }
 }

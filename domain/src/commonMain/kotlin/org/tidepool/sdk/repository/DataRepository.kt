@@ -64,7 +64,6 @@ interface DataRepository {
     ): Result<Unit>
     
     suspend fun uploadDataToDataSet(
-        dataSetId: String,
         data: List<BaseData>,
         sessionToken: String
     ): Result<List<BaseData>>
@@ -150,5 +149,8 @@ interface DataRepository {
     suspend fun uploadCachedData(
         userId: String,
         sessionToken: String,
+        dataSetId: String,
     ): Result<Unit>
+
+    fun clearCachedDataSetId()
 }

@@ -9,7 +9,7 @@ data class BasalAutomatedData(
     override val id: String,
     override val type: DataType = DataType.Basal,
     override val time: Instant? = null,
-    override val annotations: List<Map<String, String>> = emptyList(),
+    override val annotations: List<Map<String, String>>? = null,
     override val associations: List<Association> = emptyList(),
     override val clockDriftOffset: Duration? = null,
     override val conversionOffset: Duration? = null,
@@ -19,10 +19,13 @@ data class BasalAutomatedData(
     override val timeZone: TimeZone? = null,
     override val timeZoneOffset: Int? = null,
     val deliveryType: DeliveryType,
-    val duration: Int,
-    val expectedDuration: Int? = null,
+    val duration: Double,
+    val expectedDuration: Double? = null,
     val rate: Double = -1.0,
     val scheduleName: String? = null,
+    val origin: Origin? = null,
+    val payload: Payload? = null,
+    val suppressed: Suppressed? = null,
 ) : BaseData(
     id = id,
     type = type,
@@ -37,16 +40,29 @@ data class BasalAutomatedData(
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
 ) {
-    
-    val insulinFormulation: Nothing
-        get() = TODO("schema \"formulation.v1\" not implemented")
-    val suppressed: Nothing
-        get() = TODO("schema \"scheduled.v1\" not implemented")
-    
     enum class DeliveryType {
         Automated,
         Scheduled,
         Suspend,
         Temp,
     }
+
+    data class Origin(
+        val id: String,
+        val name: String,
+        val type: String,
+        val version: String,
+    )
+
+    data class Payload(
+        val deliveredUnits: Double,
+        val syncIdentifier: String,
+    )
+
+    data class Suppressed(
+        val type: DataType = DataType.Basal,
+        val deliveryType: DeliveryType,
+        val rate: Double,
+        val scheduleName: String? = null,
+    )
 }

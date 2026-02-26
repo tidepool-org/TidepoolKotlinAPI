@@ -7,7 +7,9 @@ import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import kotlinx.datetime.Instant
 import java.util.TimeZone
+import kotlin.math.roundToLong
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 @Entity(tableName = "basal_automated_data")
 data class BasalAutomatedDataEntity(
@@ -41,9 +43,9 @@ data class BasalAutomatedDataEntity(
     @ColumnInfo(name = "delivery_type")
     var deliveryType: String,
     @ColumnInfo(name = "duration")
-    var duration: Int,
+    var duration: Double,
     @ColumnInfo(name = "expected_duration")
-    var expectedDuration: Int? = null,
+    var expectedDuration: Double? = null,
     @ColumnInfo(name = "rate")
     var rate: Double = -1.0,
     @ColumnInfo(name = "schedule_name")
@@ -77,8 +79,8 @@ fun BasalAutomatedDataDto.toEntity() = BasalAutomatedDataEntity(
     timeZone = timeZone?.id,
     timeZoneOffset = timeZoneOffset,
     deliveryType = Json.encodeToString(deliveryType),
-    duration = duration,
-    expectedDuration = expectedDuration,
+    duration = duration.toDouble().div(1.minutes.inWholeMilliseconds),
+    expectedDuration = expectedDuration?.toDouble()?.div(1.minutes.inWholeMilliseconds),
     rate = rate,
     scheduleName = scheduleName,
 )
@@ -87,7 +89,9 @@ fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     id = id,
     type = Json.decodeFromString(type),
     time = time?.let { Instant.fromEpochSeconds(it) },
-    annotations = if (annotations.isNullOrBlank()) emptyList() else Json.decodeFromString(annotations!!),
+    annotations = annotations
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<List<Map<String, String>>>(it) },
     associations = if (associations.isNullOrBlank()) emptyList() else Json.decodeFromString(associations!!),
     clockDriftOffset = clockDriftOffset?.milliseconds,
     conversionOffset = conversionOffset?.milliseconds,
@@ -97,8 +101,8 @@ fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
     timeZoneOffset = timeZoneOffset,
     deliveryType = Json.decodeFromString(deliveryType),
-    duration = duration,
-    expectedDuration = expectedDuration,
+    duration = duration.times(1.minutes.inWholeMilliseconds).roundToLong(),
+    expectedDuration = expectedDuration?.times(1.minutes.inWholeMilliseconds)?.roundToLong(),
     rate = rate,
     scheduleName = scheduleName,
 )

@@ -10,15 +10,16 @@ import org.tidepool.sdk.dto.toDto
 import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
+import kotlin.math.roundToLong
+import kotlin.time.Duration.Companion.minutes
 
-// TODO: Finish implementing automated.v1
 @Serializable
 data class BasalAutomatedDataDto(
     override val id: String = "",
     override val type: DataTypeDto = DataTypeDto.Alert,
     @Contextual
     override val time: Instant? = null,
-    override val annotations: List<Map<String, String>> = emptyList(),
+    override val annotations: List<Map<String, String>>? = null,
     override val associations: List<AssociationDto> = emptyList(),
     @Contextual
     override val clockDriftOffset: Duration? = null,
@@ -35,19 +36,52 @@ data class BasalAutomatedDataDto(
     @SerialName("deliveryType")
     val deliveryType: DeliveryTypeDto,
     @SerialName("duration")
-    val duration: Int,
+    val duration: Long,
     @SerialName("expectedDuration")
-    val expectedDuration: Int? = null,
+    val expectedDuration: Long? = null,
     @SerialName("rate")
     val rate: Double = -1.0,
     @SerialName("scheduleName")
     val scheduleName: String? = null,
+    @SerialName("origin")
+    val origin: OriginDto? = null,
+    @SerialName("payload")
+    val payload: PayloadDto? = null,
+    @SerialName("suppressed")
+    val suppressed: SuppressedDto? = null,
 ) : BaseDataDto() {
-    val insulinFormulation: Nothing
-        get() = TODO("schema \"formulation.v1\" not implemented")
-    val suppressed: Nothing
-        get() = TODO("schema \"scheduled.v1\" not implemented")
-    
+    @Serializable
+    data class OriginDto(
+        @SerialName("id")
+        val id: String,
+        @SerialName("name")
+        val name: String,
+        @SerialName("type")
+        val type: String,
+        @SerialName("version")
+        val version: String,
+    )
+
+    @Serializable
+    data class PayloadDto(
+        @SerialName("deliveredUnits")
+        val deliveredUnits: Double,
+        @SerialName("syncIdentifier")
+        val syncIdentifier: String,
+    )
+
+    @Serializable
+    data class SuppressedDto(
+        @SerialName("type")
+        val type: DataTypeDto = DataTypeDto.Basal,
+        @SerialName("deliveryType")
+        val deliveryType: DeliveryTypeDto,
+        @SerialName("rate")
+        val rate: Double,
+        @SerialName("scheduleName")
+        val scheduleName: String? = null,
+    )
+
     @Serializable
     enum class DeliveryTypeDto {
         
@@ -79,10 +113,13 @@ fun BasalAutomatedDataDto.toDomain(): BasalAutomatedData = BasalAutomatedData(
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
     deliveryType = this.deliveryType.toDomain(),
-    duration = duration,
-    expectedDuration = expectedDuration,
+    duration = duration.toDouble().div(1.minutes.inWholeMilliseconds),
+    expectedDuration = expectedDuration?.toDouble()?.div(1.minutes.inWholeMilliseconds),
     rate = rate,
-    scheduleName = scheduleName
+    scheduleName = scheduleName,
+    origin = origin?.toDomain(),
+    payload = payload?.toDomain(),
+    suppressed = suppressed?.toDomain(),
 )
 
 fun BasalAutomatedDataDto.DeliveryTypeDto.toDomain(): BasalAutomatedData.DeliveryType = when (this) {
@@ -96,7 +133,7 @@ fun BasalAutomatedData.toDto(): BasalAutomatedDataDto = BasalAutomatedDataDto(
     id = id,
     type = type.toDto(),
     time = time,
-    annotations = annotations,
+    annotations = annotations?.takeUnless { it.isEmpty() },
     associations = associations.map { it.toDto() },
     clockDriftOffset = clockDriftOffset,
     conversionOffset = conversionOffset,
@@ -106,10 +143,13 @@ fun BasalAutomatedData.toDto(): BasalAutomatedDataDto = BasalAutomatedDataDto(
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
     deliveryType = deliveryType.toDto(),
-    duration = duration,
-    expectedDuration = expectedDuration,
+    duration = duration.times(1.minutes.inWholeMilliseconds).roundToLong(),
+    expectedDuration = expectedDuration?.times(1.minutes.inWholeMilliseconds)?.roundToLong(),
     rate = rate,
-    scheduleName = scheduleName
+    scheduleName = scheduleName,
+    origin = origin?.toDto(),
+    payload = payload?.toDto(),
+    suppressed = suppressed?.toDto(),
 )
 
 fun BasalAutomatedData.DeliveryType.toDto(): BasalAutomatedDataDto.DeliveryTypeDto = when (this) {
@@ -118,3 +158,47 @@ fun BasalAutomatedData.DeliveryType.toDto(): BasalAutomatedDataDto.DeliveryTypeD
     BasalAutomatedData.DeliveryType.Suspend -> BasalAutomatedDataDto.DeliveryTypeDto.Suspend
     BasalAutomatedData.DeliveryType.Temp -> BasalAutomatedDataDto.DeliveryTypeDto.Temp
 }
+
+private fun BasalAutomatedDataDto.OriginDto.toDomain(): BasalAutomatedData.Origin =
+    BasalAutomatedData.Origin(
+        id = id,
+        name = name,
+        type = type,
+        version = version,
+    )
+
+private fun BasalAutomatedDataDto.PayloadDto.toDomain(): BasalAutomatedData.Payload =
+    BasalAutomatedData.Payload(
+        deliveredUnits = deliveredUnits,
+        syncIdentifier = syncIdentifier,
+    )
+
+private fun BasalAutomatedDataDto.SuppressedDto.toDomain(): BasalAutomatedData.Suppressed =
+    BasalAutomatedData.Suppressed(
+        type = type.toDomain(),
+        deliveryType = deliveryType.toDomain(),
+        rate = rate,
+        scheduleName = scheduleName,
+    )
+
+private fun BasalAutomatedData.Origin.toDto(): BasalAutomatedDataDto.OriginDto =
+    BasalAutomatedDataDto.OriginDto(
+        id = id,
+        name = name,
+        type = type,
+        version = version,
+    )
+
+private fun BasalAutomatedData.Payload.toDto(): BasalAutomatedDataDto.PayloadDto =
+    BasalAutomatedDataDto.PayloadDto(
+        deliveredUnits = deliveredUnits,
+        syncIdentifier = syncIdentifier,
+    )
+
+private fun BasalAutomatedData.Suppressed.toDto(): BasalAutomatedDataDto.SuppressedDto =
+    BasalAutomatedDataDto.SuppressedDto(
+        type = type.toDto(),
+        deliveryType = deliveryType.toDto(),
+        rate = rate,
+        scheduleName = scheduleName,
+    )

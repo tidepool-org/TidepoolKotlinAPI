@@ -44,6 +44,7 @@ kotlin {
                 implementation("io.ktor:ktor-client-content-negotiation:3.3.1")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.1")
                 implementation("io.ktor:ktor-client-logging:3.3.1")
+                implementation("co.touchlab:kermit:2.0.4")
 
                 // Serialization
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")

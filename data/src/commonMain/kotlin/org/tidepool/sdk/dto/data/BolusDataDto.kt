@@ -21,7 +21,7 @@ data class BolusDataDto(
     override val type: DataTypeDto = DataTypeDto.Alert,
     @Contextual
     override val time: Instant? = null,
-    override val annotations: List<Map<String, String>> = emptyList(),
+    override val annotations: List<Map<String, String>>? = null,
     override val associations: List<AssociationDto> = emptyList(),
     @Contextual
     override val clockDriftOffset: Duration? = null,
@@ -39,6 +39,8 @@ data class BolusDataDto(
     val subType: BolusSubtypeDto = BolusSubtypeDto.Normal,
     @SerialName("deliveryContext")
     val deliveryContext: DeliveryContextDto,
+    @SerialName("normal")
+    val normal: Double? = null,
 ) : BaseDataDto() {
     
     val insulinFormulation: Nothing
@@ -90,6 +92,7 @@ fun BolusDataDto.toDomain(): BolusData = BolusData(
     timeZoneOffset = timeZoneOffset,
     subType = subType.toDomain(),
     deliveryContext = deliveryContext.toDomain(),
+    normal = normal,
 )
 
 fun DeliveryContextDto.toDomain(): DeliveryContext = when (this) {
@@ -110,7 +113,7 @@ fun BolusData.toDto(): BolusDataDto = BolusDataDto(
     id = id,
     type = type.toDto(),
     time = time,
-    annotations = annotations,
+    annotations = annotations?.takeUnless { it.isEmpty() },
     associations = associations.map { it.toDto() },
     clockDriftOffset = clockDriftOffset,
     conversionOffset = conversionOffset,
@@ -121,6 +124,7 @@ fun BolusData.toDto(): BolusDataDto = BolusDataDto(
     timeZoneOffset = timeZoneOffset,
     subType = subType.toDto(),
     deliveryContext = deliveryContext.toDto(),
+    normal = normal,
 )
 
 fun DeliveryContext.toDto(): DeliveryContextDto = when (this) {

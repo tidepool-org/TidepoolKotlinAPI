@@ -1,6 +1,9 @@
 package org.tidepool.sdk.di
 
 import androidx.room.Room
+import androidx.room.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -35,6 +38,7 @@ actual val platformDataModule: Module
                 name = "loop-kit-database",
             )
                 .setDriver(BundledSQLiteDriver())
+                .addMigrations(MIGRATION_1_2)
                 .build()
         }
         single<Logger> {
@@ -47,6 +51,22 @@ actual val platformDataModule: Module
             DnsResolverImpl()
         }
     }
+
+private val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE bolus_data ADD COLUMN normal REAL")
+    }
+
+    override fun migrate(connection: SQLiteConnection) {
+        val statement = connection.prepare("ALTER TABLE bolus_data ADD COLUMN normal REAL")
+        try {
+            statement.step()
+        } finally {
+            statement.close()
+        }
+    }
+}
+
 
 actual fun provideAlertApi(ktorfit: Ktorfit) = ktorfit.createAlertApi()
 actual fun provideAuthorizationApi(ktorfit: Ktorfit) = ktorfit.createAuthorizationApi()
