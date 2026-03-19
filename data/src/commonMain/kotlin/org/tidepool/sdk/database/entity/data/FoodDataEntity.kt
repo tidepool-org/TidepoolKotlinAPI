@@ -47,7 +47,13 @@ data class FoodDataEntity(
     @ColumnInfo(name = "meal_other")
     var mealOther: String? = null,
     @ColumnInfo(name = "name")
-    var name: String? = null
+    var name: String? = null,
+    @ColumnInfo(name = "amount")
+    var amount: String? = null, // JSON string
+    @ColumnInfo(name = "nutrition")
+    var nutrition: String? = null, // JSON string
+    @ColumnInfo(name = "ingredients")
+    var ingredients: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -88,7 +94,10 @@ fun FoodDataDto.toEntity() = FoodDataEntity(
         }
     },
     mealOther = mealOther,
-    name = name
+    name = name,
+    amount = amount?.let { Json.encodeToString(it) },
+    nutrition = nutrition?.let { Json.encodeToString(it) },
+    ingredients = ingredients?.let { Json.encodeToString(it) },
 )
 
 fun FoodDataEntity.toDto() = FoodDataDto(
@@ -124,4 +133,13 @@ fun FoodDataEntity.toDto() = FoodDataDto(
     },
     mealOther = mealOther,
     name = name,
+    amount = amount
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<FoodDataDto.AmountDto>(it) },
+    nutrition = nutrition
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<FoodDataDto.NutritionDto>(it) },
+    ingredients = ingredients
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<List<FoodDataDto.IngredientDto>>(it) },
 )

@@ -24,6 +24,9 @@ data class FoodData(
     val meal: Meal? = null,
     val mealOther: String? = null,
     val name: String? = null,
+    val amount: Amount? = null,
+    val nutrition: Nutrition? = null,
+    val ingredients: List<Ingredient>? = null,
 ) : BaseData(
     id = id,
     type = type,
@@ -39,13 +42,6 @@ data class FoodData(
     timeZoneOffset = timeZoneOffset,
 ) {
     
-    val amount: Nothing
-        get() = TODO("schema \"amount.v1\" not implemented")
-    val ingredients: Nothing
-        get() = TODO("schema \"ingredientarray.v1\" not implemented")
-    val nutrition: Nothing
-        get() = TODO("schema \"nutrition.v1\" not implemented")
-    
     enum class Meal {
         Breakfast,
         Lunch,
@@ -53,4 +49,44 @@ data class FoodData(
         Snack,
         Other,
     }
+    
+    data class Amount(
+        val value: Double? = null,
+        val units: String? = null,
+    )
+    
+    data class Nutrition(
+        val carbohydrate: Carbohydrate? = null,
+        val fat: Nutrient? = null,
+        val protein: Nutrient? = null,
+        val energy: Energy? = null,
+        val estimatedAbsorptionDuration: Duration? = null,
+    )
+    
+    data class Carbohydrate(
+        val net: Double? = null,
+        val sugars: Double? = null,
+        val dietaryFiber: Double? = null,
+        val total: Double? = null,
+        val units: NutrientUnit? = NutrientUnit.Grams,
+    )
+    
+    data class Nutrient(
+        val total: Double? = null,
+        val units: NutrientUnit? = NutrientUnit.Grams,
+    )
+
+    data class Energy(
+        val value: Double? = null,
+        val units: EnergyUnit? = null,
+    )
+
+    data class Ingredient(
+        val name: String? = null,
+        val amount: Amount? = null,
+        val brand: String? = null,
+        val code: String? = null,
+        val nutrition: Nutrition? = null,
+        val ingredients: List<Ingredient>? = null,
+    )
 }
