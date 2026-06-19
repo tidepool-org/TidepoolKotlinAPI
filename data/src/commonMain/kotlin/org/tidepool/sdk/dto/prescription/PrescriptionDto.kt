@@ -2,6 +2,11 @@ package org.tidepool.sdk.dto.prescription
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.prescription.BasalRate
+import org.tidepool.sdk.model.prescription.CarbRatio
+import org.tidepool.sdk.model.prescription.GlucoseTarget
+import org.tidepool.sdk.model.prescription.ISF
+import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.Prescription
 import kotlinx.datetime.Instant
 
@@ -57,7 +62,21 @@ internal fun PrescriptionDto.toDomain(): Prescription = Prescription(
     status = status!!.toDomain(),
     createdTime = Instant.parse(createdTime!!),
     modifiedTime = Instant.parse(modifiedTime!!),
-    notes = notes
+    notes = notes,
+    initialSettings = latestRevision?.attributes?.initialSettings?.let { s ->
+        InitialSettings(
+            glucoseUnit = s.glucoseUnit,
+            glucoseSafetyLimit = s.glucoseSafetyLimit,
+            glucoseTargetSchedule = s.glucoseTargetSchedule?.map { GlucoseTarget(it.startSeconds, it.low, it.high) } ?: emptyList(),
+            basalRateSchedule = s.basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) } ?: emptyList(),
+            carbRatioSchedule = s.carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) } ?: emptyList(),
+            insulinSensitivitySchedule = s.insulinSensitivitySchedule?.map { ISF(it.startSeconds, it.amount) } ?: emptyList(),
+            maxBasalRate = s.basalRateMaximum?.value,
+            maxBolus = s.bolusAmountMaximum?.value,
+            cgmId = s.cgmId,
+            pumpId = s.pumpId,
+        )
+    },
 )
 
 internal fun Prescription.toDto(): PrescriptionDto = PrescriptionDto(
