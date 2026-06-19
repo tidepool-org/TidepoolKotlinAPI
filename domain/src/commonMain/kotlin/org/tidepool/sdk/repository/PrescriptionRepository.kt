@@ -50,4 +50,11 @@ interface PrescriptionRepository {
         limit: Int? = null,
         offset: Int? = null,
     ): Result<List<Prescription>>
+
+    suspend fun claimPrescription(
+        sessionToken: String,
+        userId: String,
+        accessCode: String,
+        birthday: String,
+    ): Result<Prescription>
 }

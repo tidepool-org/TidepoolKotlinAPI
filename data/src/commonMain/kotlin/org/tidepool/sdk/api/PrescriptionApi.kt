@@ -1,5 +1,6 @@
 package org.tidepool.sdk.api
 
+import org.tidepool.sdk.dto.prescription.ClaimPrescriptionDto
 import org.tidepool.sdk.dto.prescription.NewPrescriptionDto
 import org.tidepool.sdk.dto.prescription.PrescriptionDto
 import org.tidepool.sdk.dto.prescription.UpdatePrescriptionDto
@@ -72,4 +73,13 @@ interface PrescriptionApi {
         @Query("limit") limit: Int? = null,
         @Query("offset") offset: Int? = null
     ): List<PrescriptionDto>
+
+    // Claim a prescription by access code and patient birthday
+    // Source: iOS TidepoolKit TAPI.swift — POST /v1/patients/{userId}/prescriptions/claim
+    @POST("v1/patients/{userId}/prescriptions/claim")
+    suspend fun claimPrescription(
+        @Header("X-Tidepool-Session-Token") sessionToken: String,
+        @Path("userId") userId: String,
+        @Body requestBody: ClaimPrescriptionDto
+    ): PrescriptionDto
 }

@@ -3,6 +3,7 @@ package org.tidepool.sdk.repository
 import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.PrescriptionApi
 import org.tidepool.sdk.di.providePrescriptionApi
+import org.tidepool.sdk.dto.prescription.ClaimPrescriptionDto
 import org.tidepool.sdk.dto.prescription.NewPrescriptionDto
 import org.tidepool.sdk.dto.prescription.toDomain
 import org.tidepool.sdk.dto.prescription.toDto
@@ -109,4 +110,17 @@ class PrescriptionRepositoryImpl(
             offset = offset,
         )
     }.mapList { it.toDomain() }
+
+    override suspend fun claimPrescription(
+        sessionToken: String,
+        userId: String,
+        accessCode: String,
+        birthday: String,
+    ): Result<Prescription> = runCatchingNetworkExceptions {
+        prescriptionApi.claimPrescription(
+            sessionToken = sessionToken,
+            userId = userId,
+            requestBody = ClaimPrescriptionDto(accessCode = accessCode, birthday = birthday),
+        )
+    }.map { it.toDomain() }
 }

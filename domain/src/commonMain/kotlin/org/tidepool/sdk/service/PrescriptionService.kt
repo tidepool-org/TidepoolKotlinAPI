@@ -139,4 +139,19 @@ class PrescriptionService internal constructor(
             offset = offset,
         )
     }
+
+    // Claim a prescription for the current patient
+    // userId must be obtained from sdk.users.getCurrentUser() by the caller
+    suspend fun claimPrescription(
+        userId: String,
+        accessCode: String,
+        birthday: String,
+    ): Result<Prescription> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.claimPrescription(
+            sessionToken = it,
+            userId = userId,
+            accessCode = accessCode,
+            birthday = birthday,
+        )
+    }
 }
