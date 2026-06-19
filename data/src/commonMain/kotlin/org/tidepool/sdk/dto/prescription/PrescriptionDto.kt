@@ -37,6 +37,8 @@ data class PrescriptionDto(
     val modifiedTime: String? = null,
     @SerialName("notes")
     val notes: String? = null,
+    @SerialName("latestRevision")
+    val latestRevision: PrescriptionRevisionDto? = null,
 )
 
 // Manual mapping functions
@@ -74,4 +76,59 @@ internal fun Prescription.toDto(): PrescriptionDto = PrescriptionDto(
     createdTime = createdTime.toString(),
     modifiedTime = modifiedTime.toString(),
     notes = notes
+)
+
+@Serializable
+data class PrescriptionRevisionDto(
+    @SerialName("attributes") val attributes: PrescriptionAttributesDto? = null
+)
+
+@Serializable
+data class PrescriptionAttributesDto(
+    @SerialName("initialSettings") val initialSettings: InitialSettingsDto? = null
+)
+
+@Serializable
+data class InitialSettingsDto(
+    @SerialName("glucoseUnit")                val glucoseUnit: String? = null,
+    @SerialName("glucoseSafetyLimit")         val glucoseSafetyLimit: Double? = null,
+    @SerialName("glucoseTargetSchedule")      val glucoseTargetSchedule: List<GlucoseTargetEntryDto>? = null,
+    @SerialName("basalRateSchedule")          val basalRateSchedule: List<BasalRateEntryDto>? = null,
+    @SerialName("carbRatioSchedule")          val carbRatioSchedule: List<CarbRatioEntryDto>? = null,
+    @SerialName("insulinSensitivitySchedule") val insulinSensitivitySchedule: List<ISFEntryDto>? = null,
+    @SerialName("basalRateMaximum")           val basalRateMaximum: RateValueDto? = null,
+    @SerialName("bolusAmountMaximum")         val bolusAmountMaximum: RateValueDto? = null,
+    @SerialName("cgmId")                      val cgmId: String? = null,
+    @SerialName("pumpId")                     val pumpId: String? = null
+)
+
+@Serializable
+data class GlucoseTargetEntryDto(
+    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("low")   val low: Double = 0.0,
+    @SerialName("high")  val high: Double = 0.0
+)
+
+@Serializable
+data class BasalRateEntryDto(
+    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("rate")  val rate: Double = 0.0
+)
+
+@Serializable
+data class CarbRatioEntryDto(
+    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("ratio") val ratio: Double = 0.0
+)
+
+@Serializable
+data class ISFEntryDto(
+    @SerialName("start")  val startSeconds: Long = 0,
+    @SerialName("amount") val amount: Double = 0.0
+)
+
+@Serializable
+data class RateValueDto(
+    @SerialName("units") val units: String? = null,
+    @SerialName("value") val value: Double = 0.0
 )
