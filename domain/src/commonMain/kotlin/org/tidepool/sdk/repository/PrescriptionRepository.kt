@@ -1,5 +1,6 @@
 package org.tidepool.sdk.repository
 
+import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
 import org.tidepool.sdk.model.prescription.UpdatePrescription
@@ -56,5 +57,5 @@ interface PrescriptionRepository {
         userId: String,
         accessCode: String,
         birthday: String,
-    ): Result<Prescription>
+    ): Result<InitialSettings?>
 }

@@ -7,7 +7,9 @@ import org.tidepool.sdk.dto.prescription.ClaimPrescriptionDto
 import org.tidepool.sdk.dto.prescription.NewPrescriptionDto
 import org.tidepool.sdk.dto.prescription.toDomain
 import org.tidepool.sdk.dto.prescription.toDto
+import org.tidepool.sdk.dto.prescription.toInitialSettings
 import org.tidepool.sdk.mapList
+import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
 import org.tidepool.sdk.model.prescription.UpdatePrescription
@@ -116,11 +118,11 @@ class PrescriptionRepositoryImpl(
         userId: String,
         accessCode: String,
         birthday: String,
-    ): Result<Prescription> = runCatchingNetworkExceptions {
+    ): Result<InitialSettings?> = runCatchingNetworkExceptions {
         prescriptionApi.claimPrescription(
             sessionToken = sessionToken,
             userId = userId,
             requestBody = ClaimPrescriptionDto(accessCode = accessCode, birthday = birthday),
         )
-    }.map { it.toDomain() }
+    }.map { it.toInitialSettings() }
 }

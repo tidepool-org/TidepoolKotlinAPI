@@ -2,6 +2,7 @@ package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.flatMap
+import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
 import org.tidepool.sdk.model.prescription.PrescriptionStatus
@@ -146,7 +147,7 @@ class PrescriptionService internal constructor(
         userId: String,
         accessCode: String,
         birthday: String,
-    ): Result<Prescription> = tokenProvider.getToken().flatMap {
+    ): Result<InitialSettings?> = tokenProvider.getToken().flatMap {
         prescriptionRepository.claimPrescription(
             sessionToken = it,
             userId = userId,
