@@ -1,5 +1,6 @@
 package org.tidepool.sdk.repository
 
+import org.tidepool.sdk.model.prescription.ClaimedPrescription
 import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
@@ -58,4 +59,9 @@ interface PrescriptionRepository {
         accessCode: String,
         birthday: String,
     ): Result<InitialSettings?>
+
+    suspend fun getLatestPrescription(
+        sessionToken: String,
+        userId: String,
+    ): Result<ClaimedPrescription?>
 }

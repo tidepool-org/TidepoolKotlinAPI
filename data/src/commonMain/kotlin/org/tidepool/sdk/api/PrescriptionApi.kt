@@ -83,4 +83,12 @@ interface PrescriptionApi {
         @Path("userId") userId: String,
         @Body requestBody: ClaimPrescriptionDto
     ): ClaimedPrescriptionResponseDto
+
+    // List the patient's own prescriptions (used to detect an already-claimed prescription)
+    // GET /v1/patients/{userId}/prescriptions
+    @GET("v1/patients/{userId}/prescriptions")
+    suspend fun getPatientPrescriptions(
+        @Header("X-Tidepool-Session-Token") sessionToken: String,
+        @Path("userId") userId: String
+    ): List<ClaimedPrescriptionResponseDto>
 }

@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.prescription.BasalRate
 import org.tidepool.sdk.model.prescription.CarbRatio
+import org.tidepool.sdk.model.prescription.ClaimedPrescription
 import org.tidepool.sdk.model.prescription.GlucoseTarget
 import org.tidepool.sdk.model.prescription.ISF
 import org.tidepool.sdk.model.prescription.InitialSettings
@@ -154,10 +155,23 @@ data class RateValueDto(
 
 @Serializable
 data class ClaimedPrescriptionResponseDto(
-    @SerialName("id")             val id: String? = null,
-    @SerialName("patientUserId")  val patientUserId: String? = null,
-    @SerialName("latestRevision") val latestRevision: PrescriptionRevisionDto? = null,
+    @SerialName("id")               val id: String? = null,
+    @SerialName("patientUserId")    val patientUserId: String? = null,
+    @SerialName("prescriberUserId") val prescriberUserId: String? = null,
+    @SerialName("state")            val state: String? = null,
+    @SerialName("createdTime")      val createdTime: String? = null,
+    @SerialName("modifiedTime")     val modifiedTime: String? = null,
+    @SerialName("submittedTime")    val submittedTime: String? = null,
+    @SerialName("latestRevision")   val latestRevision: PrescriptionRevisionDto? = null,
 )
+
+internal fun ClaimedPrescriptionResponseDto.toClaimedPrescription(): ClaimedPrescription =
+    ClaimedPrescription(
+        initialSettings = toInitialSettings(),
+        prescriberUserId = prescriberUserId,
+        submittedDate = submittedTime ?: modifiedTime ?: createdTime,
+        state = state,
+    )
 
 internal fun ClaimedPrescriptionResponseDto.toInitialSettings(): InitialSettings? {
     val s = latestRevision?.attributes?.initialSettings ?: return null

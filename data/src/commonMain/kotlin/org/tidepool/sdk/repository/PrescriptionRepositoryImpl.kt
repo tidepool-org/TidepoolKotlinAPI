@@ -7,8 +7,10 @@ import org.tidepool.sdk.dto.prescription.ClaimPrescriptionDto
 import org.tidepool.sdk.dto.prescription.NewPrescriptionDto
 import org.tidepool.sdk.dto.prescription.toDomain
 import org.tidepool.sdk.dto.prescription.toDto
+import org.tidepool.sdk.dto.prescription.toClaimedPrescription
 import org.tidepool.sdk.dto.prescription.toInitialSettings
 import org.tidepool.sdk.mapList
+import org.tidepool.sdk.model.prescription.ClaimedPrescription
 import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
@@ -125,4 +127,16 @@ class PrescriptionRepositoryImpl(
             requestBody = ClaimPrescriptionDto(accessCode = accessCode, birthday = birthday),
         )
     }.map { it.toInitialSettings() }
+
+    override suspend fun getLatestPrescription(
+        sessionToken: String,
+        userId: String,
+    ): Result<ClaimedPrescription?> = runCatchingNetworkExceptions {
+        prescriptionApi.getPatientPrescriptions(
+            sessionToken = sessionToken,
+            userId = userId,
+        )
+    }.map { list ->
+        list.maxByOrNull { it.createdTime ?: "" }?.toClaimedPrescription()
+    }
 }

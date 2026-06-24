@@ -2,6 +2,7 @@ package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.flatMap
+import org.tidepool.sdk.model.prescription.ClaimedPrescription
 import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
@@ -153,6 +154,17 @@ class PrescriptionService internal constructor(
             userId = userId,
             accessCode = accessCode,
             birthday = birthday,
+        )
+    }
+
+    // Latest prescription already on the patient's account (null if none).
+    // Mirrors iOS checkAccountForExistingPrescription(): used to skip the access-code screen.
+    suspend fun getLatestPrescription(
+        userId: String,
+    ): Result<ClaimedPrescription?> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.getLatestPrescription(
+            sessionToken = it,
+            userId = userId,
         )
     }
 }
