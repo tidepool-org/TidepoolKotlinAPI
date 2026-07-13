@@ -15,21 +15,21 @@ import de.jensklingenberg.ktorfit.http.Path
 import de.jensklingenberg.ktorfit.http.Query
 
 interface PrescriptionApi {
-    
+
     // Create a new prescription
     @POST("prescriptions")
     suspend fun createPrescription(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Body requestBody: NewPrescriptionDto
     ): PrescriptionDto
-    
+
     // Get prescription by ID
     @GET("prescriptions/{prescriptionId}")
     suspend fun getPrescription(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("prescriptionId") prescriptionId: String
     ): PrescriptionDto
-    
+
     // Update prescription
     @PUT("prescriptions/{prescriptionId}")
     suspend fun updatePrescription(
@@ -37,14 +37,14 @@ interface PrescriptionApi {
         @Path("prescriptionId") prescriptionId: String,
         @Body requestBody: UpdatePrescriptionDto
     ): PrescriptionDto
-    
+
     // Delete prescription
     @DELETE("prescriptions/{prescriptionId}")
     suspend fun deletePrescription(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("prescriptionId") prescriptionId: String
     )
-    
+
     // Get prescriptions for a patient
     @GET("prescriptions/patient/{patientId}")
     suspend fun getPrescriptionsForPatient(
@@ -54,7 +54,7 @@ interface PrescriptionApi {
         @Query("limit") limit: Int? = null,
         @Query("offset") offset: Int? = null
     ): List<PrescriptionDto>
-    
+
     // Get prescriptions by prescriber
     @GET("prescriptions/prescriber/{prescriberId}")
     suspend fun getPrescriptionsByPrescriber(
@@ -64,7 +64,7 @@ interface PrescriptionApi {
         @Query("limit") limit: Int? = null,
         @Query("offset") offset: Int? = null
     ): List<PrescriptionDto>
-    
+
     // Get prescriptions for a clinic
     @GET("prescriptions/clinic/{clinicId}")
     suspend fun getPrescriptionsForClinic(

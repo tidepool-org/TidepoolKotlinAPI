@@ -6,5 +6,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ClaimPrescriptionDto(
     @SerialName("accessCode") val accessCode: String,
-    @SerialName("birthday")   val birthday: String    // "yyyy-MM-dd" ISO date — NO time component
+    @SerialName("birthday") val birthday: String    // "yyyy-MM-dd" ISO date — NO time component
 )

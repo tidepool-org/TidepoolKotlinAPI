@@ -68,10 +68,16 @@ internal fun PrescriptionDto.toDomain(): Prescription = Prescription(
         InitialSettings(
             glucoseUnit = s.glucoseUnit,
             glucoseSafetyLimit = s.glucoseSafetyLimit,
-            glucoseTargetSchedule = s.glucoseTargetSchedule?.map { GlucoseTarget(it.startSeconds, it.low, it.high) } ?: emptyList(),
-            basalRateSchedule = s.basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) } ?: emptyList(),
-            carbRatioSchedule = s.carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) } ?: emptyList(),
-            insulinSensitivitySchedule = s.insulinSensitivitySchedule?.map { ISF(it.startSeconds, it.amount) } ?: emptyList(),
+            glucoseTargetSchedule = s.glucoseTargetSchedule?.map {
+                GlucoseTarget(it.startSeconds, it.low, it.high)
+            } ?: emptyList(),
+            basalRateSchedule = s.basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) }
+                ?: emptyList(),
+            carbRatioSchedule = s.carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) }
+                ?: emptyList(),
+            insulinSensitivitySchedule = s.insulinSensitivitySchedule?.map {
+                ISF(it.startSeconds, it.amount)
+            } ?: emptyList(),
             maxBasalRate = s.basalRateMaximum?.value,
             maxBolus = s.bolusAmountMaximum?.value,
             cgmId = s.cgmId,
@@ -110,40 +116,40 @@ data class PrescriptionAttributesDto(
 
 @Serializable
 data class InitialSettingsDto(
-    @SerialName("bloodGlucoseUnits")             val glucoseUnit: String? = null,
-    @SerialName("glucoseSafetyLimit")            val glucoseSafetyLimit: Double? = null,
-    @SerialName("bloodGlucoseTargetSchedule")    val glucoseTargetSchedule: List<GlucoseTargetEntryDto>? = null,
-    @SerialName("basalRateSchedule")             val basalRateSchedule: List<BasalRateEntryDto>? = null,
-    @SerialName("carbohydrateRatioSchedule")     val carbRatioSchedule: List<CarbRatioEntryDto>? = null,
-    @SerialName("insulinSensitivitySchedule")    val insulinSensitivitySchedule: List<ISFEntryDto>? = null,
-    @SerialName("basalRateMaximum")              val basalRateMaximum: RateValueDto? = null,
-    @SerialName("bolusAmountMaximum")            val bolusAmountMaximum: RateValueDto? = null,
-    @SerialName("cgmId")                         val cgmId: String? = null,
-    @SerialName("pumpId")                        val pumpId: String? = null
+    @SerialName("bloodGlucoseUnits") val glucoseUnit: String? = null,
+    @SerialName("glucoseSafetyLimit") val glucoseSafetyLimit: Double? = null,
+    @SerialName("bloodGlucoseTargetSchedule") val glucoseTargetSchedule: List<GlucoseTargetEntryDto>? = null,
+    @SerialName("basalRateSchedule") val basalRateSchedule: List<BasalRateEntryDto>? = null,
+    @SerialName("carbohydrateRatioSchedule") val carbRatioSchedule: List<CarbRatioEntryDto>? = null,
+    @SerialName("insulinSensitivitySchedule") val insulinSensitivitySchedule: List<ISFEntryDto>? = null,
+    @SerialName("basalRateMaximum") val basalRateMaximum: RateValueDto? = null,
+    @SerialName("bolusAmountMaximum") val bolusAmountMaximum: RateValueDto? = null,
+    @SerialName("cgmId") val cgmId: String? = null,
+    @SerialName("pumpId") val pumpId: String? = null
 )
 
 @Serializable
 data class GlucoseTargetEntryDto(
     @SerialName("start") val startSeconds: Long = 0,
-    @SerialName("low")   val low: Double = 0.0,
-    @SerialName("high")  val high: Double = 0.0
+    @SerialName("low") val low: Double = 0.0,
+    @SerialName("high") val high: Double = 0.0
 )
 
 @Serializable
 data class BasalRateEntryDto(
     @SerialName("start") val startSeconds: Long = 0,
-    @SerialName("rate")  val rate: Double = 0.0
+    @SerialName("rate") val rate: Double = 0.0
 )
 
 @Serializable
 data class CarbRatioEntryDto(
-    @SerialName("start")  val startSeconds: Long = 0,
+    @SerialName("start") val startSeconds: Long = 0,
     @SerialName("amount") val ratio: Double = 0.0
 )
 
 @Serializable
 data class ISFEntryDto(
-    @SerialName("start")  val startSeconds: Long = 0,
+    @SerialName("start") val startSeconds: Long = 0,
     @SerialName("amount") val amount: Double = 0.0
 )
 
@@ -155,14 +161,14 @@ data class RateValueDto(
 
 @Serializable
 data class ClaimedPrescriptionResponseDto(
-    @SerialName("id")               val id: String? = null,
-    @SerialName("patientUserId")    val patientUserId: String? = null,
+    @SerialName("id") val id: String? = null,
+    @SerialName("patientUserId") val patientUserId: String? = null,
     @SerialName("prescriberUserId") val prescriberUserId: String? = null,
-    @SerialName("state")            val state: String? = null,
-    @SerialName("createdTime")      val createdTime: String? = null,
-    @SerialName("modifiedTime")     val modifiedTime: String? = null,
-    @SerialName("submittedTime")    val submittedTime: String? = null,
-    @SerialName("latestRevision")   val latestRevision: PrescriptionRevisionDto? = null,
+    @SerialName("state") val state: String? = null,
+    @SerialName("createdTime") val createdTime: String? = null,
+    @SerialName("modifiedTime") val modifiedTime: String? = null,
+    @SerialName("submittedTime") val submittedTime: String? = null,
+    @SerialName("latestRevision") val latestRevision: PrescriptionRevisionDto? = null,
 )
 
 internal fun ClaimedPrescriptionResponseDto.toClaimedPrescription(): ClaimedPrescription =
@@ -178,10 +184,16 @@ internal fun ClaimedPrescriptionResponseDto.toInitialSettings(): InitialSettings
     return InitialSettings(
         glucoseUnit = s.glucoseUnit,
         glucoseSafetyLimit = s.glucoseSafetyLimit,
-        glucoseTargetSchedule = s.glucoseTargetSchedule?.map { GlucoseTarget(it.startSeconds, it.low, it.high) } ?: emptyList(),
-        basalRateSchedule = s.basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) } ?: emptyList(),
-        carbRatioSchedule = s.carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) } ?: emptyList(),
-        insulinSensitivitySchedule = s.insulinSensitivitySchedule?.map { ISF(it.startSeconds, it.amount) } ?: emptyList(),
+        glucoseTargetSchedule = s.glucoseTargetSchedule?.map {
+            GlucoseTarget(it.startSeconds, it.low, it.high)
+        } ?: emptyList(),
+        basalRateSchedule = s.basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) }
+            ?: emptyList(),
+        carbRatioSchedule = s.carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) }
+            ?: emptyList(),
+        insulinSensitivitySchedule = s.insulinSensitivitySchedule?.map {
+            ISF(it.startSeconds, it.amount)
+        } ?: emptyList(),
         maxBasalRate = s.basalRateMaximum?.value,
         maxBolus = s.bolusAmountMaximum?.value,
         cgmId = s.cgmId,

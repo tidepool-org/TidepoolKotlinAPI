@@ -4,7 +4,6 @@ import io.ktor.client.HttpClient
 import org.tidepool.sdk.api.PrescriptionApi
 import org.tidepool.sdk.di.providePrescriptionApi
 import org.tidepool.sdk.dto.prescription.ClaimPrescriptionDto
-import org.tidepool.sdk.dto.prescription.NewPrescriptionDto
 import org.tidepool.sdk.dto.prescription.toDomain
 import org.tidepool.sdk.dto.prescription.toDto
 import org.tidepool.sdk.dto.prescription.toClaimedPrescription
@@ -34,7 +33,7 @@ class PrescriptionRepositoryImpl(
             requestBody = newPrescription.toDto(),
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun getPrescription(
         sessionToken: String,
         prescriptionId: String,
@@ -44,7 +43,7 @@ class PrescriptionRepositoryImpl(
             prescriptionId = prescriptionId,
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun updatePrescription(
         sessionToken: String,
         prescriptionId: String,
@@ -56,7 +55,7 @@ class PrescriptionRepositoryImpl(
             requestBody = updatePrescription.toDto(),
         )
     }.map { it.toDomain() }
-    
+
     override suspend fun deletePrescription(
         sessionToken: String,
         prescriptionId: String,
@@ -66,7 +65,7 @@ class PrescriptionRepositoryImpl(
             prescriptionId = prescriptionId,
         )
     }
-    
+
     override suspend fun getPrescriptionsForPatient(
         sessionToken: String,
         patientId: String,
@@ -82,7 +81,7 @@ class PrescriptionRepositoryImpl(
             offset = offset,
         )
     }.mapList { it.toDomain() }
-    
+
     override suspend fun getPrescriptionsByPrescriber(
         sessionToken: String,
         prescriberId: String,
@@ -98,7 +97,7 @@ class PrescriptionRepositoryImpl(
             offset = offset,
         )
     }.mapList { it.toDomain() }
-    
+
     override suspend fun getPrescriptionsForClinic(
         sessionToken: String,
         clinicId: String,

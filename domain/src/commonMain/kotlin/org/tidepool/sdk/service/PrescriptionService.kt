@@ -17,7 +17,6 @@ class PrescriptionService internal constructor(
     private val tokenProvider: TokenProvider,
     private val userRepository: UserRepository,
 ) {
-    
     // Create a new prescription
     suspend fun createPrescription(
         clinicId: String?,
@@ -45,7 +44,7 @@ class PrescriptionService internal constructor(
             ),
         )
     }
-    
+
     // Get prescription by ID
     suspend fun getPrescription(
         prescriptionId: String,
@@ -55,7 +54,7 @@ class PrescriptionService internal constructor(
             prescriptionId = prescriptionId,
         )
     }
-    
+
     // Update prescription
     suspend fun updatePrescription(
         prescriptionId: String,
@@ -83,7 +82,7 @@ class PrescriptionService internal constructor(
             ),
         )
     }
-    
+
     // Delete prescription
     suspend fun deletePrescription(
         prescriptionId: String,
@@ -93,7 +92,7 @@ class PrescriptionService internal constructor(
             prescriptionId = prescriptionId,
         )
     }
-    
+
     // Get prescriptions for a patient
     suspend fun getPrescriptionsForPatient(
         patientId: String,
@@ -109,7 +108,7 @@ class PrescriptionService internal constructor(
             offset = offset,
         )
     }
-    
+
     // Get prescriptions by prescriber
     suspend fun getPrescriptionsByPrescriber(
         prescriberId: String,
@@ -125,7 +124,7 @@ class PrescriptionService internal constructor(
             offset = offset,
         )
     }
-    
+
     // Get prescriptions for a clinic
     suspend fun getPrescriptionsForClinic(
         clinicId: String,
