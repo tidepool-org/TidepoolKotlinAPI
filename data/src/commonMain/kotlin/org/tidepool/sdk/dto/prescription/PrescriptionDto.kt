@@ -64,26 +64,26 @@ internal fun PrescriptionDto.toDomain(): Prescription = Prescription(
     createdTime = Instant.parse(createdTime!!),
     modifiedTime = Instant.parse(modifiedTime!!),
     notes = notes,
-    initialSettings = latestRevision?.attributes?.initialSettings?.let { s ->
-        InitialSettings(
-            glucoseUnit = s.glucoseUnit,
-            glucoseSafetyLimit = s.glucoseSafetyLimit,
-            glucoseTargetSchedule = s.glucoseTargetSchedule?.map {
-                GlucoseTarget(it.startSeconds, it.low, it.high)
-            } ?: emptyList(),
-            basalRateSchedule = s.basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) }
-                ?: emptyList(),
-            carbRatioSchedule = s.carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) }
-                ?: emptyList(),
-            insulinSensitivitySchedule = s.insulinSensitivitySchedule?.map {
-                ISF(it.startSeconds, it.amount)
-            } ?: emptyList(),
-            maxBasalRate = s.basalRateMaximum?.value,
-            maxBolus = s.bolusAmountMaximum?.value,
-            cgmId = s.cgmId,
-            pumpId = s.pumpId,
-        )
-    },
+    initialSettings = latestRevision?.attributes?.initialSettings?.toDomain(),
+)
+
+internal fun InitialSettingsDto.toDomain(): InitialSettings = InitialSettings(
+    glucoseUnit = glucoseUnit,
+    glucoseSafetyLimit = glucoseSafetyLimit,
+    glucoseTargetSchedule = glucoseTargetSchedule?.map {
+        GlucoseTarget(it.startSeconds, it.low, it.high)
+    } ?: emptyList(),
+    basalRateSchedule = basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) }
+        ?: emptyList(),
+    carbRatioSchedule = carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) }
+        ?: emptyList(),
+    insulinSensitivitySchedule = insulinSensitivitySchedule?.map {
+        ISF(it.startSeconds, it.amount)
+    } ?: emptyList(),
+    maxBasalRate = basalRateMaximum?.value,
+    maxBolus = bolusAmountMaximum?.value,
+    cgmId = cgmId,
+    pumpId = pumpId,
 )
 
 internal fun Prescription.toDto(): PrescriptionDto = PrescriptionDto(
@@ -179,24 +179,5 @@ internal fun ClaimedPrescriptionResponseDto.toClaimedPrescription(): ClaimedPres
         state = state,
     )
 
-internal fun ClaimedPrescriptionResponseDto.toInitialSettings(): InitialSettings? {
-    val s = latestRevision?.attributes?.initialSettings ?: return null
-    return InitialSettings(
-        glucoseUnit = s.glucoseUnit,
-        glucoseSafetyLimit = s.glucoseSafetyLimit,
-        glucoseTargetSchedule = s.glucoseTargetSchedule?.map {
-            GlucoseTarget(it.startSeconds, it.low, it.high)
-        } ?: emptyList(),
-        basalRateSchedule = s.basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) }
-            ?: emptyList(),
-        carbRatioSchedule = s.carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) }
-            ?: emptyList(),
-        insulinSensitivitySchedule = s.insulinSensitivitySchedule?.map {
-            ISF(it.startSeconds, it.amount)
-        } ?: emptyList(),
-        maxBasalRate = s.basalRateMaximum?.value,
-        maxBolus = s.bolusAmountMaximum?.value,
-        cgmId = s.cgmId,
-        pumpId = s.pumpId,
-    )
-}
+internal fun ClaimedPrescriptionResponseDto.toInitialSettings(): InitialSettings? =
+    latestRevision?.attributes?.initialSettings?.toDomain()
