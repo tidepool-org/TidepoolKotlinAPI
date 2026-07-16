@@ -2,6 +2,8 @@ package org.tidepool.sdk.service
 
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.flatMap
+import org.tidepool.sdk.model.prescription.ClaimedPrescription
+import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.NewPrescription
 import org.tidepool.sdk.model.prescription.Prescription
 import org.tidepool.sdk.model.prescription.PrescriptionStatus
@@ -15,7 +17,6 @@ class PrescriptionService internal constructor(
     private val tokenProvider: TokenProvider,
     private val userRepository: UserRepository,
 ) {
-    
     // Create a new prescription
     suspend fun createPrescription(
         clinicId: String?,
@@ -43,7 +44,7 @@ class PrescriptionService internal constructor(
             ),
         )
     }
-    
+
     // Get prescription by ID
     suspend fun getPrescription(
         prescriptionId: String,
@@ -53,7 +54,7 @@ class PrescriptionService internal constructor(
             prescriptionId = prescriptionId,
         )
     }
-    
+
     // Update prescription
     suspend fun updatePrescription(
         prescriptionId: String,
@@ -81,7 +82,7 @@ class PrescriptionService internal constructor(
             ),
         )
     }
-    
+
     // Delete prescription
     suspend fun deletePrescription(
         prescriptionId: String,
@@ -91,7 +92,7 @@ class PrescriptionService internal constructor(
             prescriptionId = prescriptionId,
         )
     }
-    
+
     // Get prescriptions for a patient
     suspend fun getPrescriptionsForPatient(
         patientId: String,
@@ -107,7 +108,7 @@ class PrescriptionService internal constructor(
             offset = offset,
         )
     }
-    
+
     // Get prescriptions by prescriber
     suspend fun getPrescriptionsByPrescriber(
         prescriberId: String,
@@ -123,7 +124,7 @@ class PrescriptionService internal constructor(
             offset = offset,
         )
     }
-    
+
     // Get prescriptions for a clinic
     suspend fun getPrescriptionsForClinic(
         clinicId: String,
@@ -137,6 +138,32 @@ class PrescriptionService internal constructor(
             status = status?.name?.lowercase(),
             limit = limit,
             offset = offset,
+        )
+    }
+
+    // Claim a prescription for the current patient
+    // userId must be obtained from sdk.users.getCurrentUser() by the caller
+    suspend fun claimPrescription(
+        userId: String,
+        accessCode: String,
+        birthday: String,
+    ): Result<InitialSettings?> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.claimPrescription(
+            sessionToken = it,
+            userId = userId,
+            accessCode = accessCode,
+            birthday = birthday,
+        )
+    }
+
+    // Latest prescription already on the patient's account (null if none).
+    // Mirrors iOS checkAccountForExistingPrescription(): used to skip the access-code screen.
+    suspend fun getLatestPrescription(
+        userId: String,
+    ): Result<ClaimedPrescription?> = tokenProvider.getToken().flatMap {
+        prescriptionRepository.getLatestPrescription(
+            sessionToken = it,
+            userId = userId,
         )
     }
 }

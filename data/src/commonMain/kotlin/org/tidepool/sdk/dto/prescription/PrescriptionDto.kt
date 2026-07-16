@@ -2,6 +2,12 @@ package org.tidepool.sdk.dto.prescription
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.model.prescription.BasalRate
+import org.tidepool.sdk.model.prescription.CarbRatio
+import org.tidepool.sdk.model.prescription.ClaimedPrescription
+import org.tidepool.sdk.model.prescription.GlucoseTarget
+import org.tidepool.sdk.model.prescription.ISF
+import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.Prescription
 import kotlinx.datetime.Instant
 
@@ -37,6 +43,8 @@ data class PrescriptionDto(
     val modifiedTime: String? = null,
     @SerialName("notes")
     val notes: String? = null,
+    @SerialName("latestRevision")
+    val latestRevision: PrescriptionRevisionDto? = null,
 )
 
 // Manual mapping functions
@@ -55,7 +63,27 @@ internal fun PrescriptionDto.toDomain(): Prescription = Prescription(
     status = status!!.toDomain(),
     createdTime = Instant.parse(createdTime!!),
     modifiedTime = Instant.parse(modifiedTime!!),
-    notes = notes
+    notes = notes,
+    initialSettings = latestRevision?.attributes?.initialSettings?.toDomain(),
+)
+
+internal fun InitialSettingsDto.toDomain(): InitialSettings = InitialSettings(
+    glucoseUnit = glucoseUnit,
+    glucoseSafetyLimit = glucoseSafetyLimit,
+    glucoseTargetSchedule = glucoseTargetSchedule?.map {
+        GlucoseTarget(it.startSeconds, it.low, it.high)
+    } ?: emptyList(),
+    basalRateSchedule = basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) }
+        ?: emptyList(),
+    carbRatioSchedule = carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) }
+        ?: emptyList(),
+    insulinSensitivitySchedule = insulinSensitivitySchedule?.map {
+        ISF(it.startSeconds, it.amount)
+    } ?: emptyList(),
+    maxBasalRate = basalRateMaximum?.value,
+    maxBolus = bolusAmountMaximum?.value,
+    cgmId = cgmId,
+    pumpId = pumpId,
 )
 
 internal fun Prescription.toDto(): PrescriptionDto = PrescriptionDto(
@@ -75,3 +103,81 @@ internal fun Prescription.toDto(): PrescriptionDto = PrescriptionDto(
     modifiedTime = modifiedTime.toString(),
     notes = notes
 )
+
+@Serializable
+data class PrescriptionRevisionDto(
+    @SerialName("attributes") val attributes: PrescriptionAttributesDto? = null
+)
+
+@Serializable
+data class PrescriptionAttributesDto(
+    @SerialName("initialSettings") val initialSettings: InitialSettingsDto? = null
+)
+
+@Serializable
+data class InitialSettingsDto(
+    @SerialName("bloodGlucoseUnits") val glucoseUnit: String? = null,
+    @SerialName("glucoseSafetyLimit") val glucoseSafetyLimit: Double? = null,
+    @SerialName("bloodGlucoseTargetSchedule") val glucoseTargetSchedule: List<GlucoseTargetEntryDto>? = null,
+    @SerialName("basalRateSchedule") val basalRateSchedule: List<BasalRateEntryDto>? = null,
+    @SerialName("carbohydrateRatioSchedule") val carbRatioSchedule: List<CarbRatioEntryDto>? = null,
+    @SerialName("insulinSensitivitySchedule") val insulinSensitivitySchedule: List<ISFEntryDto>? = null,
+    @SerialName("basalRateMaximum") val basalRateMaximum: RateValueDto? = null,
+    @SerialName("bolusAmountMaximum") val bolusAmountMaximum: RateValueDto? = null,
+    @SerialName("cgmId") val cgmId: String? = null,
+    @SerialName("pumpId") val pumpId: String? = null
+)
+
+@Serializable
+data class GlucoseTargetEntryDto(
+    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("low") val low: Double = 0.0,
+    @SerialName("high") val high: Double = 0.0
+)
+
+@Serializable
+data class BasalRateEntryDto(
+    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("rate") val rate: Double = 0.0
+)
+
+@Serializable
+data class CarbRatioEntryDto(
+    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("amount") val ratio: Double = 0.0
+)
+
+@Serializable
+data class ISFEntryDto(
+    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("amount") val amount: Double = 0.0
+)
+
+@Serializable
+data class RateValueDto(
+    @SerialName("units") val units: String? = null,
+    @SerialName("value") val value: Double = 0.0
+)
+
+@Serializable
+data class ClaimedPrescriptionResponseDto(
+    @SerialName("id") val id: String? = null,
+    @SerialName("patientUserId") val patientUserId: String? = null,
+    @SerialName("prescriberUserId") val prescriberUserId: String? = null,
+    @SerialName("state") val state: String? = null,
+    @SerialName("createdTime") val createdTime: String? = null,
+    @SerialName("modifiedTime") val modifiedTime: String? = null,
+    @SerialName("submittedTime") val submittedTime: String? = null,
+    @SerialName("latestRevision") val latestRevision: PrescriptionRevisionDto? = null,
+)
+
+internal fun ClaimedPrescriptionResponseDto.toClaimedPrescription(): ClaimedPrescription =
+    ClaimedPrescription(
+        initialSettings = toInitialSettings(),
+        prescriberUserId = prescriberUserId,
+        submittedDate = submittedTime ?: modifiedTime ?: createdTime,
+        state = state,
+    )
+
+internal fun ClaimedPrescriptionResponseDto.toInitialSettings(): InitialSettings? =
+    latestRevision?.attributes?.initialSettings?.toDomain()
