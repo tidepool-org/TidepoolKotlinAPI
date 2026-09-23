@@ -70,15 +70,16 @@ internal fun PrescriptionDto.toDomain(): Prescription = Prescription(
 internal fun InitialSettingsDto.toDomain(): InitialSettings = InitialSettings(
     glucoseUnit = glucoseUnit,
     glucoseSafetyLimit = glucoseSafetyLimit,
+    // Wire format is milliseconds-of-day (platform's pump.BasalRateStartArray etc., 0..86400000).
     glucoseTargetSchedule = glucoseTargetSchedule?.map {
-        GlucoseTarget(it.startSeconds, it.low, it.high)
+        GlucoseTarget(it.startSeconds / 1000, it.low, it.high)
     } ?: emptyList(),
-    basalRateSchedule = basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) }
+    basalRateSchedule = basalRateSchedule?.map { BasalRate(it.startSeconds / 1000, it.rate) }
         ?: emptyList(),
-    carbRatioSchedule = carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) }
+    carbRatioSchedule = carbRatioSchedule?.map { CarbRatio(it.startSeconds / 1000, it.ratio) }
         ?: emptyList(),
     insulinSensitivitySchedule = insulinSensitivitySchedule?.map {
-        ISF(it.startSeconds, it.amount)
+        ISF(it.startSeconds / 1000, it.amount)
     } ?: emptyList(),
     maxBasalRate = basalRateMaximum?.value,
     maxBolus = bolusAmountMaximum?.value,
