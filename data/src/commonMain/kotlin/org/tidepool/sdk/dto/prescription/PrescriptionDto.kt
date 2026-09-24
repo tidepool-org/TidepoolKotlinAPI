@@ -67,18 +67,26 @@ internal fun PrescriptionDto.toDomain(): Prescription = Prescription(
     initialSettings = latestRevision?.attributes?.initialSettings?.toDomain(),
 )
 
+/**
+ * Converts the platform's milliseconds-of-day `start` field (`pump.BasalRateStartArray` et al.,
+ * server-validated 0..86_400_000 inclusive) to seconds-of-day. The upper bound is documented as
+ * exclusive (86_400_000 is equivalent to midnight) but the server's validator accepts it anyway,
+ * so wrap it back to 0 rather than produce 86_400, which LocalTime.ofSecondOfDay() rejects.
+ */
+private fun Long.msOfDayToSeconds(): Long = (this / 1000) % 86_400
+
 internal fun InitialSettingsDto.toDomain(): InitialSettings = InitialSettings(
     glucoseUnit = glucoseUnit,
     glucoseSafetyLimit = glucoseSafetyLimit,
     glucoseTargetSchedule = glucoseTargetSchedule?.map {
-        GlucoseTarget(it.startSeconds, it.low, it.high)
+        GlucoseTarget(it.startMillis.msOfDayToSeconds(), it.low, it.high)
     } ?: emptyList(),
-    basalRateSchedule = basalRateSchedule?.map { BasalRate(it.startSeconds, it.rate) }
+    basalRateSchedule = basalRateSchedule?.map { BasalRate(it.startMillis.msOfDayToSeconds(), it.rate) }
         ?: emptyList(),
-    carbRatioSchedule = carbRatioSchedule?.map { CarbRatio(it.startSeconds, it.ratio) }
+    carbRatioSchedule = carbRatioSchedule?.map { CarbRatio(it.startMillis.msOfDayToSeconds(), it.ratio) }
         ?: emptyList(),
     insulinSensitivitySchedule = insulinSensitivitySchedule?.map {
-        ISF(it.startSeconds, it.amount)
+        ISF(it.startMillis.msOfDayToSeconds(), it.amount)
     } ?: emptyList(),
     maxBasalRate = basalRateMaximum?.value,
     maxBolus = bolusAmountMaximum?.value,
@@ -130,26 +138,26 @@ data class InitialSettingsDto(
 
 @Serializable
 data class GlucoseTargetEntryDto(
-    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("start") val startMillis: Long = 0,
     @SerialName("low") val low: Double = 0.0,
     @SerialName("high") val high: Double = 0.0
 )
 
 @Serializable
 data class BasalRateEntryDto(
-    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("start") val startMillis: Long = 0,
     @SerialName("rate") val rate: Double = 0.0
 )
 
 @Serializable
 data class CarbRatioEntryDto(
-    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("start") val startMillis: Long = 0,
     @SerialName("amount") val ratio: Double = 0.0
 )
 
 @Serializable
 data class ISFEntryDto(
-    @SerialName("start") val startSeconds: Long = 0,
+    @SerialName("start") val startMillis: Long = 0,
     @SerialName("amount") val amount: Double = 0.0
 )
 
