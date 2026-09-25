@@ -20,4 +20,7 @@ interface DosingDecisionDataDao {
 
     @Query("SELECT * FROM dosing_decision_data")
     suspend fun getAll(): List<DosingDecisionDataEntity>
+
+    @Query("SELECT * FROM dosing_decision_data LIMIT :limit")
+    suspend fun getAll(limit: Int): List<DosingDecisionDataEntity>
 }

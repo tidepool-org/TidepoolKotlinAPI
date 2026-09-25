@@ -353,12 +353,12 @@ class DataRepositoryImpl(
         sessionToken: String,
         dataSetId: String,
     ): Result<Unit> = listOf(
-        basalAutomatedDataDao.getAll(),
-        bolusDataDao.getAll(),
-        continuousGlucoseDataDao.getAll(),
-        dosingDecisionDataDao.getAll(),
-        foodDataDao.getAll(),
-        insulinDataDao.getAll(),
+        basalAutomatedDataDao.getAll(UPLOAD_BATCH_LIMIT),
+        bolusDataDao.getAll(UPLOAD_BATCH_LIMIT),
+        continuousGlucoseDataDao.getAll(UPLOAD_BATCH_LIMIT),
+        dosingDecisionDataDao.getAll(DOSING_DECISION_UPLOAD_BATCH_LIMIT),
+        foodDataDao.getAll(UPLOAD_BATCH_LIMIT),
+        insulinDataDao.getAll(UPLOAD_BATCH_LIMIT),
     ).flatten().let { entities ->
         Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities" }
         if (entities.isEmpty()) {
@@ -416,5 +416,11 @@ class DataRepositoryImpl(
             is PumpSettingsDataDto -> pumpSettingsDataDao.insert(dto.toEntity())
             else -> Logger.w(javaClass.simpleName) { "Unknown data type: ${dto::class.simpleName}" }
         }
+    }
+
+    companion object {
+        // iOS parity: TidepoolServiceKit/TidepoolService.swift:323-457
+        private const val UPLOAD_BATCH_LIMIT = 1000
+        private const val DOSING_DECISION_UPLOAD_BATCH_LIMIT = 50
     }
 }

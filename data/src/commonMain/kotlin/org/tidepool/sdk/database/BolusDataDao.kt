@@ -20,4 +20,7 @@ interface BolusDataDao {
 
     @Query("SELECT * FROM bolus_data")
     suspend fun getAll(): List<BolusDataEntity>
+
+    @Query("SELECT * FROM bolus_data LIMIT :limit")
+    suspend fun getAll(limit: Int): List<BolusDataEntity>
 }
