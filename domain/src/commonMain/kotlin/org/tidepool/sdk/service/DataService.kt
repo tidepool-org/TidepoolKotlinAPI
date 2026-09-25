@@ -2,6 +2,8 @@ package org.tidepool.sdk.service
 
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import org.tidepool.sdk.AppLifecycleProvider
 import org.tidepool.sdk.Paginator
@@ -32,37 +34,50 @@ class DataService internal constructor(
 ) {
 
     private val TAG = javaClass.simpleName
+    private val uploadMutex = Mutex()
+    private var lifecycleAwareDataUploadManager: LifecycleAwareDataUploadManager? = null
+
     fun startLifecycleAwareRecurrentUpload(
         lifecycleProvider: AppLifecycleProvider,
         scope: CoroutineScope,
         period: Duration,
         delay: Duration,
-    ) = LifecycleAwareDataUploadManager(
-        lifecycleProvider = lifecycleProvider,
-        scope = scope,
-    ).apply {
-        configure(
-            period = period,
-            delay = delay,
-            action = {
-                Logger.d("DataService") { "Uploading cached data" }
-                tokenProvider.getToken().flatMap { sessionToken ->
-                    Logger.v("DataService") { "Have token" }
-                    getDataSetId().flatMap { dataSetId ->
-                        Logger.i("DataService") { "Have data set id" }
-                        dataRepository.uploadCachedData(
-                            userId = userRepository.getCurrentUser(sessionToken)
-                                .getOrThrow().userId,
-                            sessionToken = sessionToken,
-                            dataSetId = dataSetId,
-                        )
-                    }
-                        .onSuccess { Logger.d(TAG) { "Cached data uploaded successfully" } }
-                        .onFailure { Logger.e(TAG, it) { "Failed to upload cached data: " } }
-                }
-            },
-        )
-        start()
+    ) {
+        lifecycleAwareDataUploadManager?.stop()
+        lifecycleAwareDataUploadManager = LifecycleAwareDataUploadManager(
+            lifecycleProvider = lifecycleProvider,
+            scope = scope,
+        ).apply {
+            configure(
+                period = period,
+                delay = delay,
+                action = { uploadCachedDataNow() },
+            )
+            start()
+        }
+    }
+
+    /**
+     * Uploads cached data now, serialized against concurrent callers via [uploadMutex] so the
+     * foreground lifecycle-aware loop and any background caller (e.g. a WorkManager worker)
+     * never race on token fetch, data set creation, and the upload itself.
+     */
+    suspend fun uploadCachedDataNow(): Result<Unit> = uploadMutex.withLock {
+        Logger.d("DataService") { "Uploading cached data" }
+        tokenProvider.getToken().flatMap { sessionToken ->
+            Logger.v("DataService") { "Have token" }
+            getDataSetId().flatMap { dataSetId ->
+                Logger.i("DataService") { "Have data set id" }
+                dataRepository.uploadCachedData(
+                    userId = userRepository.getCurrentUser(sessionToken)
+                        .getOrThrow().userId,
+                    sessionToken = sessionToken,
+                    dataSetId = dataSetId,
+                )
+            }
+                .onSuccess { Logger.d(TAG) { "Cached data uploaded successfully" } }
+                .onFailure { Logger.e(TAG, it) { "Failed to upload cached data: " } }
+        }
     }
 
     suspend fun getDataForUser(
