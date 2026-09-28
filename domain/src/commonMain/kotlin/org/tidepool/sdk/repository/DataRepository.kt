@@ -155,7 +155,6 @@ interface DataRepository {
      * the outbox is drained (or was already empty).
      */
     suspend fun uploadCachedData(
-        userId: String,
         sessionToken: String,
         dataSetId: String,
     ): Result<Boolean>

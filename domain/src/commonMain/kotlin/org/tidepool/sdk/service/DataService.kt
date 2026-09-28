@@ -92,13 +92,10 @@ class DataService internal constructor(
             Logger.v(TAG) { "Have token" }
             getDataSetId().flatMap { dataSetId ->
                 Logger.i(TAG) { "Have data set id" }
-                userRepository.getCurrentUser(sessionToken).flatMap { user ->
-                    dataRepository.uploadCachedData(
-                        userId = user.userId,
-                        sessionToken = sessionToken,
-                        dataSetId = dataSetId,
-                    )
-                }
+                dataRepository.uploadCachedData(
+                    sessionToken = sessionToken,
+                    dataSetId = dataSetId,
+                )
             }
         }
     }

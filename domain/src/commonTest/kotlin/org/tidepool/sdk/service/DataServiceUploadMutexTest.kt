@@ -47,19 +47,19 @@ class DataServiceUploadMutexTest {
     }
 
     /**
-     * Regression test: [DataService.uploadCachedDataNow] must keep the token/user/upload chain
-     * inside [Result] (via `flatMap`) instead of calling `getOrThrow()` on an intermediate
-     * result. A `getOrThrow()` there would let a transient failure from
-     * [UserRepository.getCurrentUser] escape as a throw instead of a `Result.failure`, which
-     * would make the caller (a WorkManager worker) record a hard failure instead of retrying.
+     * Regression test: [DataService.uploadCachedDataNow] must keep the token/data set/upload
+     * chain inside [Result] (via `flatMap`) instead of calling `getOrThrow()` on an intermediate
+     * result. A `getOrThrow()` there would let a transient failure escape as a throw instead of
+     * a `Result.failure`, which would make the caller (a WorkManager worker) record a hard
+     * failure instead of retrying.
      */
     @Test
-    fun getCurrentUserFailureIsReturnedAsResultFailureNotThrown() = runTest {
-        val expected = IllegalStateException("getCurrentUser failed")
+    fun tokenFailureIsReturnedAsResultFailureNotThrown() = runTest {
+        val expected = IllegalStateException("getToken failed")
         val dataService = DataService(
             dataRepository = RecordingDataRepository(),
-            userRepository = FailingUserRepository(expected),
-            tokenProvider = FakeTokenProvider(),
+            userRepository = FakeUserRepository(),
+            tokenProvider = FailingTokenProvider(expected),
         )
 
         val result = dataService.uploadCachedDataNow()
@@ -129,7 +129,6 @@ class DataServiceUploadMutexTest {
         private val remainingResults = ArrayDeque(scriptedResults)
 
         override suspend fun uploadCachedData(
-            userId: String,
             sessionToken: String,
             dataSetId: String,
         ): Result<Boolean> {
@@ -286,11 +285,8 @@ class DataServiceUploadMutexTest {
             throw NotImplementedError()
     }
 
-    private class FailingUserRepository(private val error: Throwable) : UserRepository {
-        override suspend fun getCurrentUser(sessionToken: String): Result<User> =
-            Result.failure(error)
-
-        override suspend fun getUser(userId: String, sessionToken: String): Result<User> =
-            throw NotImplementedError()
+    private class FailingTokenProvider(private val error: Throwable) : TokenProvider {
+        override suspend fun getToken(): Result<String> = Result.failure(error)
+        override fun clearToken() = Unit
     }
 }

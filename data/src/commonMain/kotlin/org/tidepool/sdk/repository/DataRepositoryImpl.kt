@@ -349,7 +349,6 @@ class DataRepositoryImpl(
     }
 
     override suspend fun uploadCachedData(
-        userId: String,
         sessionToken: String,
         dataSetId: String,
     ): Result<Boolean> {
