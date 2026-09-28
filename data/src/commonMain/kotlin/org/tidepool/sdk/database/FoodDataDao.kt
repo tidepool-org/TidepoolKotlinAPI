@@ -21,6 +21,6 @@ interface FoodDataDao {
     @Query("SELECT * FROM food_data")
     suspend fun getAll(): List<FoodDataEntity>
 
-    @Query("SELECT * FROM food_data LIMIT :limit")
+    @Query("SELECT * FROM food_data ORDER BY time ASC, rowid ASC LIMIT :limit")
     suspend fun getAll(limit: Int): List<FoodDataEntity>
 }

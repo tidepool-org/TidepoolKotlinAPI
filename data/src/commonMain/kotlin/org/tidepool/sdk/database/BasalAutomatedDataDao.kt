@@ -21,6 +21,6 @@ interface BasalAutomatedDataDao {
     @Query("SELECT * FROM basal_automated_data")
     suspend fun getAll(): List<BasalAutomatedDataEntity>
 
-    @Query("SELECT * FROM basal_automated_data LIMIT :limit")
+    @Query("SELECT * FROM basal_automated_data ORDER BY time ASC, rowid ASC LIMIT :limit")
     suspend fun getAll(limit: Int): List<BasalAutomatedDataEntity>
 }

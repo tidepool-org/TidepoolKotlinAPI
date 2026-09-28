@@ -21,6 +21,6 @@ interface ContinuousGlucoseDataDao {
     @Query("SELECT * FROM continuous_glucose_data")
     suspend fun getAll(): List<ContinuousGlucoseDataEntity>
 
-    @Query("SELECT * FROM continuous_glucose_data LIMIT :limit")
+    @Query("SELECT * FROM continuous_glucose_data ORDER BY time ASC, rowid ASC LIMIT :limit")
     suspend fun getAll(limit: Int): List<ContinuousGlucoseDataEntity>
 }

@@ -21,6 +21,6 @@ interface BolusDataDao {
     @Query("SELECT * FROM bolus_data")
     suspend fun getAll(): List<BolusDataEntity>
 
-    @Query("SELECT * FROM bolus_data LIMIT :limit")
+    @Query("SELECT * FROM bolus_data ORDER BY time ASC, rowid ASC LIMIT :limit")
     suspend fun getAll(limit: Int): List<BolusDataEntity>
 }
