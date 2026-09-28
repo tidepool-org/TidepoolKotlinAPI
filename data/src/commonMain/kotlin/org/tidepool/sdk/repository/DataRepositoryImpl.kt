@@ -426,7 +426,10 @@ class DataRepositoryImpl(
     }
 
     companion object {
-        // iOS parity: TidepoolServiceKit/TidepoolService.swift:323-457
+        // Values borrowed from iOS TidepoolService's doseDataLimit / dosingDecisionDataLimit, but
+        // not the same shape: iOS sends one request per data type and caps doses at 1000 across all
+        // dose kinds. Here each table is capped on its own and all of them go out in one request,
+        // up to 5 * 1000 + 50 records.
         private const val UPLOAD_BATCH_LIMIT = 1000
         private const val DOSING_DECISION_UPLOAD_BATCH_LIMIT = 50
     }
