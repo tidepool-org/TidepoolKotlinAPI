@@ -52,22 +52,15 @@ suspend fun <T : Any> runCatchingNetworkExceptions(
 suspend fun <T : Any> runWithRetry(
     maxRetries: Int = 3,
     delay: Long = 2.seconds.inWholeMilliseconds,
-    retriableExceptions: List<KClass<out TidepoolNetworkException>> = listOf(
-        NetworkUnavailableException::class,
-        TimeoutException::class,
-        GenericNetworkException::class,
-        NoInternetException::class,
-        InternalServerErrorException::class,
-        BadGatewayException::class,
-        ServiceUnavailableException::class,
-        GatewayTimeoutException::class,
-    ),
+    retriableExceptions: List<KClass<out TidepoolNetworkException>> = RetriableNetworkExceptions,
     block: suspend () -> T,
 ): Result<T> = runCatchingNetworkExceptions(block)
     .fold(
         onSuccess = { Result.success(it) },
         onFailure = {
-            if (maxRetries > 0 && it::class in retriableExceptions) {
+            // Subclass-inclusive on purpose: matches DataUploadWorker's matching so the two
+            // callers of this retriable set never disagree on what counts as transient.
+            if (maxRetries > 0 && retriableExceptions.any { klass -> klass.isInstance(it) }) {
                 val jitteredDelay = delay + Random.nextLong(-delay / 10, delay / 10)
 
                 delay(jitteredDelay)
