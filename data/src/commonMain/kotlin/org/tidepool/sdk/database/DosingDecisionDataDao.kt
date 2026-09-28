@@ -15,6 +15,9 @@ interface DosingDecisionDataDao {
     @Delete
     suspend fun delete(data: DosingDecisionDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<DosingDecisionDataEntity>)
+
     @Query("SELECT * FROM dosing_decision_data WHERE id = :id")
     suspend fun getById(id: String): DosingDecisionDataEntity?
 

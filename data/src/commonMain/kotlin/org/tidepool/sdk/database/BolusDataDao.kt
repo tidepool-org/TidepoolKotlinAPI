@@ -15,6 +15,9 @@ interface BolusDataDao {
     @Delete
     suspend fun delete(data: BolusDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<BolusDataEntity>)
+
     @Query("SELECT * FROM bolus_data WHERE id = :id")
     suspend fun getById(id: String): BolusDataEntity?
 

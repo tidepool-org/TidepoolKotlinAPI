@@ -14,16 +14,6 @@ import org.tidepool.sdk.database.DosingDecisionDataDao
 import org.tidepool.sdk.database.FoodDataDao
 import org.tidepool.sdk.database.InsulinDataDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
-import org.tidepool.sdk.database.entity.data.BasalAutomatedDataEntity
-import org.tidepool.sdk.database.entity.data.BolusDataEntity
-import org.tidepool.sdk.database.entity.data.CgmSettingsDataEntity
-import org.tidepool.sdk.database.entity.data.ContinuousGlucoseDataEntity
-import org.tidepool.sdk.database.entity.data.ControllerSettingsDataEntity
-import org.tidepool.sdk.database.entity.data.DeviceEventDataEntity
-import org.tidepool.sdk.database.entity.data.DosingDecisionDataEntity
-import org.tidepool.sdk.database.entity.data.FoodDataEntity
-import org.tidepool.sdk.database.entity.data.InsulinDataEntity
-import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
 import org.tidepool.sdk.database.entity.data.toEntity
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
@@ -352,18 +342,18 @@ class DataRepositoryImpl(
         sessionToken: String,
         dataSetId: String,
     ): Result<Boolean> {
-        // Each pair tracks the batch fetched for a type alongside the limit it was fetched
-        // with, so we can tell the caller whether more data may still be waiting behind it.
-        val batches = listOf(
-            basalAutomatedDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
-            bolusDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
-            continuousGlucoseDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
-            dosingDecisionDataDao.getAll(DOSING_DECISION_UPLOAD_BATCH_LIMIT) to DOSING_DECISION_UPLOAD_BATCH_LIMIT,
-            foodDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
-            insulinDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
-        )
-        val batchWasFull = batches.any { (batch, limit) -> batch.size == limit }
-        val entities = batches.flatMap { it.first }
+        val basalAutomated = basalAutomatedDataDao.getAll(UPLOAD_BATCH_LIMIT)
+        val bolus = bolusDataDao.getAll(UPLOAD_BATCH_LIMIT)
+        val continuousGlucose = continuousGlucoseDataDao.getAll(UPLOAD_BATCH_LIMIT)
+        val dosingDecision = dosingDecisionDataDao.getAll(DOSING_DECISION_UPLOAD_BATCH_LIMIT)
+        val food = foodDataDao.getAll(UPLOAD_BATCH_LIMIT)
+        val insulin = insulinDataDao.getAll(UPLOAD_BATCH_LIMIT)
+
+        // A table that came back at its limit may have more rows waiting behind this batch.
+        val batchWasFull = dosingDecision.size == DOSING_DECISION_UPLOAD_BATCH_LIMIT ||
+            listOf(basalAutomated, bolus, continuousGlucose, food, insulin)
+                .any { it.size == UPLOAD_BATCH_LIMIT }
+        val entities = basalAutomated + bolus + continuousGlucose + dosingDecision + food + insulin
 
         Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities" }
         if (entities.isEmpty()) {
@@ -376,20 +366,14 @@ class DataRepositoryImpl(
                 data = entities.map { it.toDto() },
             )
         }.map {
-            entities.forEach { entity ->
-                when (entity) {
-                    is BasalAutomatedDataEntity -> basalAutomatedDataDao.delete(entity)
-                    is BolusDataEntity -> bolusDataDao.delete(entity)
-                    is ContinuousGlucoseDataEntity -> continuousGlucoseDataDao.delete(entity)
-                    is DosingDecisionDataEntity -> dosingDecisionDataDao.delete(entity)
-                    is FoodDataEntity -> foodDataDao.delete(entity)
-                    is InsulinDataEntity -> insulinDataDao.delete(entity)
-                    is DeviceEventDataEntity -> deviceEventDataDao.delete(entity)
-                    is CgmSettingsDataEntity -> cgmSettingsDataDao.delete(entity)
-                    is ControllerSettingsDataEntity -> controllerSettingsDataDao.delete(entity)
-                    is PumpSettingsDataEntity -> pumpSettingsDataDao.delete(entity)
-                }
-            }
+            // One list delete per table: Room runs each as a single transaction instead of one
+            // per row, which matters with up to thousands of rows per batch.
+            basalAutomatedDataDao.delete(basalAutomated)
+            bolusDataDao.delete(bolus)
+            continuousGlucoseDataDao.delete(continuousGlucose)
+            dosingDecisionDataDao.delete(dosingDecision)
+            foodDataDao.delete(food)
+            insulinDataDao.delete(insulin)
             batchWasFull
         }
     }

@@ -15,6 +15,9 @@ interface ContinuousGlucoseDataDao {
     @Delete
     suspend fun delete(data: ContinuousGlucoseDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<ContinuousGlucoseDataEntity>)
+
     @Query("SELECT * FROM continuous_glucose_data WHERE id = :id")
     suspend fun getById(id: String): ContinuousGlucoseDataEntity?
 
