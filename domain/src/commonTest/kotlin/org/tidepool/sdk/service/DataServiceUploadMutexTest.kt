@@ -22,7 +22,8 @@ import kotlin.test.assertTrue
 /**
  * Verifies that [DataService.uploadCachedDataNow] serializes concurrent callers, so the
  * foreground lifecycle-aware loop and a background caller (e.g. a WorkManager worker) can never
- * race on token fetch, data set creation, and the upload itself.
+ * race on token fetch, data set creation, and the upload itself, and that it drains the outbox
+ * batch by batch within its iteration cap.
  */
 class DataServiceUploadMutexTest {
 
@@ -67,8 +68,57 @@ class DataServiceUploadMutexTest {
         assertEquals(expected, result.exceptionOrNull())
     }
 
-    /** Records how many calls to [uploadCachedData] are in flight at once. */
-    private class RecordingDataRepository : DataRepository {
+    @Test
+    fun drainsAgainWhileBatchIsFull() = runTest {
+        val dataRepository = RecordingDataRepository(
+            scriptedResults = listOf(Result.success(true), Result.success(true), Result.success(false)),
+        )
+
+        val result = dataServiceWith(dataRepository).uploadCachedDataNow()
+
+        assertTrue(result.isSuccess)
+        assertEquals(3, dataRepository.completedCallCount)
+    }
+
+    @Test
+    fun stopsAfterMaxDrainIterationsWhenEveryBatchIsFull() = runTest {
+        val dataRepository = RecordingDataRepository(fallbackResult = Result.success(true))
+
+        val result = dataServiceWith(dataRepository).uploadCachedDataNow()
+
+        assertTrue(result.isSuccess)
+        assertEquals(10, dataRepository.completedCallCount)
+    }
+
+    @Test
+    fun stopsOnFirstFailureAfterEarlierSuccess() = runTest {
+        val expected = IllegalStateException("upload failed")
+        val dataRepository = RecordingDataRepository(
+            scriptedResults = listOf(Result.success(true), Result.failure(expected)),
+            fallbackResult = Result.success(true),
+        )
+
+        val result = dataServiceWith(dataRepository).uploadCachedDataNow()
+
+        assertTrue(result.isFailure)
+        assertEquals(expected, result.exceptionOrNull())
+        assertEquals(2, dataRepository.completedCallCount)
+    }
+
+    private fun dataServiceWith(dataRepository: DataRepository) = DataService(
+        dataRepository = dataRepository,
+        userRepository = FakeUserRepository(),
+        tokenProvider = FakeTokenProvider(),
+    )
+
+    /**
+     * Records how many calls to [uploadCachedData] are in flight at once, and returns
+     * [scriptedResults] in order, then [fallbackResult] for every further call.
+     */
+    private class RecordingDataRepository(
+        scriptedResults: List<Result<Boolean>> = emptyList(),
+        private val fallbackResult: Result<Boolean> = Result.success(false),
+    ) : DataRepository {
 
         var maxObservedConcurrency = 0
             private set
@@ -76,6 +126,7 @@ class DataServiceUploadMutexTest {
             private set
 
         private var activeCallCount = 0
+        private val remainingResults = ArrayDeque(scriptedResults)
 
         override suspend fun uploadCachedData(
             userId: String,
@@ -87,7 +138,7 @@ class DataServiceUploadMutexTest {
             delay(50)
             activeCallCount--
             completedCallCount++
-            return Result.success(false)
+            return remainingResults.removeFirstOrNull() ?: fallbackResult
         }
 
         override suspend fun awaitOrCreateCachedDataSetId(
