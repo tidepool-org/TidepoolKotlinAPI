@@ -58,50 +58,49 @@ class DataService internal constructor(
     }
 
     /**
-     * Uploads cached data now, serialized against concurrent callers via [uploadMutex] so the
-     * foreground lifecycle-aware loop and any background caller (e.g. a WorkManager worker)
-     * never race on token fetch, data set creation, and the upload itself.
+     * Uploads cached data now, one batch at a time while the previous batch came back full, so a
+     * backlog built up while the app was backgrounded drains in one call instead of one batch per
+     * upload period. Stops on the first failure, leaving the remaining data cached for next time.
+     *
+     * At most [MAX_DRAIN_ITERATIONS_PER_RUN] batches per call. This cap is a deliberate Android
+     * divergence: iOS keeps uploading while its query anchor moves, with no cap, but here the
+     * bound keeps a call inside WorkManager's execution budget.
+     *
+     * Each batch is serialized via [uploadMutex], so the foreground lifecycle-aware loop and any
+     * background caller (e.g. a WorkManager worker) never race on token fetch, data set creation,
+     * and the upload itself. The lock is released between batches, so a concurrent caller waits
+     * for at most one batch rather than a whole drain.
      */
-    suspend fun uploadCachedDataNow(): Result<Unit> = uploadMutex.withLock {
-        Logger.d("DataService") { "Uploading cached data" }
+    suspend fun uploadCachedDataNow(): Result<Unit> {
+        Logger.d(TAG) { "Uploading cached data" }
+        repeat(MAX_DRAIN_ITERATIONS_PER_RUN) {
+            val batchWasFull = uploadNextCachedBatch().getOrElse {
+                Logger.e(TAG, it) { "Failed to upload cached data: " }
+                return Result.failure(it)
+            }
+            if (!batchWasFull) {
+                Logger.d(TAG) { "Cached data uploaded successfully" }
+                return Result.success(Unit)
+            }
+        }
+        Logger.d(TAG) { "Upload batch limit reached, remaining cached data waits for next time" }
+        return Result.success(Unit)
+    }
+
+    private suspend fun uploadNextCachedBatch(): Result<Boolean> = uploadMutex.withLock {
         tokenProvider.getToken().flatMap { sessionToken ->
-            Logger.v("DataService") { "Have token" }
+            Logger.v(TAG) { "Have token" }
             getDataSetId().flatMap { dataSetId ->
-                Logger.i("DataService") { "Have data set id" }
+                Logger.i(TAG) { "Have data set id" }
                 userRepository.getCurrentUser(sessionToken).flatMap { user ->
-                    drainCachedData(
+                    dataRepository.uploadCachedData(
                         userId = user.userId,
                         sessionToken = sessionToken,
                         dataSetId = dataSetId,
                     )
                 }
             }
-                .onSuccess { Logger.d(TAG) { "Cached data uploaded successfully" } }
-                .onFailure { Logger.e(TAG, it) { "Failed to upload cached data: " } }
         }
-    }
-
-    /**
-     * Repeatedly uploads one batch at a time via [DataRepository.uploadCachedData] while the
-     * previous batch came back full, so a backlog built up while the app was backgrounded
-     * drains in one run instead of one batch per [MAX_DRAIN_ITERATIONS_PER_RUN]-period call.
-     * Bounded so a single call stays well inside WorkManager's background execution budget;
-     * stops immediately on the first failure, leaving any remaining data cached for next time.
-     */
-    private suspend fun drainCachedData(
-        userId: String,
-        sessionToken: String,
-        dataSetId: String,
-    ): Result<Unit> {
-        repeat(MAX_DRAIN_ITERATIONS_PER_RUN) {
-            val batchWasFull = dataRepository.uploadCachedData(
-                userId = userId,
-                sessionToken = sessionToken,
-                dataSetId = dataSetId,
-            ).getOrElse { return Result.failure(it) }
-            if (!batchWasFull) return Result.success(Unit)
-        }
-        return Result.success(Unit)
     }
 
     suspend fun getDataForUser(
@@ -452,9 +451,8 @@ class DataService internal constructor(
 
     private companion object {
         // Each upload request has a 30s timeout (DataModule.kt), so this bounds a single
-        // uploadCachedDataNow() call to roughly 5 minutes worst case - comfortably inside a
-        // WorkManager CoroutineWorker's ~10-minute execution budget - while draining a large
-        // backlog in far fewer than one batch per period.
+        // uploadCachedDataNow() call to roughly 5 minutes worst case, comfortably inside a
+        // WorkManager CoroutineWorker's ~10-minute execution budget.
         private const val MAX_DRAIN_ITERATIONS_PER_RUN = 10
     }
 }
