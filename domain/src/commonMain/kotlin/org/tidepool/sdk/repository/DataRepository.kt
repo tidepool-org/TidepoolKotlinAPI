@@ -146,11 +146,19 @@ interface DataRepository {
         sessionToken: String
     ): Result<Unit>
     
+    /**
+     * Uploads one batch of locally cached data (bounded by the per-type limits enforced in the
+     * implementation) and removes the uploaded rows from the local outbox on success.
+     *
+     * @return on success, `true` when any data type's batch came back at its limit - meaning
+     * more cached data may still be waiting and the caller should call again - or `false` once
+     * the outbox is drained (or was already empty).
+     */
     suspend fun uploadCachedData(
         userId: String,
         sessionToken: String,
         dataSetId: String,
-    ): Result<Unit>
+    ): Result<Boolean>
 
     fun clearCachedDataSetId()
 }

@@ -352,19 +352,25 @@ class DataRepositoryImpl(
         userId: String,
         sessionToken: String,
         dataSetId: String,
-    ): Result<Unit> = listOf(
-        basalAutomatedDataDao.getAll(UPLOAD_BATCH_LIMIT),
-        bolusDataDao.getAll(UPLOAD_BATCH_LIMIT),
-        continuousGlucoseDataDao.getAll(UPLOAD_BATCH_LIMIT),
-        dosingDecisionDataDao.getAll(DOSING_DECISION_UPLOAD_BATCH_LIMIT),
-        foodDataDao.getAll(UPLOAD_BATCH_LIMIT),
-        insulinDataDao.getAll(UPLOAD_BATCH_LIMIT),
-    ).flatten().let { entities ->
+    ): Result<Boolean> {
+        // Each pair tracks the batch fetched for a type alongside the limit it was fetched
+        // with, so we can tell the caller whether more data may still be waiting behind it.
+        val batches = listOf(
+            basalAutomatedDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
+            bolusDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
+            continuousGlucoseDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
+            dosingDecisionDataDao.getAll(DOSING_DECISION_UPLOAD_BATCH_LIMIT) to DOSING_DECISION_UPLOAD_BATCH_LIMIT,
+            foodDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
+            insulinDataDao.getAll(UPLOAD_BATCH_LIMIT) to UPLOAD_BATCH_LIMIT,
+        )
+        val batchWasFull = batches.any { (batch, limit) -> batch.size == limit }
+        val entities = batches.flatMap { it.first }
+
         Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities" }
         if (entities.isEmpty()) {
-            return@let Result.success(Unit)
+            return Result.success(false)
         }
-        runCatchingNetworkExceptions {
+        return runCatchingNetworkExceptions {
             dataApi.uploadDataToDataSet(
                 sessionToken = sessionToken,
                 dataSetId = dataSetId,
@@ -385,6 +391,7 @@ class DataRepositoryImpl(
                     is PumpSettingsDataEntity -> pumpSettingsDataDao.delete(entity)
                 }
             }
+            batchWasFull
         }
     }
 

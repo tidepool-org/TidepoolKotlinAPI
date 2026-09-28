@@ -68,16 +68,40 @@ class DataService internal constructor(
             Logger.v("DataService") { "Have token" }
             getDataSetId().flatMap { dataSetId ->
                 Logger.i("DataService") { "Have data set id" }
-                dataRepository.uploadCachedData(
-                    userId = userRepository.getCurrentUser(sessionToken)
-                        .getOrThrow().userId,
-                    sessionToken = sessionToken,
-                    dataSetId = dataSetId,
-                )
+                userRepository.getCurrentUser(sessionToken).flatMap { user ->
+                    drainCachedData(
+                        userId = user.userId,
+                        sessionToken = sessionToken,
+                        dataSetId = dataSetId,
+                    )
+                }
             }
                 .onSuccess { Logger.d(TAG) { "Cached data uploaded successfully" } }
                 .onFailure { Logger.e(TAG, it) { "Failed to upload cached data: " } }
         }
+    }
+
+    /**
+     * Repeatedly uploads one batch at a time via [DataRepository.uploadCachedData] while the
+     * previous batch came back full, so a backlog built up while the app was backgrounded
+     * drains in one run instead of one batch per [MAX_DRAIN_ITERATIONS_PER_RUN]-period call.
+     * Bounded so a single call stays well inside WorkManager's background execution budget;
+     * stops immediately on the first failure, leaving any remaining data cached for next time.
+     */
+    private suspend fun drainCachedData(
+        userId: String,
+        sessionToken: String,
+        dataSetId: String,
+    ): Result<Unit> {
+        repeat(MAX_DRAIN_ITERATIONS_PER_RUN) {
+            val batchWasFull = dataRepository.uploadCachedData(
+                userId = userId,
+                sessionToken = sessionToken,
+                dataSetId = dataSetId,
+            ).getOrElse { return Result.failure(it) }
+            if (!batchWasFull) return Result.success(Unit)
+        }
+        return Result.success(Unit)
     }
 
     suspend fun getDataForUser(
@@ -424,5 +448,13 @@ class DataService internal constructor(
 
     fun clearUserDataSetId() {
         dataRepository.clearCachedDataSetId()
+    }
+
+    private companion object {
+        // Each upload request has a 30s timeout (DataModule.kt), so this bounds a single
+        // uploadCachedDataNow() call to roughly 5 minutes worst case - comfortably inside a
+        // WorkManager CoroutineWorker's ~10-minute execution budget - while draining a large
+        // backlog in far fewer than one batch per period.
+        private const val MAX_DRAIN_ITERATIONS_PER_RUN = 10
     }
 }
