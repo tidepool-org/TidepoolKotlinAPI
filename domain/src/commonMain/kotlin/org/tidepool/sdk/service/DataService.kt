@@ -9,6 +9,7 @@ import org.tidepool.sdk.AppLifecycleProvider
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
+import org.tidepool.sdk.UnauthorizedException
 import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.ClientSoftware
@@ -217,15 +218,18 @@ class DataService internal constructor(
             )
         }
 
+    /**
+     * Caches [data] in the local outbox for [uploadCachedDataNow] to send. Requires a stored
+     * session but not a fresh token: an expired token can't be refreshed offline, and gating on
+     * one would drop the data exactly when the outbox is needed.
+     */
     suspend fun uploadDataToDataSet(
         data: List<BaseData>,
-    ): Result<List<BaseData>> =
-        tokenProvider.getToken().flatMap {
-            dataRepository.uploadDataToDataSet(
-                data = data,
-                sessionToken = it,
-            )
-        }
+    ): Result<List<BaseData>> = if (tokenProvider.isLoggedIn) {
+        dataRepository.uploadDataToDataSet(data = data)
+    } else {
+        Result.failure(UnauthorizedException("Not logged in, data not cached"))
+    }
 
     suspend fun deleteDataSetData(dataSetId: String): Result<Unit> =
         tokenProvider.getToken().flatMap {
@@ -380,21 +384,19 @@ class DataService internal constructor(
     suspend fun uploadData(data: List<BaseData>): Result<List<BaseData>> = if (data.isEmpty()) {
         Result.failure(IllegalArgumentException("Data list is empty"))
     } else {
-        tokenProvider.getToken().flatMap {
-            uploadDataToDataSet(data = data)
-                .onSuccess {
-                    Logger.d(TAG) { "${data.map { it.javaClass.simpleName }} saved for upload" }
-                    Logger.v(TAG) {
-                        "${data.map { "${it.javaClass.simpleName}: ${it.annotations}" }} saved for upload"
-                    }
+        uploadDataToDataSet(data = data)
+            .onSuccess {
+                Logger.d(TAG) { "${data.map { it.javaClass.simpleName }} saved for upload" }
+                Logger.v(TAG) {
+                    "${data.map { "${it.javaClass.simpleName}: ${it.annotations}" }} saved for upload"
                 }
-                .onFailure {
-                    Logger.e(
-                        TAG,
-                        it
-                    ) { "Saving ${data.map { it.javaClass.simpleName }} failed: " }
-                }
-        }
+            }
+            .onFailure {
+                Logger.e(
+                    TAG,
+                    it
+                ) { "Saving ${data.map { it.javaClass.simpleName }} failed: " }
+            }
     }
 
     suspend fun uploadData(data: BaseData): Result<List<BaseData>> = uploadData(listOf(data))

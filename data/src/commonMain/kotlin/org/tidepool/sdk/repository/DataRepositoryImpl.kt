@@ -199,7 +199,6 @@ class DataRepositoryImpl(
 
     override suspend fun uploadDataToDataSet(
         data: List<BaseData>,
-        sessionToken: String,
     ): Result<List<BaseData>> {
         Logger.d(javaClass.simpleName) {
             "uploadDataToDataSet(): ${data.map { it.javaClass.simpleName }}"

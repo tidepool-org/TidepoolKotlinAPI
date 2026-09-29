@@ -64,8 +64,7 @@ interface DataRepository {
     ): Result<Unit>
     
     suspend fun uploadDataToDataSet(
-        data: List<BaseData>,
-        sessionToken: String
+        data: List<BaseData>
     ): Result<List<BaseData>>
     
     suspend fun deleteDataSetData(
