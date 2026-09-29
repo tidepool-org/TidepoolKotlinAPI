@@ -23,11 +23,15 @@ import org.tidepool.sdk.api.createSummaryApi
 import org.tidepool.sdk.api.createTaskApi
 import org.tidepool.sdk.api.createUserApi
 import de.jensklingenberg.ktorfit.Ktorfit
+import io.ktor.client.engine.HttpClientEngine
+import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.Logger
 import org.tidepool.sdk.AndroidKeyValueStorage
 import org.tidepool.sdk.DnsResolver
 import org.tidepool.sdk.DnsResolverImpl
+import org.tidepool.sdk.fake.FakeBackendInterceptor
+import org.tidepool.sdk.fake.FakeBackendRecorder
 import org.tidepool.sdk.repository.KeyValueStorage
 
 actual val platformDataModule: Module
@@ -49,6 +53,14 @@ actual val platformDataModule: Module
         }
         single<DnsResolver> {
             DnsResolverImpl()
+        }
+        single<HttpClientEngine> {
+            // Only a caller that passes a recorder gets the fake backend; everyone else gets a
+            // plain OkHttp engine.
+            val fakeBackendRecorder = getOrNull<FakeBackendRecorder>()
+            OkHttp.create {
+                fakeBackendRecorder?.let { addInterceptor(FakeBackendInterceptor(it)) }
+            }
         }
     }
 

@@ -79,6 +79,7 @@ import org.tidepool.sdk.repository.UserRepositoryImpl
 import org.tidepool.sdk.repository.AuthorizationRepositoryImpl
 import kotlinx.datetime.Instant
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.defaultRequest
@@ -118,75 +119,10 @@ expect fun provideUserApi(ktorfit: Ktorfit): UserApi
 public val dataModule = module {
     
     // JSON Configuration
-    single<Json> {
-        Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-            isLenient = true
-            explicitNulls = false
-            coerceInputValues = true
-            classDiscriminator =
-                "__type"  // Use different discriminator to avoid conflict with 'type' property
-            serializersModule = SerializersModule {
-                contextual(Instant::class, InstantSerializer)
-                contextual(TimeZone::class, TimeZoneSerializer)
-                // Configure BaseData polymorphism
-                polymorphic(BaseDataDto::class) {
-                    subclass(BasalAutomatedDataDto::class)
-                    subclass(BolusDataDto::class)
-                    subclass(ContinuousGlucoseDataDto::class)
-                    subclass(DosingDecisionDataDto::class)
-                    subclass(FoodDataDto::class)
-                    subclass(InsulinDataDto::class)
-                    // Add other BaseData subclasses as they get implemented
-                }
-                // Configure SummaryDto polymorphism
-                polymorphic(SummaryDto::class) {
-                    subclass(CgmSummaryDto::class)
-                    subclass(BgmSummaryDto::class)
-                    subclass(ContinuousSummaryDto::class)
-                }
-            }
-        }
-    }
+    single<Json> { createTidepoolJson() }
 
-    // Ktor HttpClient Configuration
-    single {
-        HttpClient {
-            expectSuccess = false // Handle non-2xx responses manually
-
-            install(ContentNegotiation) {
-                json(get<Json>())
-            }
-
-            install(HttpCallValidator) {
-                validateResponse { response: HttpResponse ->
-                    if (response.status.value !in 200..299) {
-                        throw ResponseException(
-                            response = response,
-                            cachedResponseText = response.bodyAsText(),
-                        )
-                    }
-                }
-            }
-
-            install(HttpTimeout) {
-                requestTimeoutMillis = 30_000
-                connectTimeoutMillis = 10_000
-                socketTimeoutMillis = 30_000
-            }
-
-            install(Logging) {
-                logger = get<Logger>()
-                level = LogLevel.ALL
-            }
-
-            defaultRequest {
-                headers.append("Content-Type", "application/json")
-                contentType(ContentType.Application.Json)
-            }
-        }
-    }
+    // Ktor HttpClient Configuration. The engine comes from platformDataModule.
+    single { createTidepoolHttpClient(engine = get(), tidepoolJson = get(), httpLogger = get()) }
 
     // API Service Implementations using expect/actual pattern
     single<AlertApi> { provideAlertApi(get<Ktorfit>()) }
@@ -233,3 +169,74 @@ public val dataModule = module {
     singleOf(::TaskRepositoryImpl) bind TaskRepository::class
     singleOf(::UserRepositoryImpl) bind UserRepository::class
 }
+
+internal fun createTidepoolJson(): Json =
+    Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        isLenient = true
+        explicitNulls = false
+        coerceInputValues = true
+        classDiscriminator =
+            "__type"  // Use different discriminator to avoid conflict with 'type' property
+        serializersModule = SerializersModule {
+            contextual(Instant::class, InstantSerializer)
+            contextual(TimeZone::class, TimeZoneSerializer)
+            // Configure BaseData polymorphism
+            polymorphic(BaseDataDto::class) {
+                subclass(BasalAutomatedDataDto::class)
+                subclass(BolusDataDto::class)
+                subclass(ContinuousGlucoseDataDto::class)
+                subclass(DosingDecisionDataDto::class)
+                subclass(FoodDataDto::class)
+                subclass(InsulinDataDto::class)
+                // Add other BaseData subclasses as they get implemented
+            }
+            // Configure SummaryDto polymorphism
+            polymorphic(SummaryDto::class) {
+                subclass(CgmSummaryDto::class)
+                subclass(BgmSummaryDto::class)
+                subclass(ContinuousSummaryDto::class)
+            }
+        }
+    }
+
+internal fun createTidepoolHttpClient(
+    engine: HttpClientEngine,
+    tidepoolJson: Json,
+    httpLogger: Logger,
+): HttpClient =
+    HttpClient(engine) {
+        expectSuccess = false // Handle non-2xx responses manually
+
+        install(ContentNegotiation) {
+            json(tidepoolJson)
+        }
+
+        install(HttpCallValidator) {
+            validateResponse { response: HttpResponse ->
+                if (response.status.value !in 200..299) {
+                    throw ResponseException(
+                        response = response,
+                        cachedResponseText = response.bodyAsText(),
+                    )
+                }
+            }
+        }
+
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 10_000
+            socketTimeoutMillis = 30_000
+        }
+
+        install(Logging) {
+            logger = httpLogger
+            level = LogLevel.ALL
+        }
+
+        defaultRequest {
+            headers.append("Content-Type", "application/json")
+            contentType(ContentType.Application.Json)
+        }
+    }
