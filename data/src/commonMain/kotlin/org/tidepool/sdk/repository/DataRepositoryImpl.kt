@@ -14,6 +14,7 @@ import org.tidepool.sdk.database.DosingDecisionDataDao
 import org.tidepool.sdk.database.FoodDataDao
 import org.tidepool.sdk.database.InsulinDataDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
+import org.tidepool.sdk.database.entity.data.BaseDataEntity
 import org.tidepool.sdk.database.entity.data.toEntity
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
@@ -341,39 +342,70 @@ class DataRepositoryImpl(
         sessionToken: String,
         dataSetId: String,
     ): Result<Boolean> {
-        val basalAutomated = basalAutomatedDataDao.getAll(UPLOAD_BATCH_LIMIT)
-        val bolus = bolusDataDao.getAll(UPLOAD_BATCH_LIMIT)
-        val continuousGlucose = continuousGlucoseDataDao.getAll(UPLOAD_BATCH_LIMIT)
-        val dosingDecision = dosingDecisionDataDao.getAll(DOSING_DECISION_UPLOAD_BATCH_LIMIT)
-        val food = foodDataDao.getAll(UPLOAD_BATCH_LIMIT)
-        val insulin = insulinDataDao.getAll(UPLOAD_BATCH_LIMIT)
+        // One request per data type, as iOS TidepoolService does: each request stays near iOS's
+        // ~1 MB target, and a type the server rejects or that times out can't hold back the
+        // others. It's retried on the next call, like iOS retries a failed type.
+        suspend fun <T : BaseDataEntity> upload(
+            type: String,
+            limit: Int,
+            getAll: suspend (Int) -> List<T>,
+            delete: suspend (List<T>) -> Unit,
+        ) = uploadBatch(sessionToken, dataSetId, type, limit, getAll, delete)
 
-        // A table that came back at its limit may have more rows waiting behind this batch.
-        val batchWasFull = dosingDecision.size == DOSING_DECISION_UPLOAD_BATCH_LIMIT ||
-            listOf(basalAutomated, bolus, continuousGlucose, food, insulin)
-                .any { it.size == UPLOAD_BATCH_LIMIT }
-        val entities = basalAutomated + bolus + continuousGlucose + dosingDecision + food + insulin
+        val results = listOfNotNull(
+            upload("basal", UPLOAD_BATCH_LIMIT, basalAutomatedDataDao::getAll, basalAutomatedDataDao::delete),
+            upload("bolus", UPLOAD_BATCH_LIMIT, bolusDataDao::getAll, bolusDataDao::delete),
+            upload("cbg", UPLOAD_BATCH_LIMIT, continuousGlucoseDataDao::getAll, continuousGlucoseDataDao::delete),
+            upload(
+                "dosingDecision",
+                DOSING_DECISION_UPLOAD_BATCH_LIMIT,
+                dosingDecisionDataDao::getAll,
+                dosingDecisionDataDao::delete,
+            ),
+            upload("food", UPLOAD_BATCH_LIMIT, foodDataDao::getAll, foodDataDao::delete),
+            upload("insulin", UPLOAD_BATCH_LIMIT, insulinDataDao::getAll, insulinDataDao::delete),
+        )
+        val (uploaded, failed) = results.partition { it.isSuccess }
 
-        Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities" }
-        if (entities.isEmpty()) {
-            return Result.success(false)
+        // Only a pass where nothing got through is a failure, so a caller still retries when the
+        // network is down, but one stuck type doesn't stop the rest from draining.
+        return if (uploaded.isEmpty() && failed.isNotEmpty()) {
+            failed.first()
+        } else {
+            Result.success(uploaded.any { it.getOrThrow() })
         }
+    }
+
+    /**
+     * Uploads up to [limit] of one table's oldest rows in their own request and deletes them once
+     * the server accepts them. Returns null when the table is empty, otherwise whether the batch
+     * came back full (more rows may be waiting behind it).
+     */
+    private suspend fun <T : BaseDataEntity> uploadBatch(
+        sessionToken: String,
+        dataSetId: String,
+        type: String,
+        limit: Int,
+        getAll: suspend (Int) -> List<T>,
+        delete: suspend (List<T>) -> Unit,
+    ): Result<Boolean>? {
+        val rows = getAll(limit)
+        if (rows.isEmpty()) return null
+
+        Logger.v(javaClass.simpleName) { "Uploading ${rows.size} $type entities" }
         return runCatchingNetworkExceptions {
             dataApi.uploadDataToDataSet(
                 sessionToken = sessionToken,
                 dataSetId = dataSetId,
-                data = entities.map { it.toDto() },
+                data = rows.map { it.toDto() },
             )
         }.map {
-            // One list delete per table: Room runs each as a single transaction instead of one
-            // per row, which matters with up to thousands of rows per batch.
-            basalAutomatedDataDao.delete(basalAutomated)
-            bolusDataDao.delete(bolus)
-            continuousGlucoseDataDao.delete(continuousGlucose)
-            dosingDecisionDataDao.delete(dosingDecision)
-            foodDataDao.delete(food)
-            insulinDataDao.delete(insulin)
-            batchWasFull
+            // One list delete per table: Room runs it as a single transaction instead of one per
+            // row, which matters with up to 1000 rows per batch.
+            delete(rows)
+            rows.size == limit
+        }.onFailure {
+            Logger.e(javaClass.simpleName, it) { "Uploading $type failed, it stays cached for the next attempt" }
         }
     }
 
@@ -408,10 +440,9 @@ class DataRepositoryImpl(
     }
 
     companion object {
-        // Values borrowed from iOS TidepoolService's doseDataLimit / dosingDecisionDataLimit, but
-        // not the same shape: iOS sends one request per data type and caps doses at 1000 across all
-        // dose kinds. Here each table is capped on its own and all of them go out in one request,
-        // up to 5 * 1000 + 50 records.
+        // Per-request limits from iOS TidepoolService (glucoseDataLimit / doseDataLimit 1000,
+        // dosingDecisionDataLimit 50, aiming at ~1 MB each). One difference: iOS caps doses at 1000
+        // across all dose kinds, while basal, bolus and insulin each get their own request here.
         private const val UPLOAD_BATCH_LIMIT = 1000
         private const val DOSING_DECISION_UPLOAD_BATCH_LIMIT = 50
     }
