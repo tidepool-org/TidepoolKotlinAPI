@@ -73,6 +73,7 @@ kotlin {
                 implementation(kotlin("test"))
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
                 implementation("io.insert-koin:koin-test:4.1.0")
+                implementation("io.ktor:ktor-client-mock:3.3.1")
             }
         }
 
