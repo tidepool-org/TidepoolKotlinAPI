@@ -2,11 +2,14 @@ package org.tidepool.sdk.service
 
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.datetime.Clock
 import org.tidepool.sdk.AppLifecycleProvider
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
+import org.tidepool.sdk.UnauthorizedException
 import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.ClientSoftware
@@ -32,37 +35,70 @@ class DataService internal constructor(
 ) {
 
     private val TAG = javaClass.simpleName
+    private val uploadMutex = Mutex()
+    private var lifecycleAwareDataUploadManager: LifecycleAwareDataUploadManager? = null
+
     fun startLifecycleAwareRecurrentUpload(
         lifecycleProvider: AppLifecycleProvider,
         scope: CoroutineScope,
         period: Duration,
         delay: Duration,
-    ) = LifecycleAwareDataUploadManager(
-        lifecycleProvider = lifecycleProvider,
-        scope = scope,
-    ).apply {
-        configure(
-            period = period,
-            delay = delay,
-            action = {
-                Logger.d("DataService") { "Uploading cached data" }
-                tokenProvider.getToken().flatMap { sessionToken ->
-                    Logger.v("DataService") { "Have token" }
-                    getDataSetId().flatMap { dataSetId ->
-                        Logger.i("DataService") { "Have data set id" }
-                        dataRepository.uploadCachedData(
-                            userId = userRepository.getCurrentUser(sessionToken)
-                                .getOrThrow().userId,
-                            sessionToken = sessionToken,
-                            dataSetId = dataSetId,
-                        )
-                    }
-                        .onSuccess { Logger.d(TAG) { "Cached data uploaded successfully" } }
-                        .onFailure { Logger.e(TAG, it) { "Failed to upload cached data: " } }
-                }
-            },
-        )
-        start()
+    ) {
+        lifecycleAwareDataUploadManager?.stop()
+        lifecycleAwareDataUploadManager = LifecycleAwareDataUploadManager(
+            lifecycleProvider = lifecycleProvider,
+            scope = scope,
+        ).apply {
+            configure(
+                period = period,
+                delay = delay,
+                action = { uploadCachedDataNow() },
+            )
+            start()
+        }
+    }
+
+    /**
+     * Uploads cached data now, one batch at a time while the previous batch came back full, so a
+     * backlog built up while the app was backgrounded drains in one call instead of one batch per
+     * upload period. Stops on the first failure, leaving the remaining data cached for next time.
+     *
+     * At most [MAX_DRAIN_ITERATIONS_PER_RUN] batches per call. This cap is a deliberate Android
+     * divergence: iOS keeps uploading while its query anchor moves, with no cap, but here the
+     * bound keeps a call inside WorkManager's execution budget.
+     *
+     * Each batch is serialized via [uploadMutex], so the foreground lifecycle-aware loop and any
+     * background caller (e.g. a WorkManager worker) never race on token fetch, data set creation,
+     * and the upload itself. The lock is released between batches, so a concurrent caller waits
+     * for at most one batch rather than a whole drain.
+     */
+    suspend fun uploadCachedDataNow(): Result<Unit> {
+        Logger.d(TAG) { "Uploading cached data" }
+        repeat(MAX_DRAIN_ITERATIONS_PER_RUN) {
+            val batchWasFull = uploadNextCachedBatch().getOrElse {
+                Logger.e(TAG, it) { "Failed to upload cached data: " }
+                return Result.failure(it)
+            }
+            if (!batchWasFull) {
+                Logger.d(TAG) { "Cached data uploaded successfully" }
+                return Result.success(Unit)
+            }
+        }
+        Logger.d(TAG) { "Upload batch limit reached, remaining cached data waits for next time" }
+        return Result.success(Unit)
+    }
+
+    private suspend fun uploadNextCachedBatch(): Result<Boolean> = uploadMutex.withLock {
+        tokenProvider.getToken().flatMap { sessionToken ->
+            Logger.v(TAG) { "Have token" }
+            getDataSetId().flatMap { dataSetId ->
+                Logger.i(TAG) { "Have data set id" }
+                dataRepository.uploadCachedData(
+                    sessionToken = sessionToken,
+                    dataSetId = dataSetId,
+                )
+            }
+        }
     }
 
     suspend fun getDataForUser(
@@ -182,15 +218,18 @@ class DataService internal constructor(
             )
         }
 
+    /**
+     * Caches [data] in the local outbox for [uploadCachedDataNow] to send. Requires a stored
+     * session but not a fresh token: an expired token can't be refreshed offline, and gating on
+     * one would drop the data exactly when the outbox is needed.
+     */
     suspend fun uploadDataToDataSet(
         data: List<BaseData>,
-    ): Result<List<BaseData>> =
-        tokenProvider.getToken().flatMap {
-            dataRepository.uploadDataToDataSet(
-                data = data,
-                sessionToken = it,
-            )
-        }
+    ): Result<List<BaseData>> = if (tokenProvider.isLoggedIn) {
+        dataRepository.uploadDataToDataSet(data = data)
+    } else {
+        Result.failure(UnauthorizedException("Not logged in, data not cached"))
+    }
 
     suspend fun deleteDataSetData(dataSetId: String): Result<Unit> =
         tokenProvider.getToken().flatMap {
@@ -345,21 +384,19 @@ class DataService internal constructor(
     suspend fun uploadData(data: List<BaseData>): Result<List<BaseData>> = if (data.isEmpty()) {
         Result.failure(IllegalArgumentException("Data list is empty"))
     } else {
-        tokenProvider.getToken().flatMap {
-            uploadDataToDataSet(data = data)
-                .onSuccess {
-                    Logger.d(TAG) { "${data.map { it.javaClass.simpleName }} saved for upload" }
-                    Logger.v(TAG) {
-                        "${data.map { "${it.javaClass.simpleName}: ${it.annotations}" }} saved for upload"
-                    }
+        uploadDataToDataSet(data = data)
+            .onSuccess {
+                Logger.d(TAG) { "${data.map { it.javaClass.simpleName }} saved for upload" }
+                Logger.v(TAG) {
+                    "${data.map { "${it.javaClass.simpleName}: ${it.annotations}" }} saved for upload"
                 }
-                .onFailure {
-                    Logger.e(
-                        TAG,
-                        it
-                    ) { "Saving ${data.map { it.javaClass.simpleName }} failed: " }
-                }
-        }
+            }
+            .onFailure {
+                Logger.e(
+                    TAG,
+                    it
+                ) { "Saving ${data.map { it.javaClass.simpleName }} failed: " }
+            }
     }
 
     suspend fun uploadData(data: BaseData): Result<List<BaseData>> = uploadData(listOf(data))
@@ -374,32 +411,7 @@ class DataService internal constructor(
                         Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
                         Result.success(it)
                     }
-                    ?: createDataSet(
-                        newDataSet = NewDataSet(
-                            client = ClientSoftware(
-                                name = "org.tidepool.loop",
-                                version = "TEST",
-                            ),
-                            dataSetType = "continuous",
-                            timezone = TimeZone.getDefault().id,
-                            timeZoneOffset = TimeZone.getDefault().rawOffset.milliseconds.inWholeMinutes.toInt(),
-                            deviceManufacturers = listOf(
-                                "test"
-                            ),
-                            deviceId = "test",
-                            time = Clock.System.now(),
-                            deduplicator = DeduplicatorDescriptor(
-                                name = "org.tidepool.deduplicator.dataset.delete.origin",
-                            ),
-                            deviceTags = listOf(
-                                DeviceTag.Bgm,
-                                DeviceTag.Cgm,
-                                DeviceTag.InsulinPump,
-                            ),
-                            deviceSerialNumber = "test",
-                            timeProcessing = "none",
-                        ),
-                    )
+                    ?: createDataSet(newDataSet = newContinuousDataSet())
             }.flatMap {
                 Logger.d(TAG) { "Created data set: ${it.id}" }
                 it.id?.let { Result.success(it) }
@@ -410,4 +422,40 @@ class DataService internal constructor(
     fun clearUserDataSetId() {
         dataRepository.clearCachedDataSetId()
     }
+
+    private companion object {
+        // Each upload request has a 30s timeout (DataModule.kt), so this bounds a single
+        // uploadCachedDataNow() call to roughly 5 minutes worst case, comfortably inside a
+        // WorkManager CoroutineWorker's ~10-minute execution budget.
+        private const val MAX_DRAIN_ITERATIONS_PER_RUN = 10
+    }
 }
+
+internal fun newContinuousDataSet(
+    time: Instant = Clock.System.now(),
+    timeZone: TimeZone = TimeZone.getDefault(),
+) = NewDataSet(
+    client = ClientSoftware(
+        name = "org.tidepool.loop",
+        version = "TEST",
+    ),
+    dataSetType = "continuous",
+    timezone = timeZone.id,
+    // Offset at `time`, DST included; rawOffset is standard time only.
+    timeZoneOffset = timeZone.getOffset(time.toEpochMilliseconds()).milliseconds.inWholeMinutes.toInt(),
+    deviceManufacturers = listOf(
+        "test"
+    ),
+    deviceId = "test",
+    time = time,
+    deduplicator = DeduplicatorDescriptor(
+        name = "org.tidepool.deduplicator.dataset.delete.origin",
+    ),
+    deviceTags = listOf(
+        DeviceTag.Bgm,
+        DeviceTag.Cgm,
+        DeviceTag.InsulinPump,
+    ),
+    deviceSerialNumber = "test",
+    timeProcessing = "none",
+)

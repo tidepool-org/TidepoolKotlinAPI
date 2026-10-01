@@ -118,37 +118,7 @@ expect fun provideUserApi(ktorfit: Ktorfit): UserApi
 public val dataModule = module {
     
     // JSON Configuration
-    single<Json> {
-        Json {
-            ignoreUnknownKeys = true
-            encodeDefaults = true
-            isLenient = true
-            explicitNulls = false
-            coerceInputValues = true
-            classDiscriminator =
-                "__type"  // Use different discriminator to avoid conflict with 'type' property
-            serializersModule = SerializersModule {
-                contextual(Instant::class, InstantSerializer)
-                contextual(TimeZone::class, TimeZoneSerializer)
-                // Configure BaseData polymorphism
-                polymorphic(BaseDataDto::class) {
-                    subclass(BasalAutomatedDataDto::class)
-                    subclass(BolusDataDto::class)
-                    subclass(ContinuousGlucoseDataDto::class)
-                    subclass(DosingDecisionDataDto::class)
-                    subclass(FoodDataDto::class)
-                    subclass(InsulinDataDto::class)
-                    // Add other BaseData subclasses as they get implemented
-                }
-                // Configure SummaryDto polymorphism
-                polymorphic(SummaryDto::class) {
-                    subclass(CgmSummaryDto::class)
-                    subclass(BgmSummaryDto::class)
-                    subclass(ContinuousSummaryDto::class)
-                }
-            }
-        }
-    }
+    single<Json> { createTidepoolJson() }
 
     // Ktor HttpClient Configuration
     single {
@@ -233,3 +203,34 @@ public val dataModule = module {
     singleOf(::TaskRepositoryImpl) bind TaskRepository::class
     singleOf(::UserRepositoryImpl) bind UserRepository::class
 }
+
+internal fun createTidepoolJson(): Json =
+    Json {
+        ignoreUnknownKeys = true
+        encodeDefaults = true
+        isLenient = true
+        explicitNulls = false
+        coerceInputValues = true
+        classDiscriminator =
+            "__type"  // Use different discriminator to avoid conflict with 'type' property
+        serializersModule = SerializersModule {
+            contextual(Instant::class, InstantSerializer)
+            contextual(TimeZone::class, TimeZoneSerializer)
+            // Configure BaseData polymorphism
+            polymorphic(BaseDataDto::class) {
+                subclass(BasalAutomatedDataDto::class)
+                subclass(BolusDataDto::class)
+                subclass(ContinuousGlucoseDataDto::class)
+                subclass(DosingDecisionDataDto::class)
+                subclass(FoodDataDto::class)
+                subclass(InsulinDataDto::class)
+                // Add other BaseData subclasses as they get implemented
+            }
+            // Configure SummaryDto polymorphism
+            polymorphic(SummaryDto::class) {
+                subclass(CgmSummaryDto::class)
+                subclass(BgmSummaryDto::class)
+                subclass(ContinuousSummaryDto::class)
+            }
+        }
+    }

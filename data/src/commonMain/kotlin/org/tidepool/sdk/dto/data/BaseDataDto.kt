@@ -46,9 +46,9 @@ abstract class BaseDataDto {
     @SerialName("notes")
     abstract val notes: List<String>
     @Contextual
-    @SerialName("timeZone")
+    @SerialName("timezone")
     abstract val timeZone: TimeZone?
-    @SerialName("timeZoneOffset")
+    @SerialName("timezoneOffset")
     abstract val timeZoneOffset: Int?
 
     val location: Nothing

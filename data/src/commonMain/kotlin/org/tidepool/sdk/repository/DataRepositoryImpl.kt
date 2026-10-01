@@ -14,16 +14,7 @@ import org.tidepool.sdk.database.DosingDecisionDataDao
 import org.tidepool.sdk.database.FoodDataDao
 import org.tidepool.sdk.database.InsulinDataDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
-import org.tidepool.sdk.database.entity.data.BasalAutomatedDataEntity
-import org.tidepool.sdk.database.entity.data.BolusDataEntity
-import org.tidepool.sdk.database.entity.data.CgmSettingsDataEntity
-import org.tidepool.sdk.database.entity.data.ContinuousGlucoseDataEntity
-import org.tidepool.sdk.database.entity.data.ControllerSettingsDataEntity
-import org.tidepool.sdk.database.entity.data.DeviceEventDataEntity
-import org.tidepool.sdk.database.entity.data.DosingDecisionDataEntity
-import org.tidepool.sdk.database.entity.data.FoodDataEntity
-import org.tidepool.sdk.database.entity.data.InsulinDataEntity
-import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
+import org.tidepool.sdk.database.entity.data.BaseDataEntity
 import org.tidepool.sdk.database.entity.data.toEntity
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
@@ -209,7 +200,6 @@ class DataRepositoryImpl(
 
     override suspend fun uploadDataToDataSet(
         data: List<BaseData>,
-        sessionToken: String,
     ): Result<List<BaseData>> {
         Logger.d(javaClass.simpleName) {
             "uploadDataToDataSet(): ${data.map { it.javaClass.simpleName }}"
@@ -349,42 +339,73 @@ class DataRepositoryImpl(
     }
 
     override suspend fun uploadCachedData(
-        userId: String,
         sessionToken: String,
         dataSetId: String,
-    ): Result<Unit> = listOf(
-        basalAutomatedDataDao.getAll(),
-        bolusDataDao.getAll(),
-        continuousGlucoseDataDao.getAll(),
-        dosingDecisionDataDao.getAll(),
-        foodDataDao.getAll(),
-        insulinDataDao.getAll(),
-    ).flatten().let { entities ->
-        Logger.v(javaClass.simpleName) { "Uploading ${entities.size} entities" }
-        if (entities.isEmpty()) {
-            return@let Result.success(Unit)
+    ): Result<Boolean> {
+        // One request per data type, as iOS TidepoolService does: each request stays near iOS's
+        // ~1 MB target, and a type the server rejects or that times out can't hold back the
+        // others. It's retried on the next call, like iOS retries a failed type.
+        suspend fun <T : BaseDataEntity> upload(
+            type: String,
+            limit: Int,
+            getAll: suspend (Int) -> List<T>,
+            delete: suspend (List<T>) -> Unit,
+        ) = uploadBatch(sessionToken, dataSetId, type, limit, getAll, delete)
+
+        val results = listOfNotNull(
+            upload("basal", UPLOAD_BATCH_LIMIT, basalAutomatedDataDao::getAll, basalAutomatedDataDao::delete),
+            upload("bolus", UPLOAD_BATCH_LIMIT, bolusDataDao::getAll, bolusDataDao::delete),
+            upload("cbg", UPLOAD_BATCH_LIMIT, continuousGlucoseDataDao::getAll, continuousGlucoseDataDao::delete),
+            upload(
+                "dosingDecision",
+                DOSING_DECISION_UPLOAD_BATCH_LIMIT,
+                dosingDecisionDataDao::getAll,
+                dosingDecisionDataDao::delete,
+            ),
+            upload("food", UPLOAD_BATCH_LIMIT, foodDataDao::getAll, foodDataDao::delete),
+            upload("insulin", UPLOAD_BATCH_LIMIT, insulinDataDao::getAll, insulinDataDao::delete),
+        )
+        val (uploaded, failed) = results.partition { it.isSuccess }
+
+        // Only a pass where nothing got through is a failure, so a caller still retries when the
+        // network is down, but one stuck type doesn't stop the rest from draining.
+        return if (uploaded.isEmpty() && failed.isNotEmpty()) {
+            failed.first()
+        } else {
+            Result.success(uploaded.any { it.getOrThrow() })
         }
-        runCatchingNetworkExceptions {
+    }
+
+    /**
+     * Uploads up to [limit] of one table's oldest rows in their own request and deletes them once
+     * the server accepts them. Returns null when the table is empty, otherwise whether the batch
+     * came back full (more rows may be waiting behind it).
+     */
+    private suspend fun <T : BaseDataEntity> uploadBatch(
+        sessionToken: String,
+        dataSetId: String,
+        type: String,
+        limit: Int,
+        getAll: suspend (Int) -> List<T>,
+        delete: suspend (List<T>) -> Unit,
+    ): Result<Boolean>? {
+        val rows = getAll(limit)
+        if (rows.isEmpty()) return null
+
+        Logger.v(javaClass.simpleName) { "Uploading ${rows.size} $type entities" }
+        return runCatchingNetworkExceptions {
             dataApi.uploadDataToDataSet(
                 sessionToken = sessionToken,
                 dataSetId = dataSetId,
-                data = entities.map { it.toDto() },
+                data = rows.map { it.toDto() },
             )
         }.map {
-            entities.forEach { entity ->
-                when (entity) {
-                    is BasalAutomatedDataEntity -> basalAutomatedDataDao.delete(entity)
-                    is BolusDataEntity -> bolusDataDao.delete(entity)
-                    is ContinuousGlucoseDataEntity -> continuousGlucoseDataDao.delete(entity)
-                    is DosingDecisionDataEntity -> dosingDecisionDataDao.delete(entity)
-                    is FoodDataEntity -> foodDataDao.delete(entity)
-                    is InsulinDataEntity -> insulinDataDao.delete(entity)
-                    is DeviceEventDataEntity -> deviceEventDataDao.delete(entity)
-                    is CgmSettingsDataEntity -> cgmSettingsDataDao.delete(entity)
-                    is ControllerSettingsDataEntity -> controllerSettingsDataDao.delete(entity)
-                    is PumpSettingsDataEntity -> pumpSettingsDataDao.delete(entity)
-                }
-            }
+            // One list delete per table: Room runs it as a single transaction instead of one per
+            // row, which matters with up to 1000 rows per batch.
+            delete(rows)
+            rows.size == limit
+        }.onFailure {
+            Logger.e(javaClass.simpleName, it) { "Uploading $type failed, it stays cached for the next attempt" }
         }
     }
 
@@ -416,5 +437,13 @@ class DataRepositoryImpl(
             is PumpSettingsDataDto -> pumpSettingsDataDao.insert(dto.toEntity())
             else -> Logger.w(javaClass.simpleName) { "Unknown data type: ${dto::class.simpleName}" }
         }
+    }
+
+    companion object {
+        // Per-request limits from iOS TidepoolService (glucoseDataLimit / doseDataLimit 1000,
+        // dosingDecisionDataLimit 50, aiming at ~1 MB each). One difference: iOS caps doses at 1000
+        // across all dose kinds, while basal, bolus and insulin each get their own request here.
+        private const val UPLOAD_BATCH_LIMIT = 1000
+        private const val DOSING_DECISION_UPLOAD_BATCH_LIMIT = 50
     }
 }

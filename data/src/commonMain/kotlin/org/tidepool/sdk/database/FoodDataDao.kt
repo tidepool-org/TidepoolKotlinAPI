@@ -15,9 +15,15 @@ interface FoodDataDao {
     @Delete
     suspend fun delete(data: FoodDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<FoodDataEntity>)
+
     @Query("SELECT * FROM food_data WHERE id = :id")
     suspend fun getById(id: String): FoodDataEntity?
 
     @Query("SELECT * FROM food_data")
     suspend fun getAll(): List<FoodDataEntity>
+
+    @Query("SELECT * FROM food_data ORDER BY time ASC, rowid ASC LIMIT :limit")
+    suspend fun getAll(limit: Int): List<FoodDataEntity>
 }
