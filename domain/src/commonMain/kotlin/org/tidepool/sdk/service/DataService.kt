@@ -411,32 +411,7 @@ class DataService internal constructor(
                         Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
                         Result.success(it)
                     }
-                    ?: createDataSet(
-                        newDataSet = NewDataSet(
-                            client = ClientSoftware(
-                                name = "org.tidepool.loop",
-                                version = "TEST",
-                            ),
-                            dataSetType = "continuous",
-                            timezone = TimeZone.getDefault().id,
-                            timeZoneOffset = TimeZone.getDefault().rawOffset.milliseconds.inWholeMinutes.toInt(),
-                            deviceManufacturers = listOf(
-                                "test"
-                            ),
-                            deviceId = "test",
-                            time = Clock.System.now(),
-                            deduplicator = DeduplicatorDescriptor(
-                                name = "org.tidepool.deduplicator.dataset.delete.origin",
-                            ),
-                            deviceTags = listOf(
-                                DeviceTag.Bgm,
-                                DeviceTag.Cgm,
-                                DeviceTag.InsulinPump,
-                            ),
-                            deviceSerialNumber = "test",
-                            timeProcessing = "none",
-                        ),
-                    )
+                    ?: createDataSet(newDataSet = newContinuousDataSet())
             }.flatMap {
                 Logger.d(TAG) { "Created data set: ${it.id}" }
                 it.id?.let { Result.success(it) }
@@ -455,3 +430,32 @@ class DataService internal constructor(
         private const val MAX_DRAIN_ITERATIONS_PER_RUN = 10
     }
 }
+
+internal fun newContinuousDataSet(
+    time: Instant = Clock.System.now(),
+    timeZone: TimeZone = TimeZone.getDefault(),
+) = NewDataSet(
+    client = ClientSoftware(
+        name = "org.tidepool.loop",
+        version = "TEST",
+    ),
+    dataSetType = "continuous",
+    timezone = timeZone.id,
+    // Offset at `time`, DST included; rawOffset is standard time only.
+    timeZoneOffset = timeZone.getOffset(time.toEpochMilliseconds()).milliseconds.inWholeMinutes.toInt(),
+    deviceManufacturers = listOf(
+        "test"
+    ),
+    deviceId = "test",
+    time = time,
+    deduplicator = DeduplicatorDescriptor(
+        name = "org.tidepool.deduplicator.dataset.delete.origin",
+    ),
+    deviceTags = listOf(
+        DeviceTag.Bgm,
+        DeviceTag.Cgm,
+        DeviceTag.InsulinPump,
+    ),
+    deviceSerialNumber = "test",
+    timeProcessing = "none",
+)
