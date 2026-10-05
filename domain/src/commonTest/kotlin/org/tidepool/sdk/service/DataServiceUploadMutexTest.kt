@@ -7,6 +7,8 @@ import org.tidepool.sdk.repository.DataRepository
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
+import kotlin.time.TestTimeSource
 
 /**
  * Verifies that [DataService.uploadCachedDataNow] serializes concurrent callers, so the
@@ -92,6 +94,26 @@ class DataServiceUploadMutexTest {
         assertTrue(result.isFailure)
         assertEquals(expected, result.exceptionOrNull())
         assertEquals(2, dataRepository.completedCallCount)
+    }
+
+    /**
+     * One full batch per call never ends the drain on its own, so only the time budget can stop
+     * it before the iteration cap. Batches take 90s each: the 4th would start at 270s, past the
+     * 4-minute budget, so exactly 3 run.
+     */
+    @Test
+    fun stopsStartingBatchesOnceTimeBudgetIsSpent() = runTest {
+        val timeSource = TestTimeSource()
+        val dataRepository = RecordingDataRepository(
+            fallbackResult = Result.success(true),
+            onUploadCachedData = { timeSource += 90.seconds },
+        )
+        val dataService = dataServiceWith(dataRepository).apply { drainTimeSource = timeSource }
+
+        val result = dataService.uploadCachedDataNow()
+
+        assertTrue(result.isSuccess)
+        assertEquals(3, dataRepository.completedCallCount)
     }
 
     private fun dataServiceWith(dataRepository: DataRepository) = DataService(

@@ -27,6 +27,8 @@ import kotlinx.datetime.Instant
 import java.util.Collections.emptyList
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.TimeSource
 
 class DataService internal constructor(
     private val dataRepository: DataRepository,
@@ -37,6 +39,10 @@ class DataService internal constructor(
     private val TAG = javaClass.simpleName
     private val uploadMutex = Mutex()
     private var lifecycleAwareDataUploadManager: LifecycleAwareDataUploadManager? = null
+
+    // A property, not a constructor parameter: Koin builds this class with singleOf(::DataService),
+    // which resolves every constructor parameter from the graph and ignores defaults.
+    internal var drainTimeSource: TimeSource = TimeSource.Monotonic
 
     fun startLifecycleAwareRecurrentUpload(
         lifecycleProvider: AppLifecycleProvider,
@@ -63,18 +69,24 @@ class DataService internal constructor(
      * backlog built up while the app was backgrounded drains in one call instead of one batch per
      * upload period. Stops on the first failure, leaving the remaining data cached for next time.
      *
-     * At most [MAX_DRAIN_ITERATIONS_PER_RUN] batches per call. This cap is a deliberate Android
-     * divergence: iOS keeps uploading while its query anchor moves, with no cap, but here the
-     * bound keeps a call inside WorkManager's execution budget.
+     * At most [MAX_DRAIN_ITERATIONS_PER_RUN] batches per call, and no new batch starts once
+     * [DRAIN_TIME_BUDGET] has passed. These caps are a deliberate Android divergence: iOS keeps
+     * uploading while its query anchor moves, with no cap, but here they keep a call inside
+     * WorkManager's execution budget. The time budget never interrupts a batch in flight.
      *
      * Each batch is serialized via [uploadMutex], so the foreground lifecycle-aware loop and any
      * background caller (e.g. a WorkManager worker) never race on token fetch, data set creation,
      * and the upload itself. The lock is released between batches, so a concurrent caller waits
-     * for at most one batch rather than a whole drain.
+     * for at most one batch (one request per data type) rather than a whole drain.
      */
     suspend fun uploadCachedDataNow(): Result<Unit> {
         Logger.d(TAG) { "Uploading cached data" }
-        repeat(MAX_DRAIN_ITERATIONS_PER_RUN) {
+        val drainStart = drainTimeSource.markNow()
+        repeat(MAX_DRAIN_ITERATIONS_PER_RUN) { iteration ->
+            if (iteration > 0 && drainStart.elapsedNow() >= DRAIN_TIME_BUDGET) {
+                Logger.d(TAG) { "Upload time budget spent, remaining cached data waits for next time" }
+                return Result.success(Unit)
+            }
             val batchWasFull = uploadNextCachedBatch().getOrElse {
                 Logger.e(TAG, it) { "Failed to upload cached data: " }
                 return Result.failure(it)
@@ -424,10 +436,13 @@ class DataService internal constructor(
     }
 
     private companion object {
-        // Each upload request has a 30s timeout (DataModule.kt), so this bounds a single
-        // uploadCachedDataNow() call to roughly 5 minutes worst case, comfortably inside a
-        // WorkManager CoroutineWorker's ~10-minute execution budget.
+        // Together these keep one uploadCachedDataNow() call inside a WorkManager CoroutineWorker's
+        // ~10-minute execution budget. A batch is one upload request per data type plus the token
+        // and data set calls, each with a 30s timeout (DataModule.kt): up to ~4 minutes when
+        // several requests time out. No batch starts after the time budget, so a call takes at
+        // most the budget plus one batch, ~8 minutes.
         private const val MAX_DRAIN_ITERATIONS_PER_RUN = 10
+        private val DRAIN_TIME_BUDGET = 4.minutes
     }
 }
 
