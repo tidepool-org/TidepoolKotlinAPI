@@ -4,9 +4,9 @@ import kotlin.reflect.KClass
 
 /**
  * Network failure types considered transient and safe to retry. Shared by every caller that
- * needs to distinguish a retriable failure from a terminal one - e.g.
- * [org.tidepool.sdk.runWithRetry]'s default and `DataUploadWorker` in the app module - so the
- * retriable set can't drift between callers.
+ * needs to distinguish a retriable failure from a terminal one - [org.tidepool.sdk.runWithRetry]'s
+ * default, and any consumer that classifies failures itself (e.g. a background upload worker) -
+ * so the retriable set can't drift between callers. Match with `isInstance`, as runWithRetry does.
  *
  * Deliberately not declared in `NetworkExceptions.kt`: the `data` module has its own file of
  * that same name in this same package (`org.tidepool.sdk`), and top-level declarations compile

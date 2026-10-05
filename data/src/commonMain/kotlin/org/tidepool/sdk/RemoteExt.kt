@@ -58,8 +58,10 @@ suspend fun <T : Any> runWithRetry(
     .fold(
         onSuccess = { Result.success(it) },
         onFailure = {
-            // Subclass-inclusive on purpose: matches DataUploadWorker's matching so the two
-            // callers of this retriable set never disagree on what counts as transient.
+            // Subclass-inclusive on purpose: callers that classify failures themselves against
+            // RetriableNetworkExceptions match the same way, so no two callers disagree on what
+            // counts as transient. All listed types are final today, so this matches exact-class
+            // matching until a subclass is added.
             if (maxRetries > 0 && retriableExceptions.any { klass -> klass.isInstance(it) }) {
                 val jitteredDelay = delay + Random.nextLong(-delay / 10, delay / 10)
 
