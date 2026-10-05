@@ -15,6 +15,7 @@ android {
 
     defaultConfig {
         minSdk = 26
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     compileOptions {
@@ -88,10 +89,28 @@ kotlin {
                 implementation("com.squareup.okhttp3:okhttp:5.1.0")
             }
         }
+        // Room DAO tests shared by the host JVM run and the on-device run.
+        val androidRoomTestDir = "src/androidRoomTest/kotlin"
+
         val androidUnitTest by getting {
+            kotlin.srcDir(androidRoomTestDir)
             dependencies {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-junit"))
+                // The Android sqlite-bundled artifact only ships Android binaries. Keep this at the
+                // sqlite version Room resolves to (2.6.1 for Room 2.8.1), not the 2.5.0 declared
+                // above: an older driver lacks connection methods Room calls.
+                implementation("androidx.sqlite:sqlite-bundled-jvm:2.6.1")
+                implementation("io.mockk:mockk:1.14.9")
+            }
+        }
+        val androidInstrumentedTest by getting {
+            kotlin.srcDir(androidRoomTestDir)
+            dependencies {
+                implementation(kotlin("test-junit"))
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
+                implementation("androidx.test:core:1.6.1")
+                implementation("androidx.test:runner:1.6.2")
             }
         }
     }

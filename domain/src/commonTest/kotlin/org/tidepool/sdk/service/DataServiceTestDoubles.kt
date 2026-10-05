@@ -15,12 +15,13 @@ import org.tidepool.sdk.repository.UserRepository
 
 /**
  * Records how many calls to [uploadCachedData] are in flight at once, and returns
- * [scriptedResults] in order, then [fallbackResult] for every further call. Data passed to
- * [uploadDataToDataSet] is kept in [cachedData].
+ * [scriptedResults] in order, then [fallbackResult] for every further call. [onUploadCachedData]
+ * runs inside each call. Data passed to [uploadDataToDataSet] is kept in [cachedData].
  */
 internal class RecordingDataRepository(
     scriptedResults: List<Result<Boolean>> = emptyList(),
     private val fallbackResult: Result<Boolean> = Result.success(false),
+    private val onUploadCachedData: () -> Unit = {},
 ) : DataRepository {
 
     var maxObservedConcurrency = 0
@@ -39,6 +40,7 @@ internal class RecordingDataRepository(
         activeCallCount++
         maxObservedConcurrency = maxOf(maxObservedConcurrency, activeCallCount)
         delay(50)
+        onUploadCachedData()
         activeCallCount--
         completedCallCount++
         return remainingResults.removeFirstOrNull() ?: fallbackResult
