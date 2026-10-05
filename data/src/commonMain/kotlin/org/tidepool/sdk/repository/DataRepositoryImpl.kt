@@ -413,6 +413,14 @@ class DataRepositoryImpl(
         cachedDataSetId = null
     }
 
+    override suspend fun hasCachedData(): Boolean =
+        basalAutomatedDataDao.getAll(1).isNotEmpty() ||
+            bolusDataDao.getAll(1).isNotEmpty() ||
+            continuousGlucoseDataDao.getAll(1).isNotEmpty() ||
+            dosingDecisionDataDao.getAll(1).isNotEmpty() ||
+            foodDataDao.getAll(1).isNotEmpty() ||
+            insulinDataDao.getAll(1).isNotEmpty()
+
     private suspend fun Result<List<BaseDataDto>>.cacheOnFailure(
         toUpload: List<BaseDataDto>,
     ) = fold(

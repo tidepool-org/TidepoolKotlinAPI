@@ -435,6 +435,9 @@ class DataService internal constructor(
         dataRepository.clearCachedDataSetId()
     }
 
+    /** Whether recorded data is still waiting to be uploaded. */
+    suspend fun hasCachedData(): Boolean = dataRepository.hasCachedData()
+
     private companion object {
         // Together these keep one uploadCachedDataNow() call inside a WorkManager CoroutineWorker's
         // ~10-minute execution budget. A batch is one upload request per data type plus the token
