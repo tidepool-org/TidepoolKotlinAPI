@@ -158,5 +158,8 @@ interface DataRepository {
         dataSetId: String,
     ): Result<Boolean>
 
+    /** Whether any record that [uploadCachedData] sends is still waiting in the outbox. */
+    suspend fun hasCachedData(): Boolean
+
     fun clearCachedDataSetId()
 }

@@ -194,7 +194,6 @@ class DataService internal constructor(
 
     suspend fun createDataSet(newDataSet: NewDataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap { token ->
-            Logger.d(TAG) { "Creating data set with token: ${token.take(5)}..." }
             userRepository.getCurrentUser(token).flatMap { user ->
                 Logger.d(TAG) { "Creating data set for user: ${user.userId}" }
                 dataRepository.createDataSet(
@@ -434,6 +433,9 @@ class DataService internal constructor(
     fun clearUserDataSetId() {
         dataRepository.clearCachedDataSetId()
     }
+
+    /** Whether recorded data is still waiting to be uploaded. */
+    suspend fun hasCachedData(): Boolean = dataRepository.hasCachedData()
 
     private companion object {
         // Together these keep one uploadCachedDataNow() call inside a WorkManager CoroutineWorker's

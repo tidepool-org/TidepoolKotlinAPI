@@ -109,6 +109,18 @@ class DataRepositoryImplUploadTest {
     }
 
     @Test
+    fun `hasCachedData reports whether anything is waiting`() = runTest {
+        val repository = repository()
+        assertFalse(repository.hasCachedData())
+
+        repository.cache(FoodData(id = "food-1"))
+        assertTrue(repository.hasCachedData())
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+        assertFalse(repository.hasCachedData())
+    }
+
+    @Test
     fun `an empty outbox sends nothing`() = runTest {
         val result = repository().uploadCachedData(sessionToken = "token", dataSetId = "data-set")
 

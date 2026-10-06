@@ -52,6 +52,8 @@ internal class RecordingDataRepository(
 
     override fun clearCachedDataSetId() = Unit
 
+    override suspend fun hasCachedData() = cachedData.isNotEmpty()
+
     override suspend fun uploadDataToDataSet(
         data: List<BaseData>,
     ): Result<List<BaseData>> {

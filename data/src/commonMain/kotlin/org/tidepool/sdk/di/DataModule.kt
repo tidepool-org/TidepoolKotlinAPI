@@ -6,6 +6,7 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.tidepool.sdk.Environment
@@ -79,6 +80,7 @@ import org.tidepool.sdk.repository.UserRepositoryImpl
 import org.tidepool.sdk.repository.AuthorizationRepositoryImpl
 import kotlinx.datetime.Instant
 import io.ktor.client.HttpClient
+import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.defaultRequest
@@ -120,42 +122,15 @@ public val dataModule = module {
     // JSON Configuration
     single<Json> { createTidepoolJson() }
 
-    // Ktor HttpClient Configuration
+    // Ktor HttpClient Configuration. The engine comes from platformDataModule.
     single {
-        HttpClient {
-            expectSuccess = false // Handle non-2xx responses manually
-
-            install(ContentNegotiation) {
-                json(get<Json>())
-            }
-
-            install(HttpCallValidator) {
-                validateResponse { response: HttpResponse ->
-                    if (response.status.value !in 200..299) {
-                        throw ResponseException(
-                            response = response,
-                            cachedResponseText = response.bodyAsText(),
-                        )
-                    }
-                }
-            }
-
-            install(HttpTimeout) {
-                requestTimeoutMillis = 30_000
-                connectTimeoutMillis = 10_000
-                socketTimeoutMillis = 30_000
-            }
-
-            install(Logging) {
-                logger = get<Logger>()
-                level = LogLevel.ALL
-            }
-
-            defaultRequest {
-                headers.append("Content-Type", "application/json")
-                contentType(ContentType.Application.Json)
-            }
-        }
+        createTidepoolHttpClient(
+            engine = get(),
+            tidepoolJson = get(),
+            httpLogger = get(),
+            // Full bodies are health data, so only a host that opts in (debug builds) logs them.
+            logLevel = if (getOrNull<Boolean>(VerboseHttpLogging) == true) LogLevel.ALL else LogLevel.INFO,
+        )
     }
 
     // API Service Implementations using expect/actual pattern
@@ -232,5 +207,55 @@ internal fun createTidepoolJson(): Json =
                 subclass(BgmSummaryDto::class)
                 subclass(ContinuousSummaryDto::class)
             }
+        }
+    }
+
+/**
+ * Set to `true` in a host's Koin module to log full request and response bodies. Without it, only
+ * the request line and status are logged. The session token header is masked either way.
+ */
+val VerboseHttpLogging = named("verboseHttpLogging")
+
+private const val SESSION_TOKEN_HEADER = "X-Tidepool-Session-Token"
+
+internal fun createTidepoolHttpClient(
+    engine: HttpClientEngine,
+    tidepoolJson: Json,
+    httpLogger: Logger,
+    logLevel: LogLevel,
+): HttpClient =
+    HttpClient(engine) {
+        expectSuccess = false // Handle non-2xx responses manually
+
+        install(ContentNegotiation) {
+            json(tidepoolJson)
+        }
+
+        install(HttpCallValidator) {
+            validateResponse { response: HttpResponse ->
+                if (response.status.value !in 200..299) {
+                    throw ResponseException(
+                        response = response,
+                        cachedResponseText = response.bodyAsText(),
+                    )
+                }
+            }
+        }
+
+        install(HttpTimeout) {
+            requestTimeoutMillis = 30_000
+            connectTimeoutMillis = 10_000
+            socketTimeoutMillis = 30_000
+        }
+
+        install(Logging) {
+            logger = httpLogger
+            level = logLevel
+            sanitizeHeader { it == SESSION_TOKEN_HEADER }
+        }
+
+        defaultRequest {
+            headers.append("Content-Type", "application/json")
+            contentType(ContentType.Application.Json)
         }
     }

@@ -22,6 +22,10 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 kotlin {
@@ -79,6 +83,10 @@ kotlin {
                 implementation("io.ktor:ktor-client-logging:3.3.1")
                 implementation("io.ktor:ktor-client-content-negotiation:3.3.1")
                 implementation("org.minidns:minidns-hla:1.1.1")
+                // Declared explicitly (it used to arrive through Ktorfit) so the fake backend can
+                // add an interceptor, and so the engine matches the Ktor core version.
+                implementation("io.ktor:ktor-client-okhttp:3.3.1")
+                implementation("com.squareup.okhttp3:okhttp:5.1.0")
             }
         }
         // Room DAO tests shared by the host JVM run and the on-device run.
@@ -87,6 +95,8 @@ kotlin {
         val androidUnitTest by getting {
             kotlin.srcDir(androidRoomTestDir)
             dependencies {
+                implementation(kotlin("test"))
+                implementation(kotlin("test-junit"))
                 // The Android sqlite-bundled artifact only ships Android binaries. Keep this at the
                 // sqlite version Room resolves to (2.6.1 for Room 2.8.1), not the 2.5.0 declared
                 // above: an older driver lacks connection methods Room calls.
