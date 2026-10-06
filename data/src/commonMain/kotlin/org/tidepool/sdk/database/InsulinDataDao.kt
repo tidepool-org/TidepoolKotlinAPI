@@ -15,9 +15,15 @@ interface InsulinDataDao {
     @Delete
     suspend fun delete(data: InsulinDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<InsulinDataEntity>)
+
     @Query("SELECT * FROM insulin_data WHERE id = :id")
     suspend fun getById(id: String): InsulinDataEntity?
 
     @Query("SELECT * FROM insulin_data")
     suspend fun getAll(): List<InsulinDataEntity>
+
+    @Query("SELECT * FROM insulin_data ORDER BY time ASC, rowid ASC LIMIT :limit")
+    suspend fun getAll(limit: Int): List<InsulinDataEntity>
 }

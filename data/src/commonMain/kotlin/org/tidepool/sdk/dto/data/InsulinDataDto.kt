@@ -28,8 +28,10 @@ data class InsulinDataDto(
     override val deviceTime: String? = null,
     override val notes: List<String> = emptyList(),
     @Contextual
+    @SerialName("timezone")
     override val timeZone: TimeZone? = null,
     @Contextual
+    @SerialName("timezoneOffset")
     override val timeZoneOffset: Int? = null,
     
     @SerialName("dose")

@@ -1,6 +1,7 @@
 package org.tidepool.sdk.dto.data
 
 import kotlinx.serialization.Contextual
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.toDomain
@@ -26,8 +27,10 @@ data class ControllerSettingsDataDto(
     override val deviceTime: String? = null,
     override val notes: List<String> = emptyList(),
     @Contextual
+    @SerialName("timezone")
     override val timeZone: TimeZone? = null,
     @Contextual
+    @SerialName("timezoneOffset")
     override val timeZoneOffset: Int? = null,
 ) : BaseDataDto()
 
