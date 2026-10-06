@@ -194,7 +194,6 @@ class DataService internal constructor(
 
     suspend fun createDataSet(newDataSet: NewDataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap { token ->
-            Logger.d(TAG) { "Creating data set with token: ${token.take(5)}..." }
             userRepository.getCurrentUser(token).flatMap { user ->
                 Logger.d(TAG) { "Creating data set for user: ${user.userId}" }
                 dataRepository.createDataSet(

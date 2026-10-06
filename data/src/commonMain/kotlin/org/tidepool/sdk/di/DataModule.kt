@@ -6,6 +6,7 @@ import kotlinx.serialization.modules.polymorphic
 import kotlinx.serialization.modules.subclass
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
+import org.koin.core.qualifier.named
 import org.koin.dsl.bind
 import org.koin.dsl.module
 import org.tidepool.sdk.Environment
@@ -122,7 +123,15 @@ public val dataModule = module {
     single<Json> { createTidepoolJson() }
 
     // Ktor HttpClient Configuration. The engine comes from platformDataModule.
-    single { createTidepoolHttpClient(engine = get(), tidepoolJson = get(), httpLogger = get()) }
+    single {
+        createTidepoolHttpClient(
+            engine = get(),
+            tidepoolJson = get(),
+            httpLogger = get(),
+            // Full bodies are health data, so only a host that opts in (debug builds) logs them.
+            logLevel = if (getOrNull<Boolean>(VerboseHttpLogging) == true) LogLevel.ALL else LogLevel.INFO,
+        )
+    }
 
     // API Service Implementations using expect/actual pattern
     single<AlertApi> { provideAlertApi(get<Ktorfit>()) }
@@ -201,10 +210,19 @@ internal fun createTidepoolJson(): Json =
         }
     }
 
+/**
+ * Set to `true` in a host's Koin module to log full request and response bodies. Without it, only
+ * the request line and status are logged. The session token header is masked either way.
+ */
+val VerboseHttpLogging = named("verboseHttpLogging")
+
+private const val SESSION_TOKEN_HEADER = "X-Tidepool-Session-Token"
+
 internal fun createTidepoolHttpClient(
     engine: HttpClientEngine,
     tidepoolJson: Json,
     httpLogger: Logger,
+    logLevel: LogLevel,
 ): HttpClient =
     HttpClient(engine) {
         expectSuccess = false // Handle non-2xx responses manually
@@ -232,7 +250,8 @@ internal fun createTidepoolHttpClient(
 
         install(Logging) {
             logger = httpLogger
-            level = LogLevel.ALL
+            level = logLevel
+            sanitizeHeader { it == SESSION_TOKEN_HEADER }
         }
 
         defaultRequest {
