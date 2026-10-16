@@ -4,6 +4,7 @@ import androidx.room.Room
 import androidx.room.migration.Migration
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.sqlite.execSQL
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -64,20 +65,41 @@ actual val platformDataModule: Module
         }
     }
 
-private val MIGRATION_1_2 = object : Migration(1, 2) {
+/**
+ * Version 2: an origin on food and automated basal rows, and the queued-deletion table.
+ *
+ * Version 1 databases already have `bolus_data.normal` (the column was added without a version
+ * bump), so it's only added to one that lacks it: adding it again would fail the migration and
+ * leave the outbox unopenable.
+ */
+internal val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        db.execSQL("ALTER TABLE bolus_data ADD COLUMN normal REAL")
+        val hasBolusNormal = db.query("PRAGMA table_info(`bolus_data`)").use { cursor ->
+            val name = cursor.getColumnIndexOrThrow("name")
+            generateSequence { if (cursor.moveToNext()) cursor.getString(name) else null }
+                .any { it == "normal" }
+        }
+        migrationToVersion2(hasBolusNormal).forEach { db.execSQL(it) }
     }
 
     override fun migrate(connection: SQLiteConnection) {
-        val statement = connection.prepare("ALTER TABLE bolus_data ADD COLUMN normal REAL")
-        try {
-            statement.step()
-        } finally {
-            statement.close()
+        val hasBolusNormal = connection.prepare("PRAGMA table_info(`bolus_data`)").use { statement ->
+            var found = false
+            while (statement.step()) {
+                if (statement.getText(1) == "normal") found = true
+            }
+            found
         }
+        migrationToVersion2(hasBolusNormal).forEach { connection.execSQL(it) }
     }
 }
+
+private fun migrationToVersion2(hasBolusNormal: Boolean) = listOfNotNull(
+    "ALTER TABLE `bolus_data` ADD COLUMN `normal` REAL".takeUnless { hasBolusNormal },
+    "ALTER TABLE `food_data` ADD COLUMN `origin` TEXT",
+    "ALTER TABLE `basal_automated_data` ADD COLUMN `origin` TEXT",
+    "CREATE TABLE IF NOT EXISTS `pending_data_deletion` (`origin_id` TEXT NOT NULL, PRIMARY KEY(`origin_id`))",
+)
 
 
 actual fun provideAlertApi(ktorfit: Ktorfit) = ktorfit.createAlertApi()

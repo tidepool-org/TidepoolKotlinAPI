@@ -161,7 +161,7 @@ fun BasalAutomatedData.DeliveryType.toDto(): BasalAutomatedDataDto.DeliveryTypeD
     BasalAutomatedData.DeliveryType.Temp -> BasalAutomatedDataDto.DeliveryTypeDto.Temp
 }
 
-private fun BasalAutomatedDataDto.OriginDto.toDomain(): BasalAutomatedData.Origin =
+internal fun BasalAutomatedDataDto.OriginDto.toDomain(): BasalAutomatedData.Origin =
     BasalAutomatedData.Origin(
         id = id,
         name = name,
@@ -183,7 +183,7 @@ private fun BasalAutomatedDataDto.SuppressedDto.toDomain(): BasalAutomatedData.S
         scheduleName = scheduleName,
     )
 
-private fun BasalAutomatedData.Origin.toDto(): BasalAutomatedDataDto.OriginDto =
+internal fun BasalAutomatedData.Origin.toDto(): BasalAutomatedDataDto.OriginDto =
     BasalAutomatedDataDto.OriginDto(
         id = id,
         name = name,

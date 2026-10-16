@@ -27,6 +27,12 @@ data class FoodData(
     val amount: Amount? = null,
     val nutrition: Nutrition? = null,
     val ingredients: List<Ingredient>? = null,
+    /**
+     * Where the entry came from. Uploading a datum with the same origin id replaces the earlier
+     * one, which is how an edited entry stays a single record (the data set deduplicates by
+     * origin). Same shape as a basal origin.
+     */
+    val origin: BasalAutomatedData.Origin? = null,
 ) : BaseData(
     id = id,
     type = type,

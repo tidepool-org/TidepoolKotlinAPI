@@ -9,7 +9,9 @@ import org.tidepool.sdk.database.DeviceEventDataDao
 import org.tidepool.sdk.database.DosingDecisionDataDao
 import org.tidepool.sdk.database.FoodDataDao
 import org.tidepool.sdk.database.InsulinDataDao
+import org.tidepool.sdk.database.PendingDataDeletionDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
+import org.tidepool.sdk.database.entity.PendingDataDeletionEntity
 import org.tidepool.sdk.database.entity.data.BaseDataEntity
 import org.tidepool.sdk.database.entity.data.BasalAutomatedDataEntity
 import org.tidepool.sdk.database.entity.data.BolusDataEntity
@@ -156,4 +158,17 @@ internal class InMemoryKeyValueStorage : KeyValueStorage {
     private fun put(key: String, value: Any?) {
         values[key] = value
     }
+}
+
+/** Queued deletions in insertion order; a repeated origin id replaces its row, like REPLACE does. */
+internal class InMemoryPendingDataDeletionDao : PendingDataDeletionDao {
+    val rows = mutableListOf<PendingDataDeletionEntity>()
+    override suspend fun insert(data: List<PendingDataDeletionEntity>) {
+        rows.removeAll { row -> data.any { it.originId == row.originId } }
+        rows += data
+    }
+    override suspend fun delete(data: List<PendingDataDeletionEntity>) {
+        rows.removeAll { it in data }
+    }
+    override suspend fun getAll(limit: Int) = rows.take(limit)
 }

@@ -1,6 +1,7 @@
 package org.tidepool.sdk.api
 
 import org.tidepool.sdk.dto.data.BaseDataDto
+import org.tidepool.sdk.dto.data.DataSelectorDto
 import org.tidepool.sdk.dto.data.DataSetDto
 import org.tidepool.sdk.dto.data.DataSourceDto
 import org.tidepool.sdk.dto.data.NewDataSetDto
@@ -8,6 +9,7 @@ import org.tidepool.sdk.dto.data.NewDataSourceDto
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.DELETE
 import de.jensklingenberg.ktorfit.http.GET
+import de.jensklingenberg.ktorfit.http.HTTP
 import de.jensklingenberg.ktorfit.http.Header
 import de.jensklingenberg.ktorfit.http.POST
 import de.jensklingenberg.ktorfit.http.PUT
@@ -94,6 +96,13 @@ interface DataApi {
     suspend fun deleteDataSetData(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
         @Path("dataSetId") dataSetId: String,
+    )
+
+    @HTTP(method = "DELETE", path = "v1/data_sets/{dataSetId}/data", hasBody = true)
+    suspend fun deleteDataSetDataBySelectors(
+        @Header("X-Tidepool-Session-Token") sessionToken: String,
+        @Path("dataSetId") dataSetId: String,
+        @Body selectors: List<DataSelectorDto>,
     )
     
     // Legacy datasets endpoints

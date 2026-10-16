@@ -1,6 +1,7 @@
 package org.tidepool.sdk.service
 
 import co.touchlab.kermit.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -13,6 +14,7 @@ import org.tidepool.sdk.UnauthorizedException
 import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.ClientSoftware
+import org.tidepool.sdk.model.data.DataDeletion
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.DataType
@@ -240,6 +242,23 @@ class DataService internal constructor(
         dataRepository.uploadDataToDataSet(data = data)
     } else {
         Result.failure(UnauthorizedException("Not logged in, data not cached"))
+    }
+
+    /**
+     * Queues [deletions] in the local outbox for [uploadCachedDataNow] to send, after the uploads
+     * waiting with them. Like [uploadDataToDataSet], it needs a stored session but not a fresh
+     * token.
+     */
+    suspend fun deleteData(deletions: List<DataDeletion>): Result<Unit> = when {
+        deletions.isEmpty() -> Result.success(Unit)
+        tokenProvider.isLoggedIn -> try {
+            Result.success(dataRepository.cacheDataDeletions(deletions))
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+        else -> Result.failure(UnauthorizedException("Not logged in, deletion not cached"))
     }
 
     suspend fun deleteDataSetData(dataSetId: String): Result<Unit> =

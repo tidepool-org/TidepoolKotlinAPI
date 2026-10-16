@@ -49,7 +49,11 @@ data class BasalAutomatedDataEntity(
     @ColumnInfo(name = "rate")
     var rate: Double = -1.0,
     @ColumnInfo(name = "schedule_name")
-    var scheduleName: String? = null
+    var scheduleName: String? = null,
+    // Without it an updated basal can't replace its earlier upload (the data set deduplicates by
+    // origin).
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -83,6 +87,7 @@ fun BasalAutomatedDataDto.toEntity() = BasalAutomatedDataEntity(
     expectedDuration = expectedDuration?.toDouble()?.div(1.minutes.inWholeMilliseconds),
     rate = rate,
     scheduleName = scheduleName,
+    origin = origin?.let { Json.encodeToString(it) },
 )
 
 fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
@@ -105,4 +110,7 @@ fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     expectedDuration = expectedDuration?.times(1.minutes.inWholeMilliseconds)?.roundToLong(),
     rate = rate,
     scheduleName = scheduleName,
+    origin = origin
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<BasalAutomatedDataDto.OriginDto>(it) },
 )

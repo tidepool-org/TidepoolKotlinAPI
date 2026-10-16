@@ -4,6 +4,7 @@ import kotlinx.coroutines.delay
 import kotlinx.datetime.Instant
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.model.data.BaseData
+import org.tidepool.sdk.model.data.DataDeletion
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.DataType
@@ -53,6 +54,8 @@ internal class RecordingDataRepository(
     override fun clearCachedDataSetId() = Unit
 
     override suspend fun hasCachedData() = cachedData.isNotEmpty()
+
+    override suspend fun cacheDataDeletions(deletions: List<DataDeletion>) = Unit
 
     override suspend fun uploadDataToDataSet(
         data: List<BaseData>,

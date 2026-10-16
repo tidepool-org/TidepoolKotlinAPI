@@ -13,7 +13,9 @@ import org.tidepool.sdk.database.DeviceEventDataDao
 import org.tidepool.sdk.database.DosingDecisionDataDao
 import org.tidepool.sdk.database.FoodDataDao
 import org.tidepool.sdk.database.InsulinDataDao
+import org.tidepool.sdk.database.PendingDataDeletionDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
+import org.tidepool.sdk.database.entity.PendingDataDeletionEntity
 import org.tidepool.sdk.database.entity.data.BaseDataEntity
 import org.tidepool.sdk.database.entity.data.toEntity
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
@@ -22,6 +24,7 @@ import org.tidepool.sdk.dto.data.BolusDataDto
 import org.tidepool.sdk.dto.data.CgmSettingsDataDto
 import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
 import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
+import org.tidepool.sdk.dto.data.DataSelectorDto
 import org.tidepool.sdk.dto.data.DeviceEventDataDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.dto.data.FoodDataDto
@@ -31,6 +34,7 @@ import org.tidepool.sdk.dto.data.toDomain
 import org.tidepool.sdk.dto.data.toDto
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.data.BaseData
+import org.tidepool.sdk.model.data.DataDeletion
 import org.tidepool.sdk.model.data.DataType
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
@@ -57,6 +61,7 @@ class DataRepositoryImpl(
     private val cgmSettingsDataDao: CgmSettingsDataDao,
     private val controllerSettingsDataDao: ControllerSettingsDataDao,
     private val pumpSettingsDataDao: PumpSettingsDataDao,
+    private val pendingDataDeletionDao: PendingDataDeletionDao,
     private val keyValueStorage: KeyValueStorage,
 ) : DataRepository {
 
@@ -364,6 +369,8 @@ class DataRepositoryImpl(
             ),
             upload("food", UPLOAD_BATCH_LIMIT, foodDataDao::getAll, foodDataDao::delete),
             upload("insulin", UPLOAD_BATCH_LIMIT, insulinDataDao::getAll, insulinDataDao::delete),
+            // After the uploads, so a deletion and a newer upload of the same origin land in order.
+            uploadDeletions(sessionToken, dataSetId),
         )
         val (uploaded, failed) = results.partition { it.isSuccess }
 
@@ -409,6 +416,42 @@ class DataRepositoryImpl(
         }
     }
 
+    /**
+     * Sends up to [UPLOAD_BATCH_LIMIT] queued deletions in one request and drops them once the
+     * server accepts them. Returns null when none are queued, otherwise whether the batch was full.
+     */
+    private suspend fun uploadDeletions(sessionToken: String, dataSetId: String): Result<Boolean>? {
+        val rows = pendingDataDeletionDao.getAll(UPLOAD_BATCH_LIMIT)
+        if (rows.isEmpty()) return null
+
+        Logger.v(javaClass.simpleName) { "Deleting ${rows.size} data by origin" }
+        return runCatchingNetworkExceptions {
+            dataApi.deleteDataSetDataBySelectors(
+                sessionToken = sessionToken,
+                dataSetId = dataSetId,
+                selectors = rows.map { DataSelectorDto(origin = DataSelectorDto.OriginDto(id = it.originId)) },
+            )
+        }.map {
+            pendingDataDeletionDao.delete(rows)
+            rows.size == UPLOAD_BATCH_LIMIT
+        }.onFailure {
+            Logger.e(javaClass.simpleName, it) { "Deleting data failed, it stays queued for the next attempt" }
+        }
+    }
+
+    override suspend fun cacheDataDeletions(deletions: List<DataDeletion>) {
+        deletions.forEach { deletion ->
+            // A copy still waiting in the outbox would otherwise go out after its deletion.
+            basalAutomatedDataDao.getById(deletion.id)?.let { basalAutomatedDataDao.delete(it) }
+            bolusDataDao.getById(deletion.id)?.let { bolusDataDao.delete(it) }
+            continuousGlucoseDataDao.getById(deletion.id)?.let { continuousGlucoseDataDao.delete(it) }
+            dosingDecisionDataDao.getById(deletion.id)?.let { dosingDecisionDataDao.delete(it) }
+            foodDataDao.getById(deletion.id)?.let { foodDataDao.delete(it) }
+            insulinDataDao.getById(deletion.id)?.let { insulinDataDao.delete(it) }
+        }
+        pendingDataDeletionDao.insert(deletions.map { PendingDataDeletionEntity(originId = it.originId) })
+    }
+
     override fun clearCachedDataSetId() {
         cachedDataSetId = null
     }
@@ -419,7 +462,8 @@ class DataRepositoryImpl(
             continuousGlucoseDataDao.getAll(1).isNotEmpty() ||
             dosingDecisionDataDao.getAll(1).isNotEmpty() ||
             foodDataDao.getAll(1).isNotEmpty() ||
-            insulinDataDao.getAll(1).isNotEmpty()
+            insulinDataDao.getAll(1).isNotEmpty() ||
+            pendingDataDeletionDao.getAll(1).isNotEmpty()
 
     private suspend fun Result<List<BaseDataDto>>.cacheOnFailure(
         toUpload: List<BaseDataDto>,
