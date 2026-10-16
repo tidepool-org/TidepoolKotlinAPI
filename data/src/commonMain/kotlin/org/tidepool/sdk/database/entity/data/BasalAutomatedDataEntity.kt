@@ -54,6 +54,10 @@ data class BasalAutomatedDataEntity(
     // origin).
     @ColumnInfo(name = "origin")
     var origin: String? = null, // JSON string
+    @ColumnInfo(name = "payload")
+    var payload: String? = null, // JSON string
+    @ColumnInfo(name = "suppressed")
+    var suppressed: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -88,6 +92,8 @@ fun BasalAutomatedDataDto.toEntity() = BasalAutomatedDataEntity(
     rate = rate,
     scheduleName = scheduleName,
     origin = origin?.let { Json.encodeToString(it) },
+    payload = payload?.let { Json.encodeToString(it) },
+    suppressed = suppressed?.let { Json.encodeToString(it) },
 )
 
 fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
@@ -113,4 +119,10 @@ fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     origin = origin
         ?.takeUnless { it == "null" }
         ?.let { Json.decodeFromString<BasalAutomatedDataDto.OriginDto>(it) },
+    payload = payload
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<BasalAutomatedDataDto.PayloadDto>(it) },
+    suppressed = suppressed
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<BasalAutomatedDataDto.SuppressedDto>(it) },
 )

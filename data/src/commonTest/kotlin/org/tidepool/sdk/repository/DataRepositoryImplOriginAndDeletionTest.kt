@@ -67,7 +67,7 @@ class DataRepositoryImplOriginAndDeletionTest {
     }
 
     @Test
-    fun `an automated basal's origin goes out with it`() = runTest {
+    fun `an automated basal's origin, payload and suppressed basal go out with it`() = runTest {
         val repository = repository()
         repository.uploadDataToDataSet(
             listOf(
@@ -77,6 +77,12 @@ class DataRepositoryImplOriginAndDeletionTest {
                     duration = 1_800_000.0,
                     rate = 0.5,
                     origin = origin.copy(id = "sync-1:basal/automated"),
+                    payload = BasalAutomatedData.Payload(deliveredUnits = 0.25, syncIdentifier = "sync-1"),
+                    suppressed = BasalAutomatedData.Suppressed(
+                        deliveryType = BasalAutomatedData.DeliveryType.Scheduled,
+                        rate = 1.0,
+                        scheduleName = "Default",
+                    ),
                 )
             )
         )
@@ -88,6 +94,15 @@ class DataRepositoryImplOriginAndDeletionTest {
             "sync-1:basal/automated",
             uploaded.getValue("origin").jsonObject.getValue("id").jsonPrimitive.content,
         )
+        val payload = uploaded.getValue("payload").jsonObject
+        assertEquals("sync-1", payload.getValue("syncIdentifier").jsonPrimitive.content)
+        assertEquals("0.25", payload.getValue("deliveredUnits").jsonPrimitive.content)
+        // The shape the platform accepts for a suppressed basal.
+        val suppressed = uploaded.getValue("suppressed").jsonObject
+        assertEquals("basal", suppressed.getValue("type").jsonPrimitive.content)
+        assertEquals("scheduled", suppressed.getValue("deliveryType").jsonPrimitive.content)
+        assertEquals("1.0", suppressed.getValue("rate").jsonPrimitive.content)
+        assertEquals("Default", suppressed.getValue("scheduleName").jsonPrimitive.content)
     }
 
     @Test

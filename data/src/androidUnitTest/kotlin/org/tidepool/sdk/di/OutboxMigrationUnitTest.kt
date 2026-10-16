@@ -42,7 +42,11 @@ class OutboxMigrationUnitTest {
         assertEquals("food-1", food.id)
         assertNull(food.origin)
         assertEquals("food-1", migrated.foodDataDao().getById("food-1")?.id)
-        assertEquals(listOf("basal-1"), migrated.basalAutomatedDataDao().getAll().map { it.id })
+        val basal = migrated.basalAutomatedDataDao().getAll().single()
+        assertEquals("basal-1", basal.id)
+        assertNull(basal.origin)
+        assertNull(basal.payload)
+        assertNull(basal.suppressed)
         assertEquals(1.5, migrated.bolusDataDao().getAll().single().normal)
     }
 
@@ -56,6 +60,9 @@ class OutboxMigrationUnitTest {
         migrated.pendingDataDeletionDao().insert(listOf(PendingDataDeletionEntity(originId = "sync-1")))
 
         assertEquals("""{"id":"sync-1"}""", migrated.foodDataDao().getById("food-1")?.origin)
+        val basal = migrated.basalAutomatedDataDao().getAll().single()
+        migrated.basalAutomatedDataDao().insert(basal.copy(payload = """{"deliveredUnits":0.25}"""))
+        assertEquals("""{"deliveredUnits":0.25}""", migrated.basalAutomatedDataDao().getById("basal-1")?.payload)
         assertEquals(listOf("sync-1"), migrated.pendingDataDeletionDao().getAll(10).map { it.originId })
     }
 

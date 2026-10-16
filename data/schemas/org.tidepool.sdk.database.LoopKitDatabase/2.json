@@ -1,0 +1,1049 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 2,
+    "identityHash": "251aa2659d7b1b5f5700a6a5c064cef7",
+    "entities": [
+      {
+        "tableName": "BaseDataEntity",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clockDriftOffset` INTEGER, `conversionOffset` INTEGER, `dataSetId` TEXT, `deviceTime` TEXT, `notes` TEXT, `timeZone` TEXT, `timeZoneOffset` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clockDriftOffset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversionOffset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "dataSetId",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "deviceTime",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "timeZone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "timeZoneOffset",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "basal_automated_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `delivery_type` TEXT NOT NULL, `duration` REAL NOT NULL, `expected_duration` REAL, `rate` REAL NOT NULL, `schedule_name` TEXT, `origin` TEXT, `payload` TEXT, `suppressed` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "deliveryType",
+            "columnName": "delivery_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "duration",
+            "columnName": "duration",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "expectedDuration",
+            "columnName": "expected_duration",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "rate",
+            "columnName": "rate",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scheduleName",
+            "columnName": "schedule_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "origin",
+            "columnName": "origin",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "suppressed",
+            "columnName": "suppressed",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "bolus_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `delivery_context` TEXT NOT NULL, `normal` REAL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "subType",
+            "columnName": "sub_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deliveryContext",
+            "columnName": "delivery_context",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "normal",
+            "columnName": "normal",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "continuous_glucose_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `value` REAL, `units` TEXT, `trend` TEXT, `trend_rate` REAL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "units",
+            "columnName": "units",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "trend",
+            "columnName": "trend",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "trendRate",
+            "columnName": "trend_rate",
+            "affinity": "REAL"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "dosing_decision_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `reason` TEXT NOT NULL, `carbs_on_board` TEXT, `insulin_on_board` TEXT, `recommended_basal` TEXT, `recommended_bolus` TEXT, `requested_bolus` TEXT, `schedule_time_zone_offset` INTEGER, `units` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "reason",
+            "columnName": "reason",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "carbsOnBoard",
+            "columnName": "carbs_on_board",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "insulinOnBoard",
+            "columnName": "insulin_on_board",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recommendedBasal",
+            "columnName": "recommended_basal",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "recommendedBolus",
+            "columnName": "recommended_bolus",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "requestedBolus",
+            "columnName": "requested_bolus",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "scheduleTimeZoneOffset",
+            "columnName": "schedule_time_zone_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "units",
+            "columnName": "units",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "food_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `brand` TEXT, `code` TEXT, `meal` TEXT, `meal_other` TEXT, `name` TEXT, `amount` TEXT, `nutrition` TEXT, `ingredients` TEXT, `origin` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "brand",
+            "columnName": "brand",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "code",
+            "columnName": "code",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "meal",
+            "columnName": "meal",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "mealOther",
+            "columnName": "meal_other",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "amount",
+            "columnName": "amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "nutrition",
+            "columnName": "nutrition",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "ingredients",
+            "columnName": "ingredients",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "origin",
+            "columnName": "origin",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "insulin_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `dose` TEXT NOT NULL, `site` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dose",
+            "columnName": "dose",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "site",
+            "columnName": "site",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "device_event_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `device_identifier` TEXT, `expected_lifetime_seconds` REAL, `warmup_period_seconds` REAL, `failure_message` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "subType",
+            "columnName": "sub_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "deviceIdentifier",
+            "columnName": "device_identifier",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "expectedLifetimeSeconds",
+            "columnName": "expected_lifetime_seconds",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "warmupPeriodSeconds",
+            "columnName": "warmup_period_seconds",
+            "affinity": "REAL"
+          },
+          {
+            "fieldPath": "failureMessage",
+            "columnName": "failure_message",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "cgm_settings_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "controller_settings_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "pump_settings_data",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "time",
+            "columnName": "time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "annotations",
+            "columnName": "annotations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "associations",
+            "columnName": "associations",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "clockDriftOffset",
+            "columnName": "clock_drift_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "conversionOffset",
+            "columnName": "conversion_offset",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "dataSetId",
+            "columnName": "data_set_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "deviceTime",
+            "columnName": "device_time",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "notes",
+            "columnName": "notes",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZone",
+            "columnName": "time_zone",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "timeZoneOffset",
+            "columnName": "time_zone_offset",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "pending_data_deletion",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`origin_id` TEXT NOT NULL, PRIMARY KEY(`origin_id`))",
+        "fields": [
+          {
+            "fieldPath": "originId",
+            "columnName": "origin_id",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "origin_id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '251aa2659d7b1b5f5700a6a5c064cef7')"
+    ]
+  }
+}

@@ -66,7 +66,8 @@ actual val platformDataModule: Module
     }
 
 /**
- * Version 2: an origin on food and automated basal rows, and the queued-deletion table.
+ * Version 2: an origin on food and automated basal rows, the basal payload and suppressed basal the
+ * outbox used to drop, and the queued-deletion table.
  *
  * Version 1 changed twice without a bump, so a version 1 database can predate either change: the
  * settings and device event tables (2025-11) are created if missing, and `bolus_data.normal`
@@ -103,6 +104,8 @@ private fun migrationToVersion2(hasBolusNormal: Boolean) = listOfNotNull(
     "ALTER TABLE `bolus_data` ADD COLUMN `normal` REAL".takeUnless { hasBolusNormal },
     "ALTER TABLE `food_data` ADD COLUMN `origin` TEXT",
     "ALTER TABLE `basal_automated_data` ADD COLUMN `origin` TEXT",
+    "ALTER TABLE `basal_automated_data` ADD COLUMN `payload` TEXT",
+    "ALTER TABLE `basal_automated_data` ADD COLUMN `suppressed` TEXT",
     "CREATE TABLE IF NOT EXISTS `pending_data_deletion` (`origin_id` TEXT NOT NULL, PRIMARY KEY(`origin_id`))",
 )
 

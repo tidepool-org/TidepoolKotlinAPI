@@ -18,7 +18,7 @@ import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
 
 @Database(
     version = 2,
-    exportSchema = false,
+    exportSchema = true,
     entities = [
         BaseDataEntity::class,
         BasalAutomatedDataEntity::class,
