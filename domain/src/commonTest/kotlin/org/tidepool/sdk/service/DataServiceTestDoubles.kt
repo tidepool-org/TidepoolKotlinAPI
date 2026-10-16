@@ -55,7 +55,11 @@ internal class RecordingDataRepository(
 
     override suspend fun hasCachedData() = cachedData.isNotEmpty()
 
-    override suspend fun cacheDataDeletions(deletions: List<DataDeletion>) = Unit
+    val cachedDeletions = mutableListOf<DataDeletion>()
+
+    override suspend fun cacheDataDeletions(deletions: List<DataDeletion>) {
+        cachedDeletions += deletions
+    }
 
     override suspend fun uploadDataToDataSet(
         data: List<BaseData>,

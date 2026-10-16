@@ -72,6 +72,23 @@ class OutboxMigrationUnitTest {
         assertNull(migrated.bolusDataDao().getAll().single().normal)
     }
 
+    // The oldest version 1 outboxes predate the settings and device event tables too.
+    @Test
+    fun oldestVersionOneOutboxGetsTheMissingTables() = runTest {
+        val laterTables = listOf("device_event_data", "cgm_settings_data", "controller_settings_data", "pump_settings_data")
+        createVersionOneDatabase(
+            VERSION_1_SCHEMA
+                .filterNot { statement -> laterTables.any { statement.contains("`$it`") } }
+                .map { it.replace(", `normal` REAL", "") },
+            bolusNormal = false,
+        )
+
+        val migrated = openCurrentDatabase()
+
+        assertEquals("food-1", migrated.foodDataDao().getAll().single().id)
+        assertEquals(emptyList(), migrated.pumpSettingsDataDao().getAll())
+    }
+
     private fun createVersionOneDatabase(schema: List<String>, bolusNormal: Boolean = true) {
         BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
             schema.forEach { execSQL(it) }

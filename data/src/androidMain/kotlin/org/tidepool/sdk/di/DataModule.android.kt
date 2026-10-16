@@ -68,9 +68,10 @@ actual val platformDataModule: Module
 /**
  * Version 2: an origin on food and automated basal rows, and the queued-deletion table.
  *
- * Version 1 databases already have `bolus_data.normal` (the column was added without a version
- * bump), so it's only added to one that lacks it: adding it again would fail the migration and
- * leave the outbox unopenable.
+ * Version 1 changed twice without a bump, so a version 1 database can predate either change: the
+ * settings and device event tables (2025-11) are created if missing, and `bolus_data.normal`
+ * (2026-02) is only added to one that lacks it. Adding it again would fail the migration and leave
+ * the outbox unopenable.
  */
 internal val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -95,6 +96,10 @@ internal val MIGRATION_1_2 = object : Migration(1, 2) {
 }
 
 private fun migrationToVersion2(hasBolusNormal: Boolean) = listOfNotNull(
+    "CREATE TABLE IF NOT EXISTS `device_event_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `device_identifier` TEXT, `expected_lifetime_seconds` REAL, `warmup_period_seconds` REAL, `failure_message` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `cgm_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `controller_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `pump_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
     "ALTER TABLE `bolus_data` ADD COLUMN `normal` REAL".takeUnless { hasBolusNormal },
     "ALTER TABLE `food_data` ADD COLUMN `origin` TEXT",
     "ALTER TABLE `basal_automated_data` ADD COLUMN `origin` TEXT",

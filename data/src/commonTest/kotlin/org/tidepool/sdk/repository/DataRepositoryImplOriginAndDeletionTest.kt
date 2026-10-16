@@ -135,6 +135,20 @@ class DataRepositoryImplOriginAndDeletionTest {
         assertFalse(repository.hasCachedData())
     }
 
+    @Test
+    fun `a deletion the server couldn't select by is dropped instead of blocking the queue`() = runTest {
+        val repository = repository()
+
+        repository.cacheDataDeletions(
+            listOf(
+                DataDeletion(id = "food-1", originId = "x".repeat(101)),
+                DataDeletion(id = "food-2", originId = "sync-2"),
+            )
+        )
+
+        assertEquals(listOf("sync-2"), deletions.rows.map { it.originId })
+    }
+
     private fun repository() = DataRepositoryImpl(
         environmentRepository = TestEnvironmentRepository,
         httpClient = HttpClient(MockEngine { request ->

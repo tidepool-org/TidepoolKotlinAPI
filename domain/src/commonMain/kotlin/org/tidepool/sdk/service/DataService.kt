@@ -246,19 +246,19 @@ class DataService internal constructor(
 
     /**
      * Queues [deletions] in the local outbox for [uploadCachedDataNow] to send, after the uploads
-     * waiting with them. Like [uploadDataToDataSet], it needs a stored session but not a fresh
-     * token.
+     * waiting with them. Unlike [uploadDataToDataSet] it needs no session: a deleted datum's copy
+     * still waiting in the outbox has to be dropped now, or it would go out after the next login.
      */
-    suspend fun deleteData(deletions: List<DataDeletion>): Result<Unit> = when {
-        deletions.isEmpty() -> Result.success(Unit)
-        tokenProvider.isLoggedIn -> try {
+    suspend fun deleteData(deletions: List<DataDeletion>): Result<Unit> = if (deletions.isEmpty()) {
+        Result.success(Unit)
+    } else {
+        try {
             Result.success(dataRepository.cacheDataDeletions(deletions))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             Result.failure(e)
         }
-        else -> Result.failure(UnauthorizedException("Not logged in, deletion not cached"))
     }
 
     suspend fun deleteDataSetData(dataSetId: String): Result<Unit> =

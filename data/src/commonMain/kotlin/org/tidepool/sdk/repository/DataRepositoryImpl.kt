@@ -440,7 +440,16 @@ class DataRepositoryImpl(
     }
 
     override suspend fun cacheDataDeletions(deletions: List<DataDeletion>) {
-        deletions.forEach { deletion ->
+        // The server rejects the whole request for one origin id it can't select by, which would
+        // keep every queued deletion from ever going out.
+        val (valid, invalid) = deletions.partition { it.originId.length in 1..ORIGIN_ID_LENGTH_MAXIMUM }
+        if (invalid.isNotEmpty()) {
+            Logger.e(javaClass.simpleName) { "Dropping ${invalid.size} deletions with an invalid origin id" }
+        }
+        // Queued first: if the process dies before the copies below are dropped, one still goes out
+        // ahead of its deletion instead of the deletion being lost.
+        pendingDataDeletionDao.insert(valid.map { PendingDataDeletionEntity(originId = it.originId) })
+        valid.forEach { deletion ->
             // A copy still waiting in the outbox would otherwise go out after its deletion.
             basalAutomatedDataDao.getById(deletion.id)?.let { basalAutomatedDataDao.delete(it) }
             bolusDataDao.getById(deletion.id)?.let { bolusDataDao.delete(it) }
@@ -449,7 +458,6 @@ class DataRepositoryImpl(
             foodDataDao.getById(deletion.id)?.let { foodDataDao.delete(it) }
             insulinDataDao.getById(deletion.id)?.let { insulinDataDao.delete(it) }
         }
-        pendingDataDeletionDao.insert(deletions.map { PendingDataDeletionEntity(originId = it.originId) })
     }
 
     override fun clearCachedDataSetId() {
@@ -497,5 +505,8 @@ class DataRepositoryImpl(
         // across all dose kinds, while basal, bolus and insulin each get their own request here.
         private const val UPLOAD_BATCH_LIMIT = 1000
         private const val DOSING_DECISION_UPLOAD_BATCH_LIMIT = 50
+
+        // The platform's origin.IDLengthMaximum.
+        private const val ORIGIN_ID_LENGTH_MAXIMUM = 100
     }
 }
