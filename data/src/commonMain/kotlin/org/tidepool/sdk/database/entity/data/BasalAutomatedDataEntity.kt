@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.math.roundToLong
@@ -118,7 +119,7 @@ fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     scheduleName = scheduleName,
     origin = origin
         ?.takeUnless { it == "null" }
-        ?.let { Json.decodeFromString<BasalAutomatedDataDto.OriginDto>(it) },
+        ?.let { Json.decodeFromString<OriginDto>(it) },
     payload = payload
         ?.takeUnless { it == "null" }
         ?.let { Json.decodeFromString<BasalAutomatedDataDto.PayloadDto>(it) },

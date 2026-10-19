@@ -5,7 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
-import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import kotlinx.datetime.Instant
 import java.util.TimeZone
@@ -148,5 +148,5 @@ fun FoodDataEntity.toDto() = FoodDataDto(
         ?.let { Json.decodeFromString<List<FoodDataDto.IngredientDto>>(it) },
     origin = origin
         ?.takeUnless { it == "null" }
-        ?.let { Json.decodeFromString<BasalAutomatedDataDto.OriginDto>(it) },
+        ?.let { Json.decodeFromString<OriginDto>(it) },
 )

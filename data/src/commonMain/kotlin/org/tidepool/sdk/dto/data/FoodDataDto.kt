@@ -54,7 +54,7 @@ data class FoodDataDto(
     @SerialName("ingredients")
     val ingredients: List<IngredientDto>? = null,
     @SerialName("origin")
-    val origin: BasalAutomatedDataDto.OriginDto? = null,
+    val origin: OriginDto? = null,
 ) : BaseDataDto() {
     
     @Serializable

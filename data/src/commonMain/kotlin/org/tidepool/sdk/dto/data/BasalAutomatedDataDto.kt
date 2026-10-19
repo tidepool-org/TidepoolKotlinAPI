@@ -53,18 +53,6 @@ data class BasalAutomatedDataDto(
     val suppressed: SuppressedDto? = null,
 ) : BaseDataDto() {
     @Serializable
-    data class OriginDto(
-        @SerialName("id")
-        val id: String,
-        @SerialName("name")
-        val name: String,
-        @SerialName("type")
-        val type: String,
-        @SerialName("version")
-        val version: String,
-    )
-
-    @Serializable
     data class PayloadDto(
         @SerialName("deliveredUnits")
         val deliveredUnits: Double,
@@ -161,14 +149,6 @@ fun BasalAutomatedData.DeliveryType.toDto(): BasalAutomatedDataDto.DeliveryTypeD
     BasalAutomatedData.DeliveryType.Temp -> BasalAutomatedDataDto.DeliveryTypeDto.Temp
 }
 
-internal fun BasalAutomatedDataDto.OriginDto.toDomain(): BasalAutomatedData.Origin =
-    BasalAutomatedData.Origin(
-        id = id,
-        name = name,
-        type = type,
-        version = version,
-    )
-
 private fun BasalAutomatedDataDto.PayloadDto.toDomain(): BasalAutomatedData.Payload =
     BasalAutomatedData.Payload(
         deliveredUnits = deliveredUnits,
@@ -181,14 +161,6 @@ private fun BasalAutomatedDataDto.SuppressedDto.toDomain(): BasalAutomatedData.S
         deliveryType = deliveryType.toDomain(),
         rate = rate,
         scheduleName = scheduleName,
-    )
-
-internal fun BasalAutomatedData.Origin.toDto(): BasalAutomatedDataDto.OriginDto =
-    BasalAutomatedDataDto.OriginDto(
-        id = id,
-        name = name,
-        type = type,
-        version = version,
     )
 
 private fun BasalAutomatedData.Payload.toDto(): BasalAutomatedDataDto.PayloadDto =

@@ -25,6 +25,7 @@ import org.tidepool.sdk.model.data.BasalAutomatedData
 import org.tidepool.sdk.model.data.ContinuousGlucoseData
 import org.tidepool.sdk.model.data.DataDeletion
 import org.tidepool.sdk.model.data.FoodData
+import org.tidepool.sdk.model.data.Origin
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -47,7 +48,7 @@ class DataRepositoryImplOriginAndDeletionTest {
     /** Methods the server rejects with a 400. */
     private val rejectedMethods = mutableSetOf<HttpMethod>()
 
-    private val origin = BasalAutomatedData.Origin(
+    private val origin = Origin(
         id = "sync-1",
         name = "org.tidepool.loop",
         type = "application",
