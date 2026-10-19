@@ -1,7 +1,7 @@
 package org.tidepool.sdk.dto.prescription
 
 import org.tidepool.sdk.di.createTidepoolJson
-import org.tidepool.sdk.model.prescription.GlucoseRange
+import org.tidepool.sdk.model.prescription.GlucoseTargetRange
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -70,7 +70,7 @@ class PrescriptionDtoTest {
             """{"bloodGlucoseUnits":"mg/dL","bloodGlucoseTargetPreprandial":{"low":80,"high":90}}""",
         )
 
-        assertEquals(GlucoseRange(80.0, 90.0), dto.toDomain().preMealTargetRange)
+        assertEquals(GlucoseTargetRange(80.0, 90.0), dto.toDomain().preMealTargetRange)
     }
 
     // Matches iOS TidepoolOnboarding `TPrescription`, which only reads the low/high form.
