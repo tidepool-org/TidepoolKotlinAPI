@@ -2,6 +2,7 @@ package org.tidepool.sdk.repository
 
 import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
+import kotlinx.serialization.json.Json
 import org.tidepool.sdk.api.DataApi
 import org.tidepool.sdk.di.provideDataApi
 import org.tidepool.sdk.database.BasalAutomatedDataDao
@@ -29,6 +30,7 @@ import org.tidepool.sdk.dto.data.DeviceEventDataDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import org.tidepool.sdk.dto.data.PumpSettingsDataDto
 import org.tidepool.sdk.dto.data.toDomain
 import org.tidepool.sdk.dto.data.toDto
@@ -355,10 +357,24 @@ class DataRepositoryImpl(
             limit: Int,
             getAll: suspend (Int) -> List<T>,
             delete: suspend (List<T>) -> Unit,
-        ) = uploadBatch(sessionToken, dataSetId, type, limit, getAll, delete)
+            isDeleted: (T) -> Boolean = { false },
+        ) = uploadBatch(sessionToken, dataSetId, type, limit, getAll, delete, isDeleted)
+
+        // A copy waiting with an origin whose deletion is queued is out of date: it was queued
+        // after the deletion, or left behind when the process died while queueing it. Sent in a
+        // pass where its upload fails but the deletion goes through, it would come back next pass
+        // with nothing left to remove it.
+        val deletedOrigins = pendingDataDeletionDao.getAllOriginIds().toSet()
+        fun hasDeletedOrigin(origin: String?) = origin.originIdOrNull()?.let(deletedOrigins::contains) ?: false
 
         val results = listOfNotNull(
-            upload("basal", UPLOAD_BATCH_LIMIT, basalAutomatedDataDao::getAll, basalAutomatedDataDao::delete),
+            upload(
+                "basal",
+                UPLOAD_BATCH_LIMIT,
+                basalAutomatedDataDao::getAll,
+                basalAutomatedDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
             upload("bolus", UPLOAD_BATCH_LIMIT, bolusDataDao::getAll, bolusDataDao::delete),
             upload("cbg", UPLOAD_BATCH_LIMIT, continuousGlucoseDataDao::getAll, continuousGlucoseDataDao::delete),
             upload(
@@ -367,7 +383,13 @@ class DataRepositoryImpl(
                 dosingDecisionDataDao::getAll,
                 dosingDecisionDataDao::delete,
             ),
-            upload("food", UPLOAD_BATCH_LIMIT, foodDataDao::getAll, foodDataDao::delete),
+            upload(
+                "food",
+                UPLOAD_BATCH_LIMIT,
+                foodDataDao::getAll,
+                foodDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
             upload("insulin", UPLOAD_BATCH_LIMIT, insulinDataDao::getAll, insulinDataDao::delete),
             // After the uploads, so a deletion and a newer upload of the same origin land in order.
             uploadDeletions(sessionToken, dataSetId),
@@ -385,8 +407,9 @@ class DataRepositoryImpl(
 
     /**
      * Uploads up to [limit] of one table's oldest rows in their own request and deletes them once
-     * the server accepts them. Returns null when the table is empty, otherwise whether the batch
-     * came back full (more rows may be waiting behind it).
+     * the server accepts them. Rows [isDeleted] marks are dropped without being sent. Returns null
+     * when the table is empty, otherwise whether the batch came back full (more rows may be
+     * waiting behind it).
      */
     private suspend fun <T : BaseDataEntity> uploadBatch(
         sessionToken: String,
@@ -395,9 +418,17 @@ class DataRepositoryImpl(
         limit: Int,
         getAll: suspend (Int) -> List<T>,
         delete: suspend (List<T>) -> Unit,
+        isDeleted: (T) -> Boolean,
     ): Result<Boolean>? {
-        val rows = getAll(limit)
-        if (rows.isEmpty()) return null
+        val batch = getAll(limit)
+        if (batch.isEmpty()) return null
+
+        val (deleted, rows) = batch.partition(isDeleted)
+        if (deleted.isNotEmpty()) {
+            Logger.v(javaClass.simpleName) { "Dropping ${deleted.size} $type entities deleted since they were queued" }
+            delete(deleted)
+        }
+        if (rows.isEmpty()) return Result.success(batch.size == limit)
 
         Logger.v(javaClass.simpleName) { "Uploading ${rows.size} $type entities" }
         return runCatchingNetworkExceptions {
@@ -410,7 +441,7 @@ class DataRepositoryImpl(
             // One list delete per table: Room runs it as a single transaction instead of one per
             // row, which matters with up to 1000 rows per batch.
             delete(rows)
-            rows.size == limit
+            batch.size == limit
         }.onFailure {
             Logger.e(javaClass.simpleName, it) { "Uploading $type failed, it stays cached for the next attempt" }
         }
@@ -437,6 +468,11 @@ class DataRepositoryImpl(
         }.onFailure {
             Logger.e(javaClass.simpleName, it) { "Deleting data failed, it stays queued for the next attempt" }
         }
+    }
+
+    /** The id of an outbox row's stored origin, or null when it has none or can't be read. */
+    private fun String?.originIdOrNull(): String? = this?.let {
+        runCatching { Json.decodeFromString<OriginDto>(it).id }.getOrNull()
     }
 
     override suspend fun cacheDataDeletions(deletions: List<DataDeletion>) {

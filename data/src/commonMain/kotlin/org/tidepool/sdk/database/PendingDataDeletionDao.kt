@@ -17,4 +17,7 @@ interface PendingDataDeletionDao {
 
     @Query("SELECT * FROM pending_data_deletion ORDER BY rowid ASC LIMIT :limit")
     suspend fun getAll(limit: Int): List<PendingDataDeletionEntity>
+
+    @Query("SELECT origin_id FROM pending_data_deletion")
+    suspend fun getAllOriginIds(): List<String>
 }

@@ -126,6 +126,41 @@ class DataRepositoryImplOriginAndDeletionTest {
         assertTrue(deletions.rows.isEmpty())
     }
 
+    // A copy queued after its deletion (or left behind when the process died while the deletion
+    // was being queued) is out of date. Sent in a pass where the upload fails but the deletion goes
+    // through, it would come back on the next pass with nothing left to remove it.
+    @Test
+    fun `a waiting upload whose origin has a queued deletion is dropped instead of sent`() = runTest {
+        val repository = repository()
+        rejectedMethods += HttpMethod.Post
+        repository.cacheDataDeletions(listOf(DataDeletion(id = "food-1", originId = "sync-1")))
+        repository.uploadDataToDataSet(listOf(FoodData(id = "food-1", origin = origin)))
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+        rejectedMethods.clear()
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(listOf(HttpMethod.Delete), requests.map { it.first })
+        assertTrue(food.table.rows.isEmpty())
+        assertFalse(repository.hasCachedData())
+    }
+
+    @Test
+    fun `an upload with another origin still goes out next to a deletion`() = runTest {
+        val repository = repository()
+        repository.cacheDataDeletions(listOf(DataDeletion(id = "food-1", originId = "sync-1")))
+        repository.uploadDataToDataSet(listOf(FoodData(id = "food-2", origin = origin.copy(id = "sync-2"))))
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(listOf(HttpMethod.Post, HttpMethod.Delete), requests.map { it.first })
+        assertEquals(
+            "sync-2",
+            requests.first().second.single().jsonObject
+                .getValue("origin").jsonObject.getValue("id").jsonPrimitive.content,
+        )
+    }
+
     @Test
     fun `a deletion the server rejects stays queued`() = runTest {
         val repository = repository()

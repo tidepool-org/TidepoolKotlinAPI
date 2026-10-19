@@ -171,4 +171,5 @@ internal class InMemoryPendingDataDeletionDao : PendingDataDeletionDao {
         rows.removeAll { it in data }
     }
     override suspend fun getAll(limit: Int) = rows.take(limit)
+    override suspend fun getAllOriginIds() = rows.map { it.originId }
 }
