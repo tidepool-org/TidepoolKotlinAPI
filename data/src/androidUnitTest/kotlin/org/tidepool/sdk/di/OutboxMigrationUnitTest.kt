@@ -15,10 +15,12 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 /**
- * Opens a real version 1 outbox (the schema Room generated before version 2) with the current
- * code, so [MIGRATION_1_2] has to bring it to a schema Room accepts without losing queued rows.
+ * Opens real version 1 outboxes with the current code, so [MIGRATION_1_2] has to bring each to a
+ * schema Room accepts. The fixtures in `resources/outbox-v1` are the schemas Room generated at the
+ * SDK commits the app shipped, one per version 1 shape, named by date and commit.
  */
 class OutboxMigrationUnitTest {
 
@@ -33,8 +35,9 @@ class OutboxMigrationUnitTest {
     }
 
     @Test
-    fun versionOneOutboxKeepsItsQueuedRows() = runTest {
-        createVersionOneDatabase(VERSION_1_SCHEMA)
+    fun lastVersionOneOutboxKeepsItsQueuedRows() = runTest {
+        createVersionOneDatabase(schema(LAST_VERSION_1))
+        insertRows(durationMinutes = true, bolusNormal = true)
 
         val migrated = openCurrentDatabase()
 
@@ -44,6 +47,7 @@ class OutboxMigrationUnitTest {
         assertEquals("food-1", migrated.foodDataDao().getById("food-1")?.id)
         val basal = migrated.basalAutomatedDataDao().getAll().single()
         assertEquals("basal-1", basal.id)
+        assertEquals(30.0, basal.duration)
         assertNull(basal.origin)
         assertNull(basal.payload)
         assertNull(basal.suppressed)
@@ -52,7 +56,8 @@ class OutboxMigrationUnitTest {
 
     @Test
     fun migratedOutboxStoresOriginsAndQueuedDeletions() = runTest {
-        createVersionOneDatabase(VERSION_1_SCHEMA)
+        createVersionOneDatabase(schema(LAST_VERSION_1))
+        insertRows(durationMinutes = true, bolusNormal = true)
         val migrated = openCurrentDatabase()
 
         val food = migrated.foodDataDao().getAll().single()
@@ -66,59 +71,73 @@ class OutboxMigrationUnitTest {
         assertEquals(listOf("sync-1"), migrated.pendingDataDeletionDao().getAll(10).map { it.originId })
     }
 
-    // A version 1 outbox from before `bolus_data.normal` existed gets the column instead of failing.
+    // Room hasn't opened these since a later schema shipped, so their rows were already out of
+    // reach; rebuilding them empty is what lets the outbox open again.
     @Test
-    fun versionOneOutboxWithoutBolusNormalGetsTheColumn() = runTest {
-        createVersionOneDatabase(
-            VERSION_1_SCHEMA.map { it.replace(", `normal` REAL", "") },
-            bolusNormal = false,
-        )
+    fun everyEarlierVersionOneOutboxIsRebuiltEmpty() = runTest {
+        for (fixture in EARLIER_VERSION_1) {
+            createVersionOneDatabase(schema(fixture))
+            insertRows(
+                durationMinutes = fixture == BEFORE_FOOD_DETAILS,
+                bolusNormal = fixture == BEFORE_FOOD_DETAILS,
+            )
+
+            val migrated = openCurrentDatabase()
+
+            assertEquals(emptyList(), migrated.foodDataDao().getAll(), fixture)
+            assertEquals(emptyList(), migrated.basalAutomatedDataDao().getAll(), fixture)
+            assertEquals(emptyList(), migrated.bolusDataDao().getAll(), fixture)
+            assertEquals(emptyList(), migrated.pumpSettingsDataDao().getAll(), fixture)
+            migrated.pendingDataDeletionDao().insert(listOf(PendingDataDeletionEntity(originId = "sync-1")))
+            assertEquals(1, migrated.pendingDataDeletionDao().getAll(10).size, fixture)
+
+            migrated.close()
+            database = null
+            directory.listFiles()?.forEach { it.delete() }
+        }
+    }
+
+    @Test
+    fun outboxWithoutAStoredIdentityIsRebuiltEmpty() = runTest {
+        createVersionOneDatabase(schema(LAST_VERSION_1).filterNot { it.contains("room_master_table") })
+        insertRows(durationMinutes = true, bolusNormal = true)
 
         val migrated = openCurrentDatabase()
 
-        assertNull(migrated.bolusDataDao().getAll().single().normal)
+        assertTrue(migrated.foodDataDao().getAll().isEmpty())
     }
 
-    // The oldest version 1 outboxes predate the settings and device event tables too.
-    @Test
-    fun oldestVersionOneOutboxGetsTheMissingTables() = runTest {
-        val laterTables = listOf("device_event_data", "cgm_settings_data", "controller_settings_data", "pump_settings_data")
-        createVersionOneDatabase(
-            VERSION_1_SCHEMA
-                .filterNot { statement -> laterTables.any { statement.contains("`$it`") } }
-                .map { it.replace(", `normal` REAL", "") },
-            bolusNormal = false,
-        )
+    private fun schema(fixture: String): List<String> =
+        checkNotNull(javaClass.getResource("/outbox-v1/$fixture.sql")) { "Missing fixture $fixture" }
+            .readText()
+            .lines()
+            .filter { it.isNotBlank() }
 
-        val migrated = openCurrentDatabase()
-
-        assertEquals("food-1", migrated.foodDataDao().getAll().single().id)
-        assertEquals(emptyList(), migrated.pumpSettingsDataDao().getAll())
-    }
-
-    private fun createVersionOneDatabase(schema: List<String>, bolusNormal: Boolean = true) {
+    private fun createVersionOneDatabase(schema: List<String>) {
         BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
             schema.forEach { execSQL(it) }
+            execSQL("PRAGMA user_version = 1")
+            close()
+        }
+    }
+
+    // Only columns every version 1 shape has, apart from the ones the flags name.
+    private fun insertRows(durationMinutes: Boolean, bolusNormal: Boolean) {
+        BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
             execSQL(
-                "INSERT INTO `food_data` (`id`, `type`, `time`, `associations`, `notes`, `name`, `nutrition`) " +
-                    "VALUES ('food-1', '\"food\"', 100, '[]', '[]', 'Taco', NULL)"
+                "INSERT INTO `food_data` (`id`, `type`, `time`, `associations`, `notes`, `name`) " +
+                    "VALUES ('food-1', '\"food\"', 100, '[]', '[]', 'Taco')"
             )
             execSQL(
                 "INSERT INTO `basal_automated_data` (`id`, `type`, `time`, `delivery_type`, `duration`, `rate`) " +
-                    "VALUES ('basal-1', '\"basal\"', 100, '\"automated\"', 30.0, 0.5)"
+                    "VALUES ('basal-1', '\"basal\"', 100, '\"automated\"', " +
+                    "${if (durationMinutes) "30.0" else "1800000"}, 0.5)"
             )
-            if (bolusNormal) {
-                execSQL(
-                    "INSERT INTO `bolus_data` (`id`, `type`, `time`, `sub_type`, `delivery_context`, `normal`) " +
-                        "VALUES ('bolus-1', '\"bolus\"', 100, 'normal', 'device', 1.5)"
-                )
-            } else {
-                execSQL(
-                    "INSERT INTO `bolus_data` (`id`, `type`, `time`, `sub_type`, `delivery_context`) " +
-                        "VALUES ('bolus-1', '\"bolus\"', 100, 'normal', 'device')"
-                )
-            }
-            execSQL("PRAGMA user_version = 1")
+            execSQL(
+                "INSERT INTO `bolus_data` (`id`, `type`, `time`, `sub_type`, `delivery_context`" +
+                    "${if (bolusNormal) ", `normal`" else ""}) " +
+                    "VALUES ('bolus-1', '\"bolus\"', 100, 'normal', 'device'${if (bolusNormal) ", 1.5" else ""})"
+            )
             close()
         }
     }
@@ -135,21 +154,18 @@ class OutboxMigrationUnitTest {
     }
 
     private companion object {
-        /** Version 1's schema, copied from Room's generated `LoopKitDatabase_Impl` before the bump. */
-        val VERSION_1_SCHEMA = listOf(
-        """CREATE TABLE IF NOT EXISTS `BaseDataEntity` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clockDriftOffset` INTEGER, `conversionOffset` INTEGER, `dataSetId` TEXT, `deviceTime` TEXT, `notes` TEXT, `timeZone` TEXT, `timeZoneOffset` INTEGER, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `basal_automated_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `delivery_type` TEXT NOT NULL, `duration` REAL NOT NULL, `expected_duration` REAL, `rate` REAL NOT NULL, `schedule_name` TEXT, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `bolus_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `delivery_context` TEXT NOT NULL, `normal` REAL, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `continuous_glucose_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `value` REAL, `units` TEXT, `trend` TEXT, `trend_rate` REAL, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `dosing_decision_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `reason` TEXT NOT NULL, `carbs_on_board` TEXT, `insulin_on_board` TEXT, `recommended_basal` TEXT, `recommended_bolus` TEXT, `requested_bolus` TEXT, `schedule_time_zone_offset` INTEGER, `units` TEXT NOT NULL, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `food_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `brand` TEXT, `code` TEXT, `meal` TEXT, `meal_other` TEXT, `name` TEXT, `amount` TEXT, `nutrition` TEXT, `ingredients` TEXT, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `insulin_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `dose` TEXT NOT NULL, `site` TEXT, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `device_event_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `device_identifier` TEXT, `expected_lifetime_seconds` REAL, `warmup_period_seconds` REAL, `failure_message` TEXT, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `cgm_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `controller_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS `pump_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))""",
-        """CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)""",
-        """INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'fc9eabadc1bd06011667dede19835dd7')""",
-        )
+        /** Before the settings and device event tables. */
+        const val BEFORE_SETTINGS_TABLES = "2025-11-07-0825c6a"
+
+        /** Before `bolus_data.normal` and basal durations in minutes. */
+        const val BEFORE_MINUTES = "2025-11-26-f9d014d"
+
+        /** Before food amounts, nutrition and ingredients. */
+        const val BEFORE_FOOD_DETAILS = "2026-02-26-729882e"
+
+        /** The last version 1 schema. */
+        const val LAST_VERSION_1 = "2026-10-06-ec75f6d"
+
+        val EARLIER_VERSION_1 = listOf(BEFORE_SETTINGS_TABLES, BEFORE_MINUTES, BEFORE_FOOD_DETAILS)
     }
 }

@@ -69,45 +69,74 @@ actual val platformDataModule: Module
  * Version 2: an origin on food and automated basal rows, the basal payload and suppressed basal the
  * outbox used to drop, and the queued-deletion table.
  *
- * Version 1 changed twice without a bump, so a version 1 database can predate either change: the
- * settings and device event tables (2025-11) are created if missing, and `bolus_data.normal`
- * (2026-02) is only added to one that lacks it. Adding it again would fail the migration and leave
- * the outbox unopenable.
+ * Version 1's schema changed three times without a bump: the settings and device event tables
+ * (2025-11), `bolus_data.normal` and basal durations in minutes instead of milliseconds (2026-02),
+ * and food amounts, nutrition and ingredients (2026-03). Room refuses to open a version 1 outbox
+ * whose schema isn't the one the code was built with, so an outbox made before the last change
+ * hasn't opened since, and its queued rows were already out of reach. Only an outbox with the last
+ * version 1 schema, recognised by the identity hash Room stored with it, is migrated in place; any
+ * other is rebuilt empty, so the outbox opens again.
  */
 internal val MIGRATION_1_2 = object : Migration(1, 2) {
     override fun migrate(db: SupportSQLiteDatabase) {
-        val hasBolusNormal = db.query("PRAGMA table_info(`bolus_data`)").use { cursor ->
-            val name = cursor.getColumnIndexOrThrow("name")
-            generateSequence { if (cursor.moveToNext()) cursor.getString(name) else null }
-                .any { it == "normal" }
-        }
-        migrationToVersion2(hasBolusNormal).forEach { db.execSQL(it) }
+        migrationToVersion2 { sql ->
+            db.query(sql).use { cursor -> if (cursor.moveToFirst()) cursor.getString(0) else null }
+        }.forEach { db.execSQL(it) }
     }
 
     override fun migrate(connection: SQLiteConnection) {
-        val hasBolusNormal = connection.prepare("PRAGMA table_info(`bolus_data`)").use { statement ->
-            var found = false
-            while (statement.step()) {
-                if (statement.getText(1) == "normal") found = true
+        migrationToVersion2 { sql ->
+            connection.prepare(sql).use { statement ->
+                if (statement.step() && !statement.isNull(0)) statement.getText(0) else null
             }
-            found
-        }
-        migrationToVersion2(hasBolusNormal).forEach { connection.execSQL(it) }
+        }.forEach { connection.execSQL(it) }
     }
 }
 
-private fun migrationToVersion2(hasBolusNormal: Boolean) = listOfNotNull(
-    "CREATE TABLE IF NOT EXISTS `device_event_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `device_identifier` TEXT, `expected_lifetime_seconds` REAL, `warmup_period_seconds` REAL, `failure_message` TEXT, PRIMARY KEY(`id`))",
-    "CREATE TABLE IF NOT EXISTS `cgm_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
-    "CREATE TABLE IF NOT EXISTS `controller_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
-    "CREATE TABLE IF NOT EXISTS `pump_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
-    "ALTER TABLE `bolus_data` ADD COLUMN `normal` REAL".takeUnless { hasBolusNormal },
+/** The identity hash Room stored with the last version 1 schema, in use from 2026-03 until version 2. */
+internal const val LAST_VERSION_1_IDENTITY_HASH = "fc9eabadc1bd06011667dede19835dd7"
+
+private fun migrationToVersion2(firstText: (sql: String) -> String?): List<String> {
+    val hasMasterTable = firstText(
+        "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'room_master_table'"
+    ) != null
+    val identityHash = if (hasMasterTable) {
+        firstText("SELECT identity_hash FROM room_master_table WHERE id = 42")
+    } else {
+        null
+    }
+    return if (identityHash == LAST_VERSION_1_IDENTITY_HASH) {
+        LAST_VERSION_1_TO_VERSION_2
+    } else {
+        VERSION_2_TABLE_NAMES.map { "DROP TABLE IF EXISTS `$it`" } + VERSION_2_TABLES
+    }
+}
+
+private val LAST_VERSION_1_TO_VERSION_2 = listOf(
     "ALTER TABLE `food_data` ADD COLUMN `origin` TEXT",
     "ALTER TABLE `basal_automated_data` ADD COLUMN `origin` TEXT",
     "ALTER TABLE `basal_automated_data` ADD COLUMN `payload` TEXT",
     "ALTER TABLE `basal_automated_data` ADD COLUMN `suppressed` TEXT",
     "CREATE TABLE IF NOT EXISTS `pending_data_deletion` (`origin_id` TEXT NOT NULL, PRIMARY KEY(`origin_id`))",
 )
+
+/** Version 2's tables as `schemas/.../2.json` records them. Frozen: later versions migrate from these. */
+private val VERSION_2_TABLES = listOf(
+    "CREATE TABLE IF NOT EXISTS `BaseDataEntity` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clockDriftOffset` INTEGER, `conversionOffset` INTEGER, `dataSetId` TEXT, `deviceTime` TEXT, `notes` TEXT, `timeZone` TEXT, `timeZoneOffset` INTEGER, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `basal_automated_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `delivery_type` TEXT NOT NULL, `duration` REAL NOT NULL, `expected_duration` REAL, `rate` REAL NOT NULL, `schedule_name` TEXT, `origin` TEXT, `payload` TEXT, `suppressed` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `bolus_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `delivery_context` TEXT NOT NULL, `normal` REAL, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `continuous_glucose_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `value` REAL, `units` TEXT, `trend` TEXT, `trend_rate` REAL, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `dosing_decision_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `reason` TEXT NOT NULL, `carbs_on_board` TEXT, `insulin_on_board` TEXT, `recommended_basal` TEXT, `recommended_bolus` TEXT, `requested_bolus` TEXT, `schedule_time_zone_offset` INTEGER, `units` TEXT NOT NULL, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `food_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `brand` TEXT, `code` TEXT, `meal` TEXT, `meal_other` TEXT, `name` TEXT, `amount` TEXT, `nutrition` TEXT, `ingredients` TEXT, `origin` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `insulin_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `dose` TEXT NOT NULL, `site` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `device_event_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `device_identifier` TEXT, `expected_lifetime_seconds` REAL, `warmup_period_seconds` REAL, `failure_message` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `cgm_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `controller_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `pump_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `pending_data_deletion` (`origin_id` TEXT NOT NULL, PRIMARY KEY(`origin_id`))",
+)
+
+private val VERSION_2_TABLE_NAMES = VERSION_2_TABLES.map { it.substringAfter('`').substringBefore('`') }
 
 
 actual fun provideAlertApi(ktorfit: Ktorfit) = ktorfit.createAlertApi()
