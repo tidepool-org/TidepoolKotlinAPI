@@ -6,6 +6,7 @@ import org.tidepool.sdk.model.prescription.BasalRate
 import org.tidepool.sdk.model.prescription.CarbRatio
 import org.tidepool.sdk.model.prescription.ClaimedPrescription
 import org.tidepool.sdk.model.prescription.GlucoseTarget
+import org.tidepool.sdk.model.prescription.GlucoseTargetRange
 import org.tidepool.sdk.model.prescription.ISF
 import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.Prescription
@@ -92,6 +93,11 @@ internal fun InitialSettingsDto.toDomain(): InitialSettings = InitialSettings(
     maxBolus = bolusAmountMaximum?.value,
     cgmId = cgmId,
     pumpId = pumpId,
+    // Only the low/high form is a range; iOS TidepoolOnboarding `TPrescription` drops a
+    // target/range-form value the same way.
+    preMealTargetRange = bloodGlucoseTargetPreprandial?.run {
+        if (low != null && high != null && target == null && range == null) GlucoseTargetRange(low, high) else null
+    },
 )
 
 internal fun Prescription.toDto(): PrescriptionDto = PrescriptionDto(
@@ -133,7 +139,16 @@ data class InitialSettingsDto(
     @SerialName("basalRateMaximum") val basalRateMaximum: RateValueDto? = null,
     @SerialName("bolusAmountMaximum") val bolusAmountMaximum: RateValueDto? = null,
     @SerialName("cgmId") val cgmId: String? = null,
-    @SerialName("pumpId") val pumpId: String? = null
+    @SerialName("pumpId") val pumpId: String? = null,
+    @SerialName("bloodGlucoseTargetPreprandial") val bloodGlucoseTargetPreprandial: GlucoseTargetDto? = null,
+)
+
+@Serializable
+data class GlucoseTargetDto(
+    @SerialName("low") val low: Double? = null,
+    @SerialName("high") val high: Double? = null,
+    @SerialName("target") val target: Double? = null,
+    @SerialName("range") val range: Double? = null,
 )
 
 @Serializable
