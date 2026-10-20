@@ -3,6 +3,7 @@ package org.tidepool.sdk.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import org.tidepool.sdk.database.entity.PendingDataDeletionEntity
 import org.tidepool.sdk.database.entity.data.BasalAutomatedDataEntity
 import org.tidepool.sdk.database.entity.data.BaseDataEntity
 import org.tidepool.sdk.database.entity.data.BolusDataEntity
@@ -16,8 +17,8 @@ import org.tidepool.sdk.database.entity.data.InsulinDataEntity
 import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
 
 @Database(
-    version = 1,
-    exportSchema = false,
+    version = 2,
+    exportSchema = true,
     entities = [
         BaseDataEntity::class,
         BasalAutomatedDataEntity::class,
@@ -30,6 +31,7 @@ import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
         CgmSettingsDataEntity::class,
         ControllerSettingsDataEntity::class,
         PumpSettingsDataEntity::class,
+        PendingDataDeletionEntity::class,
     ],
 )
 @TypeConverters(DatabaseConverters::class)
@@ -44,4 +46,5 @@ abstract class LoopKitDatabase : RoomDatabase() {
     abstract fun cgmSettingsDataDao(): CgmSettingsDataDao
     abstract fun controllerSettingsDataDao(): ControllerSettingsDataDao
     abstract fun pumpSettingsDataDao(): PumpSettingsDataDao
+    abstract fun pendingDataDeletionDao(): PendingDataDeletionDao
 }

@@ -1,6 +1,7 @@
 package org.tidepool.sdk.repository
 
 import org.tidepool.sdk.model.data.BaseData
+import org.tidepool.sdk.model.data.DataDeletion
 import org.tidepool.sdk.model.data.DataSet
 import org.tidepool.sdk.model.data.DataSource
 import org.tidepool.sdk.model.data.DataType
@@ -160,6 +161,12 @@ interface DataRepository {
 
     /** Whether any record that [uploadCachedData] sends is still waiting in the outbox. */
     suspend fun hasCachedData(): Boolean
+
+    /**
+     * Queues [deletions] in the outbox: a copy of the datum still waiting to upload is dropped,
+     * and [uploadCachedData] sends the deletion after that pass's uploads.
+     */
+    suspend fun cacheDataDeletions(deletions: List<DataDeletion>)
 
     fun clearCachedDataSetId()
 }

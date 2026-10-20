@@ -34,6 +34,7 @@ import org.tidepool.sdk.database.DosingDecisionDataDao
 import org.tidepool.sdk.database.FoodDataDao
 import org.tidepool.sdk.database.InsulinDataDao
 import org.tidepool.sdk.database.LoopKitDatabase
+import org.tidepool.sdk.database.PendingDataDeletionDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
 import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.deserialization.TimeZoneSerializer
@@ -160,6 +161,7 @@ public val dataModule = module {
     single<CgmSettingsDataDao> { get<LoopKitDatabase>().cgmSettingsDataDao() }
     single<ControllerSettingsDataDao> { get<LoopKitDatabase>().controllerSettingsDataDao() }
     single<PumpSettingsDataDao> { get<LoopKitDatabase>().pumpSettingsDataDao() }
+    single<PendingDataDeletionDao> { get<LoopKitDatabase>().pendingDataDeletionDao() }
     
     singleOf(::AlertRepositoryImpl) bind AlertRepository::class
     singleOf(::AuthorizationRepositoryImpl) bind AuthorizationRepository::class

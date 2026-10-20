@@ -53,6 +53,8 @@ data class FoodDataDto(
     val nutrition: NutritionDto? = null,
     @SerialName("ingredients")
     val ingredients: List<IngredientDto>? = null,
+    @SerialName("origin")
+    val origin: OriginDto? = null,
 ) : BaseDataDto() {
     
     @Serializable
@@ -164,6 +166,7 @@ fun FoodDataDto.toDomain(): FoodData = FoodData(
     amount = amount?.toDomain(),
     nutrition = nutrition?.toDomain(),
     ingredients = ingredients?.map { it.toDomain() },
+    origin = origin?.toDomain(),
 )
 
 fun FoodData.toDto(): FoodDataDto = FoodDataDto(
@@ -187,6 +190,7 @@ fun FoodData.toDto(): FoodDataDto = FoodDataDto(
     amount = amount?.toDto(),
     nutrition = nutrition?.toDto(),
     ingredients = ingredients?.map { it.toDto() },
+    origin = origin?.toDto(),
 )
 
 private fun FoodDataDto.MealDto.toDomain(): FoodData.Meal = when (this) {
