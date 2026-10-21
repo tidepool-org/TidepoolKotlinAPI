@@ -45,48 +45,46 @@ kotlin {
                 implementation(project(":TidepoolKotlinAPI:domain"))
 
                 // Ktorfit for networking
-                implementation("de.jensklingenberg.ktorfit:ktorfit-lib:2.6.4")
-                implementation("io.ktor:ktor-client-content-negotiation:3.3.1")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:3.3.1")
-                implementation("io.ktor:ktor-client-logging:3.3.1")
-                implementation("co.touchlab:kermit:2.0.4")
+                implementation(libs.ktorfit.lib)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.ktor.client.logging)
+                implementation(libs.kermit)
 
                 // Serialization
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+                implementation(libs.kotlinx.serialization.json)
 
                 // Coroutines
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+                implementation(libs.kotlinx.coroutines.core)
 
                 // DateTime
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                implementation(libs.kotlinx.datetime)
 
                 // Room KMP dependencies for local storage
-                implementation("androidx.room:room-runtime:2.8.1")
-                implementation("androidx.sqlite:sqlite-bundled:2.5.0")
+                implementation(libs.androidx.room.runtime)
+                implementation(libs.androidx.sqlite.bundled)
 
                 // Koin dependency injection
-                implementation("io.insert-koin:koin-core:4.1.0")
+                implementation(libs.koin.core)
             }
         }
 
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-                implementation("io.insert-koin:koin-test:4.1.0")
-                implementation("io.ktor:ktor-client-mock:3.3.1")
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.koin.test)
+                implementation(libs.ktor.client.mock)
             }
         }
 
         val androidMain by getting {
             dependencies {
-                implementation("io.ktor:ktor-client-logging:3.3.1")
-                implementation("io.ktor:ktor-client-content-negotiation:3.3.1")
-                implementation("org.minidns:minidns-hla:1.1.1")
+                implementation(libs.minidns.hla)
                 // Declared explicitly (it used to arrive through Ktorfit) so the fake backend can
                 // add an interceptor, and so the engine matches the Ktor core version.
-                implementation("io.ktor:ktor-client-okhttp:3.3.1")
-                implementation("com.squareup.okhttp3:okhttp:5.1.0")
+                implementation(libs.ktor.client.okhttp)
+                implementation(libs.okhttp)
             }
         }
         // Room DAO tests shared by the host JVM run and the on-device run.
@@ -97,20 +95,20 @@ kotlin {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(kotlin("test-junit"))
-                // The Android sqlite-bundled artifact only ships Android binaries. Keep this at the
-                // sqlite version Room resolves to (2.6.1 for Room 2.8.1), not the 2.5.0 declared
-                // above: an older driver lacks connection methods Room calls.
-                implementation("androidx.sqlite:sqlite-bundled-jvm:2.6.1")
-                implementation("io.mockk:mockk:1.14.9")
+                // The Android sqlite-bundled artifact only ships Android binaries. The catalog's
+                // sqlite version must stay at the one Room resolves to (2.6.1 for Room 2.8.1): an
+                // older driver lacks connection methods Room calls.
+                implementation(libs.androidx.sqlite.bundled.jvm)
+                implementation(libs.mockk)
             }
         }
         val androidInstrumentedTest by getting {
             kotlin.srcDir(androidRoomTestDir)
             dependencies {
                 implementation(kotlin("test-junit"))
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.2")
-                implementation("androidx.test:core:1.6.1")
-                implementation("androidx.test:runner:1.6.2")
+                implementation(libs.kotlinx.coroutines.test)
+                implementation(libs.androidx.test.core)
+                implementation(libs.androidx.test.runner)
             }
         }
     }
@@ -123,8 +121,8 @@ repositories {
 }
 
 dependencies {
-    add("kspCommonMainMetadata", "androidx.room:room-compiler:2.8.1")
-    add("kspAndroid", "androidx.room:room-compiler:2.8.1")
-    add("kspCommonMainMetadata", "de.jensklingenberg.ktorfit:ktorfit-ksp:2.6.4")
-    add("kspAndroid", "de.jensklingenberg.ktorfit:ktorfit-ksp:2.6.4")
+    add("kspCommonMainMetadata", libs.androidx.room.compiler)
+    add("kspAndroid", libs.androidx.room.compiler)
+    add("kspCommonMainMetadata", libs.ktorfit.ksp)
+    add("kspAndroid", libs.ktorfit.ksp)
 }
