@@ -1,7 +1,10 @@
 package org.tidepool.sdk.dto.prescription
 
+import org.tidepool.sdk.di.createTidepoolJson
+import org.tidepool.sdk.model.prescription.GlucoseTargetRange
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class PrescriptionDtoTest {
 
@@ -57,5 +60,26 @@ class PrescriptionDtoTest {
         val domain = dto.toDomain()
 
         assertEquals(0L, domain.insulinSensitivitySchedule[0].startSeconds)
+    }
+
+    // NEMO-487: the prescription's pre-meal range was dropped on decode, so onboarding's Pre-Meal
+    // Preset screen never showed what the clinician prescribed.
+    @Test
+    fun `toDomain maps the prescribed pre-meal range`() {
+        val dto = createTidepoolJson().decodeFromString<InitialSettingsDto>(
+            """{"bloodGlucoseUnits":"mg/dL","bloodGlucoseTargetPreprandial":{"low":80,"high":90}}""",
+        )
+
+        assertEquals(GlucoseTargetRange(80.0, 90.0), dto.toDomain().preMealTargetRange)
+    }
+
+    // Matches iOS TidepoolOnboarding `TPrescription`, which only reads the low/high form.
+    @Test
+    fun `toDomain drops a pre-meal target given as target and range`() {
+        val dto = createTidepoolJson().decodeFromString<InitialSettingsDto>(
+            """{"bloodGlucoseUnits":"mg/dL","bloodGlucoseTargetPreprandial":{"target":85,"range":5}}""",
+        )
+
+        assertNull(dto.toDomain().preMealTargetRange)
     }
 }
