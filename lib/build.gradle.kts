@@ -32,10 +32,6 @@ repositories {
     google()
 }
 
-dependencies {
-    add("kspCommonMainMetadata", "androidx.room:room-compiler:2.8.1")
-}
-
 kotlin {
     androidTarget {
         compilerOptions {
@@ -49,33 +45,14 @@ kotlin {
                 api(project(":TidepoolKotlinAPI:domain"))
                 implementation(project(":TidepoolKotlinAPI:data"))
 
-                implementation("com.squareup.retrofit2:retrofit:3.0.0")
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
-
-                // Kotlinx.serialization dependencies
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-                implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
-
-                // OkHttp for MediaType
-                implementation("com.squareup.okhttp3:okhttp:5.1.0")
-
-                // Room KMP dependencies
-                implementation("androidx.room:room-runtime:2.8.1")
-                implementation("androidx.sqlite:sqlite-bundled:2.5.0")
-
                 // Koin dependency injection
-                implementation("io.insert-koin:koin-core:4.1.0")
-                implementation("io.insert-koin:koin-annotations:2.1.0")
-
-                implementation("co.touchlab:kermit:2.0.4")
+                implementation(libs.koin.core)
             }
         }
 
         val commonTest by getting {
             dependencies {
                 implementation(kotlin("test"))
-                // Koin testing
-                implementation("io.insert-koin:koin-test:4.1.0")
             }
         }
 
