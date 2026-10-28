@@ -42,3 +42,6 @@ ktorfit-lib = { module = "de.jensklingenberg.ktorfit:ktorfit-lib", version.ref =
 minidns-hla = { module = "org.minidns:minidns-hla", version.ref = "minidns" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+
+[plugins]
+ktorfit = { id = "de.jensklingenberg.ktorfit", version.ref = "ktorfit" }

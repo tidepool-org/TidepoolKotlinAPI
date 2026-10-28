@@ -26,12 +26,6 @@ android {
     }
 }
 
-repositories {
-    // Use Maven Central for resolving dependencies.
-    mavenCentral()
-    google()
-}
-
 kotlin {
     androidTarget {
         compilerOptions {
