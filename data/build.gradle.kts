@@ -5,7 +5,7 @@ plugins {
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
     id("com.android.library")
-    id("de.jensklingenberg.ktorfit") version "2.6.4"
+    alias(libs.plugins.ktorfit)
 }
 
 
@@ -112,12 +112,6 @@ kotlin {
             }
         }
     }
-}
-
-
-repositories {
-    mavenCentral()
-    google()
 }
 
 dependencies {
