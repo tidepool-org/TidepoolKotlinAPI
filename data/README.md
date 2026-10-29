@@ -211,10 +211,10 @@ The module includes comprehensive test coverage with:
 - **MockWebServer** for API mocking
 - **Koin Test** for DI testing
 
-Run tests with:
+Run tests from the android-loop root with:
 
 ```bash
-./gradlew :data:test
+./gradlew :TidepoolKotlinAPI:data:test
 ```
 
 ## Architecture Benefits
