@@ -163,6 +163,7 @@ class DataRepositoryImplUploadTest {
         cgmSettingsDataDao = InMemoryCgmSettingsDataDao(),
         controllerSettingsDataDao = InMemoryControllerSettingsDataDao(),
         pumpSettingsDataDao = InMemoryPumpSettingsDataDao(),
+        pendingDataDeletionDao = InMemoryPendingDataDeletionDao(),
         keyValueStorage = InMemoryKeyValueStorage(),
     )
 

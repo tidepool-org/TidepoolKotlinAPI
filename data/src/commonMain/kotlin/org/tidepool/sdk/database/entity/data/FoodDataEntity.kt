@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
+import org.tidepool.sdk.dto.data.OriginDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import kotlinx.datetime.Instant
 import java.util.TimeZone
@@ -54,6 +55,8 @@ data class FoodDataEntity(
     var nutrition: String? = null, // JSON string
     @ColumnInfo(name = "ingredients")
     var ingredients: String? = null, // JSON string
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -98,6 +101,7 @@ fun FoodDataDto.toEntity() = FoodDataEntity(
     amount = amount?.let { Json.encodeToString(it) },
     nutrition = nutrition?.let { Json.encodeToString(it) },
     ingredients = ingredients?.let { Json.encodeToString(it) },
+    origin = origin?.let { Json.encodeToString(it) },
 )
 
 fun FoodDataEntity.toDto() = FoodDataDto(
@@ -142,4 +146,7 @@ fun FoodDataEntity.toDto() = FoodDataDto(
     ingredients = ingredients
         ?.takeUnless { it == "null" }
         ?.let { Json.decodeFromString<List<FoodDataDto.IngredientDto>>(it) },
+    origin = origin
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<OriginDto>(it) },
 )

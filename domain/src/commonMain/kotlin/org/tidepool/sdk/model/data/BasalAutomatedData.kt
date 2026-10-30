@@ -47,13 +47,6 @@ data class BasalAutomatedData(
         Temp,
     }
 
-    data class Origin(
-        val id: String,
-        val name: String,
-        val type: String,
-        val version: String,
-    )
-
     data class Payload(
         val deliveredUnits: Double,
         val syncIdentifier: String,

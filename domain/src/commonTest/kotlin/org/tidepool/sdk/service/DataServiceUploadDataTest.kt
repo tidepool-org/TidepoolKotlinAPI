@@ -9,6 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import org.tidepool.sdk.model.data.DataDeletion
 
 /**
  * Verifies that [DataService.uploadData] caches data for the next upload whenever a session is
@@ -49,6 +50,23 @@ class DataServiceUploadDataTest {
 
         assertIs<UnauthorizedException>(result.exceptionOrNull())
         assertTrue(dataRepository.cachedData.isEmpty())
+    }
+
+    // A deleted datum's copy still waiting in the outbox must be dropped now, or it would go out
+    // after the next login with nothing deleting it.
+    @Test
+    fun queuesDeletionsWhenLoggedOut() = runTest {
+        val dataRepository = RecordingDataRepository()
+        val dataService = dataServiceWith(
+            dataRepository = dataRepository,
+            tokenProvider = FakeTokenProvider(isLoggedIn = false),
+        )
+        val deletion = DataDeletion(id = "food-1", originId = "sync-1")
+
+        val result = dataService.deleteData(listOf(deletion))
+
+        assertTrue(result.isSuccess)
+        assertEquals(listOf(deletion), dataRepository.cachedDeletions)
     }
 
     private fun dataServiceWith(

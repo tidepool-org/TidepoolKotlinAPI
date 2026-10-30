@@ -9,6 +9,11 @@ plugins {
 }
 
 
+// Room writes each version's schema here, so the next migration can be tested against the real one.
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
 android {
     namespace = "org.tidepool.data"
     compileSdk = 34

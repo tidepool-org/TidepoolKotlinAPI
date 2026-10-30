@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.math.roundToLong
@@ -49,7 +50,15 @@ data class BasalAutomatedDataEntity(
     @ColumnInfo(name = "rate")
     var rate: Double = -1.0,
     @ColumnInfo(name = "schedule_name")
-    var scheduleName: String? = null
+    var scheduleName: String? = null,
+    // Without it an updated basal can't replace its earlier upload (the data set deduplicates by
+    // origin).
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
+    @ColumnInfo(name = "payload")
+    var payload: String? = null, // JSON string
+    @ColumnInfo(name = "suppressed")
+    var suppressed: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -83,6 +92,9 @@ fun BasalAutomatedDataDto.toEntity() = BasalAutomatedDataEntity(
     expectedDuration = expectedDuration?.toDouble()?.div(1.minutes.inWholeMilliseconds),
     rate = rate,
     scheduleName = scheduleName,
+    origin = origin?.let { Json.encodeToString(it) },
+    payload = payload?.let { Json.encodeToString(it) },
+    suppressed = suppressed?.let { Json.encodeToString(it) },
 )
 
 fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
@@ -105,4 +117,13 @@ fun BasalAutomatedDataEntity.toDto() = BasalAutomatedDataDto(
     expectedDuration = expectedDuration?.times(1.minutes.inWholeMilliseconds)?.roundToLong(),
     rate = rate,
     scheduleName = scheduleName,
+    origin = origin
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<OriginDto>(it) },
+    payload = payload
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<BasalAutomatedDataDto.PayloadDto>(it) },
+    suppressed = suppressed
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<BasalAutomatedDataDto.SuppressedDto>(it) },
 )
