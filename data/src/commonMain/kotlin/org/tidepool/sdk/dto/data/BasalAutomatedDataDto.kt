@@ -55,7 +55,7 @@ data class BasalAutomatedDataDto(
     @Serializable
     data class PayloadDto(
         @SerialName("deliveredUnits")
-        val deliveredUnits: Double,
+        val deliveredUnits: Double? = null,
         @SerialName("syncIdentifier")
         val syncIdentifier: String,
     )

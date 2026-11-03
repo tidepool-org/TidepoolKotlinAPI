@@ -107,6 +107,29 @@ class DataRepositoryImplOriginAndDeletionTest {
     }
 
     @Test
+    fun `a payload with no delivered amount goes out without the key`() = runTest {
+        val repository = repository()
+        repository.uploadDataToDataSet(
+            listOf(
+                BasalAutomatedData(
+                    id = "basal-1",
+                    deliveryType = BasalAutomatedData.DeliveryType.Automated,
+                    duration = 1_800_000.0,
+                    rate = 0.5,
+                    origin = origin.copy(id = "sync-1:basal/automated"),
+                    payload = BasalAutomatedData.Payload(deliveredUnits = null, syncIdentifier = "sync-1"),
+                )
+            )
+        )
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        val payload = requests.single().second.single().jsonObject.getValue("payload").jsonObject
+        assertEquals("sync-1", payload.getValue("syncIdentifier").jsonPrimitive.content)
+        assertFalse("deliveredUnits" in payload)
+    }
+
+    @Test
     fun `a deletion drops the copy still waiting and goes out after the uploads`() = runTest {
         val repository = repository()
         repository.uploadDataToDataSet(listOf(ContinuousGlucoseData(id = "cgm-1"), FoodData(id = "food-1", origin = origin)))
