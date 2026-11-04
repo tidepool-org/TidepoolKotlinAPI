@@ -40,8 +40,8 @@ kotlin {
 
 android {
     namespace = "org.tidepool.domain"
-    // Kept self-contained because mobile-remix includes this build on its own; keep in step with android-loop's build-logic,
-    // except -Xannotation-default-target, which makes mobile-remix's Kotlin 2.1.20 mark the output as pre-release.
+    // Configured here rather than by android-loop's convention plugins, because this repo also builds on its own.
+    // -Xannotation-default-target is left out: with the Kotlin 2.1.20 in settings.gradle.kts it marks the output as pre-release.
     compileSdk = 36
 
     defaultConfig {
