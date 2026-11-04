@@ -48,7 +48,8 @@ data class BasalAutomatedData(
     }
 
     data class Payload(
-        val deliveredUnits: Double,
+        /** Null while the dose is still running and its delivered amount isn't known yet. */
+        val deliveredUnits: Double?,
         val syncIdentifier: String,
     )
 
