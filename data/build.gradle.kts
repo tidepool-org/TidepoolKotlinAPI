@@ -1,4 +1,4 @@
-import org.gradle.kotlin.dsl.invoke
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform")
@@ -38,7 +38,7 @@ android {
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
