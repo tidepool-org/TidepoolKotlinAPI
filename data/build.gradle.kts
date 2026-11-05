@@ -1,4 +1,4 @@
-import org.gradle.kotlin.dsl.invoke
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("multiplatform")
@@ -16,7 +16,9 @@ ksp {
 
 android {
     namespace = "org.tidepool.data"
-    compileSdk = 34
+    // Configured here rather than by android-loop's convention plugins, because this repo also builds on its own.
+    // -Xannotation-default-target is left out: with the Kotlin 2.1.20 in settings.gradle.kts it marks the output as pre-release.
+    compileSdk = 36
 
     defaultConfig {
         minSdk = 26
@@ -36,7 +38,7 @@ android {
 kotlin {
     androidTarget {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
