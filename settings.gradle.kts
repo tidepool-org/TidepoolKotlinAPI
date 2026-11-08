@@ -8,7 +8,7 @@ pluginManagement {
         kotlin("multiplatform") version "2.1.20"
         kotlin("plugin.serialization") version "2.1.20"
         id("com.google.devtools.ksp") version "2.3.6"
-        id("com.android.library") version "8.12.0"
+        id("com.android.kotlin.multiplatform.library") version "8.13.2"
     }
 }
 

@@ -4,7 +4,7 @@ plugins {
     kotlin("multiplatform")
     kotlin("plugin.serialization")
     id("com.google.devtools.ksp")
-    id("com.android.library")
+    id("com.android.kotlin.multiplatform.library")
     alias(libs.plugins.ktorfit)
 }
 
@@ -14,31 +14,24 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
-android {
-    namespace = "org.tidepool.data"
-    // Configured here rather than by android-loop's convention plugins, because this repo also builds on its own.
-    // -Xannotation-default-target is left out: with the Kotlin 2.1.20 in settings.gradle.kts it marks the output as pre-release.
-    compileSdk = 36
-
-    defaultConfig {
-        minSdk = 26
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    testOptions {
-        unitTests.isReturnDefaultValues = true
-    }
-}
-
 kotlin {
-    androidTarget {
+    // AGP 9 deprecates androidLibrary in favour of android, but AGP 8 (this repo's own build) only has androidLibrary.
+    androidLibrary {
+        namespace = "org.tidepool.data"
+        // Configured here rather than by android-loop's convention plugins, because this repo also builds on its own.
+        // -Xannotation-default-target is left out: with the Kotlin 2.1.20 in settings.gradle.kts it marks the output as pre-release.
+        compileSdk = 36
+        minSdk = 26
+
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
+        }
+
+        withHostTest {
+            isReturnDefaultValues = true
+        }
+        withDeviceTest {
+            instrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         }
     }
 
@@ -97,7 +90,7 @@ kotlin {
         // Room DAO tests shared by the host JVM run and the on-device run.
         val androidRoomTestDir = "src/androidRoomTest/kotlin"
 
-        val androidUnitTest by getting {
+        val androidHostTest by getting {
             kotlin.srcDir(androidRoomTestDir)
             dependencies {
                 implementation(kotlin("test"))
@@ -109,7 +102,7 @@ kotlin {
                 implementation(libs.mockk)
             }
         }
-        val androidInstrumentedTest by getting {
+        val androidDeviceTest by getting {
             kotlin.srcDir(androidRoomTestDir)
             dependencies {
                 implementation(kotlin("test-junit"))
