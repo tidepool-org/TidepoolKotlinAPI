@@ -60,7 +60,7 @@ class OutboxMigrationUnitTest {
     @Test
     fun versionTwoOutboxKeepsItsQueuedRowsAndStoresDoseOrigins() = runTest {
         BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
-            VERSION_2_SCHEMA.forEach { execSQL(it) }
+            VERSION_2_TABLES.forEach { execSQL(it) }
             execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)")
             execSQL(
                 "INSERT OR REPLACE INTO room_master_table (id,identity_hash) " +
