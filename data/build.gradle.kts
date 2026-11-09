@@ -40,7 +40,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        getByName("commonMain") {
             dependencies {
                 implementation(project(":TidepoolKotlinAPI:domain"))
 
@@ -69,7 +69,7 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
+        getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
@@ -78,7 +78,7 @@ kotlin {
             }
         }
 
-        val androidMain by getting {
+        getByName("androidMain") {
             dependencies {
                 implementation(libs.minidns.hla)
                 // Declared explicitly (it used to arrive through Ktorfit) so the fake backend can
@@ -90,7 +90,7 @@ kotlin {
         // Room DAO tests shared by the host JVM run and the on-device run.
         val androidRoomTestDir = "src/androidRoomTest/kotlin"
 
-        val androidHostTest by getting {
+        getByName("androidHostTest") {
             kotlin.srcDir(androidRoomTestDir)
             dependencies {
                 implementation(kotlin("test"))
@@ -102,7 +102,7 @@ kotlin {
                 implementation(libs.mockk)
             }
         }
-        val androidDeviceTest by getting {
+        getByName("androidDeviceTest") {
             kotlin.srcDir(androidRoomTestDir)
             dependencies {
                 implementation(kotlin("test-junit"))

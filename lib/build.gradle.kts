@@ -31,7 +31,7 @@ kotlin {
     }
 
     sourceSets {
-        val commonMain by getting {
+        getByName("commonMain") {
             dependencies {
                 api(project(":TidepoolKotlinAPI:domain"))
                 implementation(project(":TidepoolKotlinAPI:data"))
@@ -41,12 +41,10 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
+        getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
             }
         }
-
-        val androidMain by getting
     }
 }
