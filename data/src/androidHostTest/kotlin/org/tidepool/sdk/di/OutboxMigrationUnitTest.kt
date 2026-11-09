@@ -18,9 +18,10 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
- * Opens real version 1 outboxes with the current code, so [MIGRATION_1_2] has to bring each to a
- * schema Room accepts. The fixtures in `resources/outbox-v1` are the schemas Room generated at the
- * SDK commits the app shipped, one per version 1 shape, named by date and commit.
+ * Opens real version 1 and 2 outboxes with the current code, so [OUTBOX_MIGRATIONS] have to bring
+ * each to a schema Room accepts. The fixtures in `resources/outbox-v1` are the schemas Room
+ * generated at the SDK commits the app shipped, one per version 1 shape, named by date and commit.
+ * A version 2 outbox is built from the frozen tables [MIGRATION_1_2] creates.
  */
 class OutboxMigrationUnitTest {
 
@@ -51,7 +52,45 @@ class OutboxMigrationUnitTest {
         assertNull(basal.origin)
         assertNull(basal.payload)
         assertNull(basal.suppressed)
-        assertEquals(1.5, migrated.bolusDataDao().getAll().single().normal)
+        val bolus = migrated.bolusDataDao().getAll().single()
+        assertEquals(1.5, bolus.normal)
+        assertNull(bolus.origin)
+    }
+
+    @Test
+    fun versionTwoOutboxKeepsItsQueuedRowsAndStoresDoseOrigins() = runTest {
+        BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
+            VERSION_2_SCHEMA.forEach { execSQL(it) }
+            execSQL("CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)")
+            execSQL(
+                "INSERT OR REPLACE INTO room_master_table (id,identity_hash) " +
+                    "VALUES(42, '$VERSION_2_IDENTITY_HASH')"
+            )
+            execSQL("PRAGMA user_version = 2")
+            close()
+        }
+        insertRows(durationMinutes = true, bolusNormal = true)
+        BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
+            execSQL(
+                "INSERT INTO `insulin_data` (`id`, `type`, `time`, `dose`) " +
+                    "VALUES ('insulin-1', '\"insulin\"', 100, '{}')"
+            )
+            execSQL("INSERT INTO `pending_data_deletion` (`origin_id`) VALUES ('sync-1')")
+            close()
+        }
+
+        val migrated = openCurrentDatabase()
+
+        val bolus = migrated.bolusDataDao().getAll().single()
+        assertEquals(1.5, bolus.normal)
+        assertNull(bolus.origin)
+        val insulin = migrated.insulinDataDao().getAll().single()
+        assertNull(insulin.origin)
+        assertEquals(listOf("sync-1"), migrated.pendingDataDeletionDao().getAll(10).map { it.originId })
+        migrated.bolusDataDao().insert(bolus.copy(origin = """{"id":"sync-2:bolus/normal"}"""))
+        migrated.insulinDataDao().insert(insulin.copy(origin = """{"id":"sync-3:insulin"}"""))
+        assertEquals("""{"id":"sync-2:bolus/normal"}""", migrated.bolusDataDao().getById("bolus-1")?.origin)
+        assertEquals("""{"id":"sync-3:insulin"}""", migrated.insulinDataDao().getById("insulin-1")?.origin)
     }
 
     @Test
@@ -148,7 +187,7 @@ class OutboxMigrationUnitTest {
         every { context.getDatabasePath(any()) } returns databaseFile
         return Room.databaseBuilder<LoopKitDatabase>(context, databaseFile.absolutePath)
             .setDriver(BundledSQLiteDriver())
-            .addMigrations(MIGRATION_1_2)
+            .addMigrations(*OUTBOX_MIGRATIONS)
             .build()
             .also { database = it }
     }
@@ -165,6 +204,9 @@ class OutboxMigrationUnitTest {
 
         /** The last version 1 schema. */
         const val LAST_VERSION_1 = "2026-10-06-ec75f6d"
+
+        /** The identity hash `schemas/.../2.json` records for version 2. */
+        const val VERSION_2_IDENTITY_HASH = "251aa2659d7b1b5f5700a6a5c064cef7"
 
         val EARLIER_VERSION_1 = listOf(BEFORE_SETTINGS_TABLES, BEFORE_MINUTES, BEFORE_FOOD_DETAILS)
     }

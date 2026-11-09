@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
@@ -43,6 +44,10 @@ data class InsulinDataEntity(
     var dose: String = "", // JSON string for DoseDto
     @ColumnInfo(name = "site")
     var site: String? = null,
+    // Kept so the upload replaces an earlier copy and a queued deletion can drop this one (see
+    // DataRepositoryImpl), as for basal and food data.
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -72,7 +77,8 @@ fun InsulinDataDto.toEntity() = InsulinDataEntity(
     timeZone = timeZone?.id,
     timeZoneOffset = timeZoneOffset,
     dose = Json.encodeToString(dose),
-    site = site
+    site = site,
+    origin = origin?.let { Json.encodeToString(it) },
 )
 
 fun InsulinDataEntity.toDto() = InsulinDataDto(
@@ -95,5 +101,8 @@ fun InsulinDataEntity.toDto() = InsulinDataDto(
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
     timeZoneOffset = timeZoneOffset,
     dose = Json.decodeFromString(dose),
-    site = site
+    site = site,
+    origin = origin
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<OriginDto>(it) },
 )

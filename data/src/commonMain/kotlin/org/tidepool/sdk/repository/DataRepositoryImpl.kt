@@ -375,7 +375,13 @@ class DataRepositoryImpl(
                 basalAutomatedDataDao::delete,
                 isDeleted = { hasDeletedOrigin(it.origin) },
             ),
-            upload("bolus", UPLOAD_BATCH_LIMIT, bolusDataDao::getAll, bolusDataDao::delete),
+            upload(
+                "bolus",
+                UPLOAD_BATCH_LIMIT,
+                bolusDataDao::getAll,
+                bolusDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
             upload("cbg", UPLOAD_BATCH_LIMIT, continuousGlucoseDataDao::getAll, continuousGlucoseDataDao::delete),
             upload(
                 "dosingDecision",
@@ -390,7 +396,13 @@ class DataRepositoryImpl(
                 foodDataDao::delete,
                 isDeleted = { hasDeletedOrigin(it.origin) },
             ),
-            upload("insulin", UPLOAD_BATCH_LIMIT, insulinDataDao::getAll, insulinDataDao::delete),
+            upload(
+                "insulin",
+                UPLOAD_BATCH_LIMIT,
+                insulinDataDao::getAll,
+                insulinDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
             // After the uploads, so a deletion and a newer upload of the same origin land in order.
             uploadDeletions(sessionToken, dataSetId),
         )

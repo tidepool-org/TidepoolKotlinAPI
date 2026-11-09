@@ -43,7 +43,7 @@ actual val platformDataModule: Module
                 name = "loop-kit-database",
             )
                 .setDriver(BundledSQLiteDriver())
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(*OUTBOX_MIGRATIONS)
                 .build()
         }
         single<Logger> {
@@ -137,6 +137,33 @@ private val VERSION_2_TABLES = listOf(
 )
 
 private val VERSION_2_TABLE_NAMES = VERSION_2_TABLES.map { it.substringAfter('`').substringBefore('`') }
+
+/**
+ * Version 3: an origin on bolus and insulin rows too, so a running dose's upload is replaced by
+ * the finished one and a queued deletion can drop a copy still waiting, as for basal and food.
+ * Every version 2 outbox, migrated in place or rebuilt from version 1, has the frozen version 2
+ * tables, so adding the two columns is enough.
+ */
+internal val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        VERSION_2_TO_VERSION_3.forEach { db.execSQL(it) }
+    }
+
+    override fun migrate(connection: SQLiteConnection) {
+        VERSION_2_TO_VERSION_3.forEach { connection.execSQL(it) }
+    }
+}
+
+private val VERSION_2_TO_VERSION_3 = listOf(
+    "ALTER TABLE `bolus_data` ADD COLUMN `origin` TEXT",
+    "ALTER TABLE `insulin_data` ADD COLUMN `origin` TEXT",
+)
+
+/** Every outbox migration, oldest first. The test opens outboxes with the same list. */
+internal val OUTBOX_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+
+/** Version 2's tables, for the test that migrates a version 2 outbox. */
+internal val VERSION_2_SCHEMA: List<String> get() = VERSION_2_TABLES
 
 
 actual fun provideAlertApi(ktorfit: Ktorfit) = ktorfit.createAlertApi()
