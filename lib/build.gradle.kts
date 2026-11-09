@@ -20,7 +20,7 @@ kotlin {
         namespace = "org.tidepool.sdk"
         // Configured here rather than by android-loop's convention plugins, because this repo also builds on its own.
         // -Xannotation-default-target is left out: with the Kotlin 2.1.20 in settings.gradle.kts it marks the output as pre-release.
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 26
 
         compilerOptions {
