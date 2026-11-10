@@ -19,8 +19,7 @@ kotlin {
     androidLibrary {
         namespace = "org.tidepool.data"
         // Configured here rather than by android-loop's convention plugins, because this repo also builds on its own.
-        // -Xannotation-default-target is left out: with the Kotlin 2.1.20 in settings.gradle.kts it marks the output as pre-release.
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 26
 
         compilerOptions {
@@ -35,12 +34,8 @@ kotlin {
         }
     }
 
-    compilerOptions {
-        freeCompilerArgs.add("-Xcontext-parameters")
-    }
-
     sourceSets {
-        val commonMain by getting {
+        getByName("commonMain") {
             dependencies {
                 implementation(project(":TidepoolKotlinAPI:domain"))
 
@@ -69,7 +64,7 @@ kotlin {
             }
         }
 
-        val commonTest by getting {
+        getByName("commonTest") {
             dependencies {
                 implementation(kotlin("test"))
                 implementation(libs.kotlinx.coroutines.test)
@@ -78,7 +73,7 @@ kotlin {
             }
         }
 
-        val androidMain by getting {
+        getByName("androidMain") {
             dependencies {
                 implementation(libs.minidns.hla)
                 // Declared explicitly (it used to arrive through Ktorfit) so the fake backend can
@@ -90,7 +85,7 @@ kotlin {
         // Room DAO tests shared by the host JVM run and the on-device run.
         val androidRoomTestDir = "src/androidRoomTest/kotlin"
 
-        val androidHostTest by getting {
+        getByName("androidHostTest") {
             kotlin.srcDir(androidRoomTestDir)
             dependencies {
                 implementation(kotlin("test"))
@@ -102,7 +97,7 @@ kotlin {
                 implementation(libs.mockk)
             }
         }
-        val androidDeviceTest by getting {
+        getByName("androidDeviceTest") {
             kotlin.srcDir(androidRoomTestDir)
             dependencies {
                 implementation(kotlin("test-junit"))
