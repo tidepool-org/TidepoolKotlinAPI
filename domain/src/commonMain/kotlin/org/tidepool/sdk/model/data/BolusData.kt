@@ -23,6 +23,11 @@ data class BolusData(
     val subType: BolusSubtype = BolusSubtype.Normal,
     val deliveryContext: DeliveryContext,
     val normal: Double? = null,
+    /**
+     * Where the bolus came from. Uploading a datum with the same origin id replaces the earlier
+     * one, and a deletion selects it by that id (the data set deduplicates by origin).
+     */
+    val origin: Origin? = null,
 ) : BaseData(
     id = id,
     type = type,

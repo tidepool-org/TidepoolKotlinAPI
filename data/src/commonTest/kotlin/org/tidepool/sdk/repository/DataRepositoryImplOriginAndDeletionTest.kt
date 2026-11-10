@@ -22,9 +22,14 @@ import kotlinx.serialization.json.jsonPrimitive
 import org.tidepool.sdk.Environment
 import org.tidepool.sdk.di.createTidepoolJson
 import org.tidepool.sdk.model.data.BasalAutomatedData
+import org.tidepool.sdk.model.data.BolusData
 import org.tidepool.sdk.model.data.ContinuousGlucoseData
 import org.tidepool.sdk.model.data.DataDeletion
+import org.tidepool.sdk.model.data.DeliveryContext
+import org.tidepool.sdk.model.data.Dose
 import org.tidepool.sdk.model.data.FoodData
+import org.tidepool.sdk.model.data.Insulin
+import org.tidepool.sdk.model.data.InsulinData
 import org.tidepool.sdk.model.data.Origin
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -38,8 +43,10 @@ import kotlin.test.assertTrue
 class DataRepositoryImplOriginAndDeletionTest {
 
     private val basal = InMemoryBasalAutomatedDataDao()
+    private val bolus = InMemoryBolusDataDao()
     private val cgm = InMemoryContinuousGlucoseDataDao()
     private val food = InMemoryFoodDataDao()
+    private val insulin = InMemoryInsulinDataDao()
     private val deletions = InMemoryPendingDataDeletionDao()
 
     /** Each request the server received, in order: its method and JSON body. */
@@ -104,6 +111,43 @@ class DataRepositoryImplOriginAndDeletionTest {
         assertEquals("scheduled", suppressed.getValue("deliveryType").jsonPrimitive.content)
         assertEquals("1.0", suppressed.getValue("rate").jsonPrimitive.content)
         assertEquals("Default", suppressed.getValue("scheduleName").jsonPrimitive.content)
+    }
+
+    @Test
+    fun `a bolus's and an insulin dose's origins go out with them`() = runTest {
+        val repository = repository()
+        repository.uploadDataToDataSet(
+            listOf(bolus(origin.copy(id = "sync-1:bolus/normal")), insulin(origin.copy(id = "sync-2:insulin")))
+        )
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        val originIds = requests.flatMap { (_, body) -> body }
+            .map { it.jsonObject.getValue("origin").jsonObject.getValue("id").jsonPrimitive.content }
+        assertEquals(setOf("sync-1:bolus/normal", "sync-2:insulin"), originIds.toSet())
+    }
+
+    // A running bolus is uploaded and then dropped: its copy may still be waiting when the
+    // deletion is queued, as for basal and food.
+    @Test
+    fun `a waiting bolus or insulin upload whose origin has a queued deletion is dropped instead of sent`() = runTest {
+        val repository = repository()
+        repository.uploadDataToDataSet(
+            listOf(bolus(origin.copy(id = "sync-1:bolus/normal")), insulin(origin.copy(id = "sync-2:insulin")))
+        )
+        repository.cacheDataDeletions(
+            listOf(
+                DataDeletion(id = "bolus-1", originId = "sync-1:bolus/normal"),
+                DataDeletion(id = "insulin-1", originId = "sync-2:insulin"),
+            )
+        )
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(listOf(HttpMethod.Delete), requests.map { it.first })
+        assertTrue(bolus.table.rows.isEmpty())
+        assertTrue(insulin.table.rows.isEmpty())
+        assertFalse(repository.hasCachedData())
     }
 
     @Test
@@ -223,6 +267,20 @@ class DataRepositoryImplOriginAndDeletionTest {
         assertEquals(listOf("sync-2"), deletions.rows.map { it.originId })
     }
 
+    private fun bolus(origin: Origin) = BolusData(
+        id = "bolus-1",
+        deliveryContext = DeliveryContext.Algorithm,
+        normal = 1.5,
+        origin = origin,
+    )
+
+    private fun insulin(origin: Origin) = InsulinData(
+        id = "insulin-1",
+        dose = Dose(units = Insulin.Units.Units, total = 2.0, food = null, correction = null, active = null),
+        site = null,
+        origin = origin,
+    )
+
     private fun repository() = DataRepositoryImpl(
         environmentRepository = TestEnvironmentRepository,
         httpClient = HttpClient(MockEngine { request ->
@@ -239,11 +297,11 @@ class DataRepositoryImplOriginAndDeletionTest {
             defaultRequest { contentType(ContentType.Application.Json) }
         },
         basalAutomatedDataDao = basal,
-        bolusDataDao = InMemoryBolusDataDao(),
+        bolusDataDao = bolus,
         continuousGlucoseDataDao = cgm,
         dosingDecisionDataDao = InMemoryDosingDecisionDataDao(),
         foodDataDao = food,
-        insulinDataDao = InMemoryInsulinDataDao(),
+        insulinDataDao = insulin,
         deviceEventDataDao = InMemoryDeviceEventDataDao(),
         cgmSettingsDataDao = InMemoryCgmSettingsDataDao(),
         controllerSettingsDataDao = InMemoryControllerSettingsDataDao(),

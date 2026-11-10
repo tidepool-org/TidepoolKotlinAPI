@@ -20,7 +20,12 @@ data class InsulinData(
     override val timeZone: TimeZone? = null,
     override val timeZoneOffset: Int? = null,
     val dose: Dose,
-    val site: String?
+    val site: String?,
+    /**
+     * Where the dose came from. Uploading a datum with the same origin id replaces the earlier
+     * one, and a deletion selects it by that id (the data set deduplicates by origin).
+     */
+    val origin: Origin? = null,
 ) : BaseData(
     id = id,
     type = type,

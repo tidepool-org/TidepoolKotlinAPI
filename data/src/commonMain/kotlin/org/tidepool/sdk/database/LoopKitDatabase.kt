@@ -17,7 +17,7 @@ import org.tidepool.sdk.database.entity.data.InsulinDataEntity
 import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
 
 @Database(
-    version = 2,
+    version = 3,
     exportSchema = true,
     entities = [
         BaseDataEntity::class,

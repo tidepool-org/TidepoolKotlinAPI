@@ -43,7 +43,7 @@ actual val platformDataModule: Module
                 name = "loop-kit-database",
             )
                 .setDriver(BundledSQLiteDriver())
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(*OUTBOX_MIGRATIONS)
                 .build()
         }
         single<Logger> {
@@ -120,8 +120,11 @@ private val LAST_VERSION_1_TO_VERSION_2 = listOf(
     "CREATE TABLE IF NOT EXISTS `pending_data_deletion` (`origin_id` TEXT NOT NULL, PRIMARY KEY(`origin_id`))",
 )
 
-/** Version 2's tables as `schemas/.../2.json` records them. Frozen: later versions migrate from these. */
-private val VERSION_2_TABLES = listOf(
+/**
+ * Version 2's tables as `schemas/.../2.json` records them. Frozen: later versions migrate from
+ * these. Internal for the test that migrates a version 2 outbox.
+ */
+internal val VERSION_2_TABLES = listOf(
     "CREATE TABLE IF NOT EXISTS `BaseDataEntity` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clockDriftOffset` INTEGER, `conversionOffset` INTEGER, `dataSetId` TEXT, `deviceTime` TEXT, `notes` TEXT, `timeZone` TEXT, `timeZoneOffset` INTEGER, PRIMARY KEY(`id`))",
     "CREATE TABLE IF NOT EXISTS `basal_automated_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `delivery_type` TEXT NOT NULL, `duration` REAL NOT NULL, `expected_duration` REAL, `rate` REAL NOT NULL, `schedule_name` TEXT, `origin` TEXT, `payload` TEXT, `suppressed` TEXT, PRIMARY KEY(`id`))",
     "CREATE TABLE IF NOT EXISTS `bolus_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `delivery_context` TEXT NOT NULL, `normal` REAL, PRIMARY KEY(`id`))",
@@ -138,6 +141,29 @@ private val VERSION_2_TABLES = listOf(
 
 private val VERSION_2_TABLE_NAMES = VERSION_2_TABLES.map { it.substringAfter('`').substringBefore('`') }
 
+/**
+ * Version 3: an origin on bolus and insulin rows too, so a running dose's upload is replaced by
+ * the finished one and a queued deletion can drop a copy still waiting, as for basal and food.
+ * Every version 2 outbox, migrated in place or rebuilt from version 1, has the frozen version 2
+ * tables, so adding the two columns is enough.
+ */
+internal val MIGRATION_2_3 = object : Migration(2, 3) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        VERSION_2_TO_VERSION_3.forEach { db.execSQL(it) }
+    }
+
+    override fun migrate(connection: SQLiteConnection) {
+        VERSION_2_TO_VERSION_3.forEach { connection.execSQL(it) }
+    }
+}
+
+private val VERSION_2_TO_VERSION_3 = listOf(
+    "ALTER TABLE `bolus_data` ADD COLUMN `origin` TEXT",
+    "ALTER TABLE `insulin_data` ADD COLUMN `origin` TEXT",
+)
+
+/** Every outbox migration, oldest first. The test opens outboxes with the same list. */
+internal val OUTBOX_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
 
 actual fun provideAlertApi(ktorfit: Ktorfit) = ktorfit.createAlertApi()
 actual fun provideAuthorizationApi(ktorfit: Ktorfit) = ktorfit.createAuthorizationApi()

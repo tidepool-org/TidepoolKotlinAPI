@@ -37,7 +37,9 @@ data class InsulinDataDto(
     @SerialName("dose")
     val dose: DoseDto,
     @SerialName("site")
-    val site: String?
+    val site: String?,
+    @SerialName("origin")
+    val origin: OriginDto? = null,
 ) : BaseDataDto() {
     
     val formulation: Nothing
@@ -59,6 +61,7 @@ fun InsulinDataDto.toDomain(): InsulinData = InsulinData(
     timeZoneOffset = timeZoneOffset,
     dose = dose.toDomain(),
     site = site,
+    origin = origin?.toDomain(),
 )
 
 fun InsulinData.toDto(): InsulinDataDto = InsulinDataDto(
@@ -76,4 +79,5 @@ fun InsulinData.toDto(): InsulinDataDto = InsulinDataDto(
     timeZoneOffset = timeZoneOffset,
     dose = dose.toDto(),
     site = site,
+    origin = origin?.toDto(),
 )

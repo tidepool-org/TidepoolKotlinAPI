@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.BolusDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlinx.datetime.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
@@ -44,6 +45,10 @@ data class BolusDataEntity(
     var deliveryContext: String = "",
     @ColumnInfo(name = "normal")
     var normal: Double? = null,
+    // Kept so the upload replaces an earlier copy and a queued deletion can drop this one (see
+    // DataRepositoryImpl), as for basal and food data.
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -75,6 +80,7 @@ fun BolusDataDto.toEntity() = BolusDataEntity(
     subType = Json.encodeToString(subType),
     deliveryContext = Json.encodeToString(deliveryContext),
     normal = normal,
+    origin = origin?.let { Json.encodeToString(it) },
 )
 
 fun BolusDataEntity.toDto() = BolusDataDto(
@@ -99,4 +105,7 @@ fun BolusDataEntity.toDto() = BolusDataDto(
     subType = Json.decodeFromString(subType),
     deliveryContext = Json.decodeFromString(deliveryContext),
     normal = normal,
+    origin = origin
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<OriginDto>(it) },
 )

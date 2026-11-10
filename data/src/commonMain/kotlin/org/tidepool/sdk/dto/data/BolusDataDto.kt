@@ -43,6 +43,8 @@ data class BolusDataDto(
     val deliveryContext: DeliveryContextDto,
     @SerialName("normal")
     val normal: Double? = null,
+    @SerialName("origin")
+    val origin: OriginDto? = null,
 ) : BaseDataDto() {
     
     val insulinFormulation: Nothing
@@ -95,6 +97,7 @@ fun BolusDataDto.toDomain(): BolusData = BolusData(
     subType = subType.toDomain(),
     deliveryContext = deliveryContext.toDomain(),
     normal = normal,
+    origin = origin?.toDomain(),
 )
 
 fun DeliveryContextDto.toDomain(): DeliveryContext = when (this) {
@@ -127,6 +130,7 @@ fun BolusData.toDto(): BolusDataDto = BolusDataDto(
     subType = subType.toDto(),
     deliveryContext = deliveryContext.toDto(),
     normal = normal,
+    origin = origin?.toDto(),
 )
 
 fun DeliveryContext.toDto(): DeliveryContextDto = when (this) {
