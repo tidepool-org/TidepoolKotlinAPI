@@ -1,7 +1,7 @@
 package org.tidepool.sdk.model.clinic
 
 import org.tidepool.sdk.model.BloodGlucose
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class Clinic(
     val id: String,

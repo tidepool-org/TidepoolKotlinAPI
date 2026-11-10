@@ -6,7 +6,7 @@ import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.export.ExportData
 import org.tidepool.sdk.model.export.ExportFormat
 import org.tidepool.sdk.runCatchingNetworkExceptions
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlin.toString
 
 class ExportRepositoryImpl(

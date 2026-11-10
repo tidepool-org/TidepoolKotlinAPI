@@ -16,7 +16,7 @@ import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
 import org.tidepool.sdk.dto.data.PumpSettingsDataDto
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataType
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Entity
 sealed class BaseDataEntity(

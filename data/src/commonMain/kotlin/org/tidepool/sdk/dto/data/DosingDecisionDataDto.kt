@@ -10,7 +10,7 @@ import org.tidepool.sdk.dto.toDomain
 import org.tidepool.sdk.dto.toDto
 import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.data.DosingDecisionData
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
 

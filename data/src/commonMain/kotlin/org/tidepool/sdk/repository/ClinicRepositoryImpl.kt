@@ -11,7 +11,7 @@ import org.tidepool.sdk.model.clinic.Clinic
 import org.tidepool.sdk.model.clinic.Clinician
 import org.tidepool.sdk.model.clinic.Patient
 import org.tidepool.sdk.runCatchingNetworkExceptions
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class ClinicRepositoryImpl(
     private val environmentRepository: EnvironmentRepository,

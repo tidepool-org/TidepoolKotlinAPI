@@ -1,7 +1,7 @@
 package org.tidepool.sdk.database
 
 import androidx.room.TypeConverter
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class DatabaseConverters {
     

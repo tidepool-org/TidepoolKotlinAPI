@@ -1,7 +1,7 @@
 package org.tidepool.sdk.service
 
 import kotlinx.coroutines.delay
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataDeletion

@@ -1,8 +1,8 @@
 package org.tidepool.sdk.model.confirmation
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.tidepool.sdk.model.metadata.UserProfile
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class Confirmation(
     val key: String = "",

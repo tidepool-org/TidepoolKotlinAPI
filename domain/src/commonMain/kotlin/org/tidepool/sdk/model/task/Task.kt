@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.task
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class Task(
     val id: String,

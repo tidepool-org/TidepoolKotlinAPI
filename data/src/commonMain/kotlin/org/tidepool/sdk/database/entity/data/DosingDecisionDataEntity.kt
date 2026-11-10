@@ -9,7 +9,7 @@ import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 

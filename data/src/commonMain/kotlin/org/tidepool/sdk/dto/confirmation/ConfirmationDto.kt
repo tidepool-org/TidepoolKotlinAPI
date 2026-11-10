@@ -1,6 +1,6 @@
 package org.tidepool.sdk.dto.confirmation
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -9,7 +9,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import org.tidepool.sdk.model.confirmation.Confirmation
 import org.tidepool.sdk.dto.metadata.UserProfileDto
 import org.tidepool.sdk.model.metadata.UserProfile
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Serializable
 data class ConfirmationDto(

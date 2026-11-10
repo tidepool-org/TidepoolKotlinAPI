@@ -10,7 +10,7 @@ import org.tidepool.sdk.model.prescription.GlucoseTargetRange
 import org.tidepool.sdk.model.prescription.ISF
 import org.tidepool.sdk.model.prescription.InitialSettings
 import org.tidepool.sdk.model.prescription.Prescription
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Serializable
 data class PrescriptionDto(

@@ -1,7 +1,7 @@
 package org.tidepool.sdk.model.metadata.users
 
 import org.tidepool.sdk.model.metadata.UserProfile
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 open class User(
     open val emailVerified: Boolean = false,

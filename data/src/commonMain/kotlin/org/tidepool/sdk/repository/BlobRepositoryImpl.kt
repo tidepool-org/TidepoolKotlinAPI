@@ -9,7 +9,7 @@ import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.blob.BlobStatus
 import org.tidepool.sdk.model.blob.DeviceLogContent
 import org.tidepool.sdk.runCatchingNetworkExceptions
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class BlobRepositoryImpl(
     private val environmentRepository: EnvironmentRepository,

@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.clinic.Clinician
 import org.tidepool.sdk.model.clinic.ClinicianRole
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Serializable
 data class ClinicianDto(

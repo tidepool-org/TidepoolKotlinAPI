@@ -1,8 +1,8 @@
 package org.tidepool.sdk.fake
 
 import co.touchlab.kermit.Logger
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlin.time.Clock
+import kotlin.time.Instant
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Protocol

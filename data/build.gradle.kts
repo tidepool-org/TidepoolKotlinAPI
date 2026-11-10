@@ -34,6 +34,11 @@ kotlin {
         }
     }
 
+    // kotlin.time.Instant and Clock are stable from Kotlin 2.3; this repo's own build is on 2.1.20.
+    compilerOptions {
+        optIn.add("kotlin.time.ExperimentalTime")
+    }
+
     sourceSets {
         getByName("commonMain") {
             dependencies {

@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.blob
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class BlobMetadata(
     val id: String,

@@ -3,7 +3,7 @@ package org.tidepool.sdk.dto.message
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Serializable
 data class NewMessageDto(

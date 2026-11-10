@@ -7,7 +7,7 @@ import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.toDomain
 import org.tidepool.sdk.dto.toDto
 import org.tidepool.sdk.model.data.FoodData
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import org.tidepool.sdk.model.data.EnergyUnit
 import org.tidepool.sdk.model.data.NutrientUnit
 import java.util.TimeZone

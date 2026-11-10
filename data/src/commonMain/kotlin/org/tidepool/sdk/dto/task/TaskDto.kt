@@ -6,7 +6,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import org.tidepool.sdk.model.task.Task
 import org.tidepool.sdk.model.task.TaskState
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Serializable
 data class TaskDto(

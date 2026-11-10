@@ -5,7 +5,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import org.tidepool.sdk.AppLifecycleProvider
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
@@ -25,7 +25,7 @@ import org.tidepool.sdk.model.data.NewDataSource
 import org.tidepool.sdk.repository.DataRepository
 import org.tidepool.sdk.repository.UserRepository
 import kotlin.time.Duration
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.Collections.emptyList
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds

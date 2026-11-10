@@ -1,6 +1,6 @@
 package org.tidepool.sdk.fake
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 /** One request answered by the fake backend, with the canned response it got. */
 data class RecordedRequest(

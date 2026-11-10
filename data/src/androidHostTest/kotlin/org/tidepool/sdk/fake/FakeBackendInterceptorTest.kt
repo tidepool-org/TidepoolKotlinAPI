@@ -1,6 +1,6 @@
 package org.tidepool.sdk.fake
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
