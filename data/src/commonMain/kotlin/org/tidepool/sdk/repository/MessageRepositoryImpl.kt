@@ -9,7 +9,7 @@ import org.tidepool.sdk.dto.message.toDomain
 import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.messages.Message
 import org.tidepool.sdk.runCatchingNetworkExceptions
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.time.format.DateTimeFormatter
 
 class MessageRepositoryImpl(

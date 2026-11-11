@@ -5,7 +5,7 @@ package org.tidepool.sdk.model
 import org.tidepool.sdk.model.BloodGlucose.GlucoseReading
 import org.tidepool.sdk.model.BloodGlucose.Units.MilligramsPerDeciliter
 import org.tidepool.sdk.model.BloodGlucose.Units.MillimolesPerLiter
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import kotlin.math.roundToInt
 import kotlin.time.Duration
 import kotlin.time.ExperimentalTime

@@ -2,7 +2,7 @@ package org.tidepool.sdk.model.data
 
 import org.tidepool.sdk.model.Association
 import org.tidepool.sdk.model.BloodGlucose
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
 

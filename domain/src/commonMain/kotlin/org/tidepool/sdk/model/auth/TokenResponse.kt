@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.auth
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class TokenResponse(
     val expiresAt: Instant,

@@ -17,7 +17,7 @@ import org.tidepool.sdk.model.data.DosingDecisionData
 import org.tidepool.sdk.model.data.FoodData
 import org.tidepool.sdk.model.data.InsulinData
 import org.tidepool.sdk.model.data.PumpSettingsData
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.reflect.KClass
 import kotlin.time.Duration

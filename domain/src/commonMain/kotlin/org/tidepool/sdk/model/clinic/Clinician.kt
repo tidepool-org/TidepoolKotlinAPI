@@ -1,6 +1,6 @@
 package org.tidepool.sdk.model.clinic
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 data class Clinician(
     val id: String? = null,

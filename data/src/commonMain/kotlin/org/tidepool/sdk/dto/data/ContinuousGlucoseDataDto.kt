@@ -9,7 +9,7 @@ import org.tidepool.sdk.dto.BloodGlucoseDto.GlucoseReadingDto
 import org.tidepool.sdk.dto.toDomain
 import org.tidepool.sdk.dto.toDto
 import org.tidepool.sdk.model.data.ContinuousGlucoseData
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
 

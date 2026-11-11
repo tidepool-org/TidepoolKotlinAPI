@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.DeviceEventDataDto
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 

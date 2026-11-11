@@ -1,6 +1,6 @@
 package org.tidepool.sdk.service
 
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.test.Test
 import kotlin.test.assertEquals

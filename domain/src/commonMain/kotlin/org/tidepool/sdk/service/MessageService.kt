@@ -5,9 +5,9 @@ import org.tidepool.sdk.flatMap
 import org.tidepool.sdk.model.messages.Message
 import org.tidepool.sdk.repository.MessageRepository
 import org.tidepool.sdk.repository.UserRepository
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 import java.util.UUID
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
 @OptIn(ExperimentalTime::class)

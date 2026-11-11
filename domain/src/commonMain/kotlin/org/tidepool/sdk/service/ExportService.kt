@@ -7,7 +7,7 @@ import org.tidepool.sdk.model.export.ExportData
 import org.tidepool.sdk.model.export.ExportFormat
 import org.tidepool.sdk.repository.ExportRepository
 import org.tidepool.sdk.repository.UserRepository
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 class ExportService internal constructor(
     private val exportRepository: ExportRepository,

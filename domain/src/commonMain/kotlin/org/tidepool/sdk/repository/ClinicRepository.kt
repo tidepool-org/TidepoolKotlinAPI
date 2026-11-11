@@ -3,7 +3,7 @@ package org.tidepool.sdk.repository
 import org.tidepool.sdk.model.clinic.Clinic
 import org.tidepool.sdk.model.clinic.Clinician
 import org.tidepool.sdk.model.clinic.Patient
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 interface ClinicRepository {
     

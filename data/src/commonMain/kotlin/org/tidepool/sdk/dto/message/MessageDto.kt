@@ -1,11 +1,11 @@
 package org.tidepool.sdk.dto.message
 
-import kotlinx.datetime.Clock
+import kotlin.time.Clock
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.messages.Message
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Serializable
 data class MessageDto(

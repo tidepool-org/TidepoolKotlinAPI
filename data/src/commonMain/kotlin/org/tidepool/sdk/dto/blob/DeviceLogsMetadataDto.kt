@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.blob.DeviceLogContent
 import org.tidepool.sdk.model.blob.DeviceLogType
 import org.tidepool.sdk.model.blob.DeviceLogsMetadata
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 @Serializable
 data class DeviceLogsMetadataDto(

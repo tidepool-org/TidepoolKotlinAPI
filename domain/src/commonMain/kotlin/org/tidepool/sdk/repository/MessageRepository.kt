@@ -1,7 +1,7 @@
 package org.tidepool.sdk.repository
 
 import org.tidepool.sdk.model.messages.Message
-import kotlinx.datetime.Instant
+import kotlin.time.Instant
 
 interface MessageRepository {
     
