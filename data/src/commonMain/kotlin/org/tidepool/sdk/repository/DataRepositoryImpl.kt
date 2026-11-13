@@ -448,6 +448,14 @@ class DataRepositoryImpl(
                 controllerStatusDataDao::delete,
                 isDeleted = { hasDeletedOrigin(it.origin) },
             ),
+            upload("cgmSettings", UPLOAD_BATCH_LIMIT, cgmSettingsDataDao::getAll, cgmSettingsDataDao::delete),
+            upload(
+                "controllerSettings",
+                UPLOAD_BATCH_LIMIT,
+                controllerSettingsDataDao::getAll,
+                controllerSettingsDataDao::delete,
+            ),
+            upload("pumpSettings", UPLOAD_BATCH_LIMIT, pumpSettingsDataDao::getAll, pumpSettingsDataDao::delete),
             // After the uploads, so a deletion and a newer upload of the same origin land in order.
             uploadDeletions(sessionToken, dataSetId),
         )
@@ -614,6 +622,9 @@ class DataRepositoryImpl(
             smbgDataDao.getAll(1).isNotEmpty() ||
             pumpStatusDataDao.getAll(1).isNotEmpty() ||
             controllerStatusDataDao.getAll(1).isNotEmpty() ||
+            cgmSettingsDataDao.getAll(1).isNotEmpty() ||
+            controllerSettingsDataDao.getAll(1).isNotEmpty() ||
+            pumpSettingsDataDao.getAll(1).isNotEmpty() ||
             pendingDataDeletionDao.getAll(1).isNotEmpty()
 
     override suspend fun clearCachedData(): Result<Unit> = try {

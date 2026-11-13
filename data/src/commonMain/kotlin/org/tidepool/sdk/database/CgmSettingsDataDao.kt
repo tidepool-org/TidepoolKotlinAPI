@@ -15,6 +15,9 @@ interface CgmSettingsDataDao {
     @Delete
     suspend fun delete(data: CgmSettingsDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<CgmSettingsDataEntity>)
+
     @Query("DELETE FROM cgm_settings_data")
     suspend fun deleteAll()
 
@@ -23,4 +26,7 @@ interface CgmSettingsDataDao {
 
     @Query("SELECT * FROM cgm_settings_data")
     suspend fun getAll(): List<CgmSettingsDataEntity>
+
+    @Query("SELECT * FROM cgm_settings_data ORDER BY time ASC, rowid ASC LIMIT :limit")
+    suspend fun getAll(limit: Int): List<CgmSettingsDataEntity>
 }

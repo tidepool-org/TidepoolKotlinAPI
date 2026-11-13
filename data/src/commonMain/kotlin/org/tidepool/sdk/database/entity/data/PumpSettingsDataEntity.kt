@@ -11,6 +11,8 @@ import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 
 
+// Base fields only for now: this table is dropped and recreated with real columns for the new
+// fields in the outbox's v3->v4 migration (it has never been drained, so there's nothing to lose).
 @Entity(tableName = "pump_settings_data")
 data class PumpSettingsDataEntity(
     @PrimaryKey

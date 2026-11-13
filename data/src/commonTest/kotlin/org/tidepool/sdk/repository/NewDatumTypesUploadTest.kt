@@ -20,9 +20,12 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.tidepool.sdk.Environment
 import org.tidepool.sdk.di.createTidepoolJson
+import org.tidepool.sdk.model.data.CgmSettingsData
+import org.tidepool.sdk.model.data.ControllerSettingsData
 import org.tidepool.sdk.model.data.ControllerStatusData
 import org.tidepool.sdk.model.data.DataDeletion
 import org.tidepool.sdk.model.data.Origin
+import org.tidepool.sdk.model.data.PumpSettingsData
 import org.tidepool.sdk.model.data.PumpStatusData
 import org.tidepool.sdk.model.data.SmbgData
 import kotlin.test.Test
@@ -33,13 +36,17 @@ import kotlin.test.assertTrue
 /**
  * smbg, pumpStatus and controllerStatus (items #3/#2) go through the outbox drain the same way
  * as the other origin-carrying types: their own request, and a waiting copy whose origin has a
- * queued deletion is dropped instead of sent.
+ * queued deletion is dropped instead of sent. pumpSettings/cgmSettings/controllerSettings (item
+ * #1) are also exercised here: they used to be cached but never drained.
  */
 class NewDatumTypesUploadTest {
 
     private val smbg = InMemorySmbgDataDao()
     private val pumpStatus = InMemoryPumpStatusDataDao()
     private val controllerStatus = InMemoryControllerStatusDataDao()
+    private val cgmSettings = InMemoryCgmSettingsDataDao()
+    private val controllerSettings = InMemoryControllerSettingsDataDao()
+    private val pumpSettings = InMemoryPumpSettingsDataDao()
 
     private val requests = mutableListOf<Set<String>>()
 
@@ -90,6 +97,30 @@ class NewDatumTypesUploadTest {
             assertFalse(repository.hasCachedData())
         }
 
+    @Test
+    fun `pumpSettings, cgmSettings and controllerSettings are drained and counted by hasCachedData`() = runTest {
+        val repository = repository()
+        assertFalse(repository.hasCachedData())
+
+        repository.uploadDataToDataSet(
+            listOf(
+                PumpSettingsData(id = "pump-settings-1"),
+                CgmSettingsData(id = "cgm-settings-1"),
+                ControllerSettingsData(id = "controller-settings-1"),
+            )
+        )
+        assertTrue(repository.hasCachedData())
+
+        val result = repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(Result.success(false), result)
+        assertEquals(
+            setOf(setOf("pumpSettings"), setOf("cgmSettings"), setOf("controllerSettings")),
+            requests.toSet(),
+        )
+        assertFalse(repository.hasCachedData())
+    }
+
     private fun repository() = DataRepositoryImpl(
         environmentRepository = TestEnvironmentRepository,
         httpClient = HttpClient(MockEngine { request ->
@@ -113,9 +144,9 @@ class NewDatumTypesUploadTest {
         foodDataDao = InMemoryFoodDataDao(),
         insulinDataDao = InMemoryInsulinDataDao(),
         deviceEventDataDao = InMemoryDeviceEventDataDao(),
-        cgmSettingsDataDao = InMemoryCgmSettingsDataDao(),
-        controllerSettingsDataDao = InMemoryControllerSettingsDataDao(),
-        pumpSettingsDataDao = InMemoryPumpSettingsDataDao(),
+        cgmSettingsDataDao = cgmSettings,
+        controllerSettingsDataDao = controllerSettings,
+        pumpSettingsDataDao = pumpSettings,
         smbgDataDao = smbg,
         pumpStatusDataDao = pumpStatus,
         controllerStatusDataDao = controllerStatus,

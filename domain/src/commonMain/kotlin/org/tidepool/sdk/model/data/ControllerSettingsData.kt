@@ -5,6 +5,7 @@ import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
 
+/** The controller's (phone's) settings. Mirrors TidepoolKit's TControllerSettingsDatum. */
 data class ControllerSettingsData(
     override val id: String,
     override val type: DataType = DataType.ControllerSettings,
@@ -18,6 +19,10 @@ data class ControllerSettingsData(
     override val notes: List<String> = emptyList(),
     override val timeZone: TimeZone? = null,
     override val timeZoneOffset: Int? = null,
+    val device: Device? = null,
+    val notifications: Notifications? = null,
+    val origin: Origin? = null,
+    val payload: Payload? = null,
 ) : BaseData(
     id = id,
     type = type,
@@ -31,4 +36,47 @@ data class ControllerSettingsData(
     notes = notes,
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
-)
+) {
+
+    data class Device(
+        val firmwareVersion: String? = null,
+        val hardwareVersion: String? = null,
+        val manufacturers: List<String>? = null,
+        val model: String? = null,
+        val name: String? = null,
+        val serialNumber: String? = null,
+        val softwareVersion: String? = null,
+    )
+
+    data class Notifications(
+        val authorization: Authorization? = null,
+        val alert: Boolean? = null,
+        val criticalAlert: Boolean? = null,
+        val badge: Boolean? = null,
+        val sound: Boolean? = null,
+        val announcement: Boolean? = null,
+        val timeSensitive: Boolean? = null,
+        val scheduledDelivery: Boolean? = null,
+        val notificationCenter: Boolean? = null,
+        val lockScreen: Boolean? = null,
+        val alertStyle: AlertStyle? = null,
+    ) {
+        enum class Authorization {
+            NotDetermined,
+            Denied,
+            Authorized,
+            Provisional,
+            Ephemeral,
+        }
+
+        enum class AlertStyle {
+            None,
+            Alert,
+            Banner,
+        }
+    }
+
+    data class Payload(
+        val syncIdentifier: String,
+    )
+}

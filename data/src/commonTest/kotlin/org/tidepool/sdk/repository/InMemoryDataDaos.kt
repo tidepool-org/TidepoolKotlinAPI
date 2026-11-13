@@ -135,8 +135,10 @@ internal class InMemoryCgmSettingsDataDao : CgmSettingsDataDao {
     val table = InMemoryTable<CgmSettingsDataEntity>()
     override suspend fun insert(data: CgmSettingsDataEntity) = table.insert(data)
     override suspend fun delete(data: CgmSettingsDataEntity) = table.delete(data)
+    override suspend fun delete(data: List<CgmSettingsDataEntity>) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun getAll(limit: Int) = table.getAll(limit)
     override suspend fun deleteAll() = table.deleteAll()
 }
 
@@ -144,8 +146,10 @@ internal class InMemoryControllerSettingsDataDao : ControllerSettingsDataDao {
     val table = InMemoryTable<ControllerSettingsDataEntity>()
     override suspend fun insert(data: ControllerSettingsDataEntity) = table.insert(data)
     override suspend fun delete(data: ControllerSettingsDataEntity) = table.delete(data)
+    override suspend fun delete(data: List<ControllerSettingsDataEntity>) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun getAll(limit: Int) = table.getAll(limit)
     override suspend fun deleteAll() = table.deleteAll()
 }
 
@@ -153,8 +157,10 @@ internal class InMemoryPumpSettingsDataDao : PumpSettingsDataDao {
     val table = InMemoryTable<PumpSettingsDataEntity>()
     override suspend fun insert(data: PumpSettingsDataEntity) = table.insert(data)
     override suspend fun delete(data: PumpSettingsDataEntity) = table.delete(data)
+    override suspend fun delete(data: List<PumpSettingsDataEntity>) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun getAll(limit: Int) = table.getAll(limit)
     override suspend fun deleteAll() = table.deleteAll()
 }
 

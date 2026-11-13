@@ -41,11 +41,14 @@ import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
 import org.tidepool.sdk.dto.data.BolusDataDto
+import org.tidepool.sdk.dto.data.CgmSettingsDataDto
 import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
+import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
 import org.tidepool.sdk.dto.data.ControllerStatusDataDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
+import org.tidepool.sdk.dto.data.PumpSettingsDataDto
 import org.tidepool.sdk.dto.data.PumpStatusDataDto
 import org.tidepool.sdk.dto.data.SmbgDataDto
 import org.tidepool.sdk.dto.summary.SummaryDto
@@ -207,6 +210,9 @@ internal fun createTidepoolJson(): Json =
                 subclass(SmbgDataDto::class)
                 subclass(PumpStatusDataDto::class)
                 subclass(ControllerStatusDataDto::class)
+                subclass(CgmSettingsDataDto::class)
+                subclass(ControllerSettingsDataDto::class)
+                subclass(PumpSettingsDataDto::class)
                 // Add other BaseData subclasses as they get implemented
             }
             // Configure SummaryDto polymorphism

@@ -15,6 +15,9 @@ interface PumpSettingsDataDao {
     @Delete
     suspend fun delete(data: PumpSettingsDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<PumpSettingsDataEntity>)
+
     @Query("DELETE FROM pump_settings_data")
     suspend fun deleteAll()
 
@@ -23,4 +26,7 @@ interface PumpSettingsDataDao {
 
     @Query("SELECT * FROM pump_settings_data")
     suspend fun getAll(): List<PumpSettingsDataEntity>
+
+    @Query("SELECT * FROM pump_settings_data ORDER BY time ASC, rowid ASC LIMIT :limit")
+    suspend fun getAll(limit: Int): List<PumpSettingsDataEntity>
 }

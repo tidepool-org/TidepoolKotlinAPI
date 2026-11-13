@@ -15,6 +15,9 @@ interface ControllerSettingsDataDao {
     @Delete
     suspend fun delete(data: ControllerSettingsDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<ControllerSettingsDataEntity>)
+
     @Query("DELETE FROM controller_settings_data")
     suspend fun deleteAll()
 
@@ -23,4 +26,7 @@ interface ControllerSettingsDataDao {
 
     @Query("SELECT * FROM controller_settings_data")
     suspend fun getAll(): List<ControllerSettingsDataEntity>
+
+    @Query("SELECT * FROM controller_settings_data ORDER BY time ASC, rowid ASC LIMIT :limit")
+    suspend fun getAll(limit: Int): List<ControllerSettingsDataEntity>
 }
