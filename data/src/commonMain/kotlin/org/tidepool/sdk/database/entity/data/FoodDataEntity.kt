@@ -57,8 +57,8 @@ data class FoodDataEntity(
     var ingredients: String? = null, // JSON string
     @ColumnInfo(name = "origin")
     var origin: String? = null, // JSON string
-    // payload isn't persisted yet: it gets its own column in the outbox's v3->v4 migration, so a
-    // cached food entry doesn't carry it through the outbox until then.
+    @ColumnInfo(name = "payload")
+    var payload: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -104,6 +104,7 @@ fun FoodDataDto.toEntity() = FoodDataEntity(
     nutrition = nutrition?.let { Json.encodeToString(it) },
     ingredients = ingredients?.let { Json.encodeToString(it) },
     origin = origin?.let { Json.encodeToString(it) },
+    payload = payload?.let { Json.encodeToString(it) },
 )
 
 fun FoodDataEntity.toDto() = FoodDataDto(
@@ -151,4 +152,7 @@ fun FoodDataEntity.toDto() = FoodDataDto(
     origin = origin
         ?.takeUnless { it == "null" }
         ?.let { Json.decodeFromString<OriginDto>(it) },
+    payload = payload
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<FoodDataDto.PayloadDto>(it) },
 )

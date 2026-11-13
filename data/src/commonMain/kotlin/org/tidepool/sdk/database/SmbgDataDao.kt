@@ -7,7 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import org.tidepool.sdk.database.entity.data.SmbgDataEntity
 
-// Not yet wired into LoopKitDatabase: it gets its table in the outbox's v3->v4 migration.
 @Dao
 interface SmbgDataDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

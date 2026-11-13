@@ -28,6 +28,7 @@ import org.tidepool.sdk.database.BasalAutomatedDataDao
 import org.tidepool.sdk.database.BolusDataDao
 import org.tidepool.sdk.database.CgmSettingsDataDao
 import org.tidepool.sdk.database.ControllerSettingsDataDao
+import org.tidepool.sdk.database.ControllerStatusDataDao
 import org.tidepool.sdk.database.ContinuousGlucoseDataDao
 import org.tidepool.sdk.database.DeviceEventDataDao
 import org.tidepool.sdk.database.DosingDecisionDataDao
@@ -36,6 +37,8 @@ import org.tidepool.sdk.database.InsulinDataDao
 import org.tidepool.sdk.database.LoopKitDatabase
 import org.tidepool.sdk.database.PendingDataDeletionDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
+import org.tidepool.sdk.database.PumpStatusDataDao
+import org.tidepool.sdk.database.SmbgDataDao
 import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
@@ -167,6 +170,9 @@ public val dataModule = module {
     single<CgmSettingsDataDao> { get<LoopKitDatabase>().cgmSettingsDataDao() }
     single<ControllerSettingsDataDao> { get<LoopKitDatabase>().controllerSettingsDataDao() }
     single<PumpSettingsDataDao> { get<LoopKitDatabase>().pumpSettingsDataDao() }
+    single<SmbgDataDao> { get<LoopKitDatabase>().smbgDataDao() }
+    single<PumpStatusDataDao> { get<LoopKitDatabase>().pumpStatusDataDao() }
+    single<ControllerStatusDataDao> { get<LoopKitDatabase>().controllerStatusDataDao() }
     single<PendingDataDeletionDao> { get<LoopKitDatabase>().pendingDataDeletionDao() }
     
     singleOf(::AlertRepositoryImpl) bind AlertRepository::class

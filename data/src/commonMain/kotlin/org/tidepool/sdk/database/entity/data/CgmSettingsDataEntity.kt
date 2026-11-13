@@ -6,12 +6,13 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.CgmSettingsDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 
-// Base fields only for now: this table is dropped and recreated with real columns for the new
-// fields in the outbox's v3->v4 migration (it has never been drained, so there's nothing to lose).
+// Table dropped and recreated with these columns in the outbox's v3->v4 migration: it had never
+// been drained, so there was nothing to lose.
 @Entity(tableName = "cgm_settings_data")
 data class CgmSettingsDataEntity(
     @PrimaryKey
@@ -39,6 +40,29 @@ data class CgmSettingsDataEntity(
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
     override var timeZoneOffset: Int?, // Duration in minutes
+
+    @ColumnInfo(name = "firmware_version")
+    var firmwareVersion: String? = null,
+    @ColumnInfo(name = "hardware_version")
+    var hardwareVersion: String? = null,
+    @ColumnInfo(name = "manufacturers")
+    var manufacturers: String? = null, // JSON string
+    @ColumnInfo(name = "model")
+    var model: String? = null,
+    @ColumnInfo(name = "name")
+    var name: String? = null,
+    @ColumnInfo(name = "serial_number")
+    var serialNumber: String? = null,
+    @ColumnInfo(name = "software_version")
+    var softwareVersion: String? = null,
+    @ColumnInfo(name = "transmitter_id")
+    var transmitterId: String? = null,
+    @ColumnInfo(name = "units")
+    var units: String? = null, // JSON string
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
+    @ColumnInfo(name = "payload")
+    var payload: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -67,6 +91,17 @@ fun CgmSettingsDataDto.toEntity() = CgmSettingsDataEntity(
     notes = notes.let { Json.encodeToString(it) },
     timeZone = timeZone?.id,
     timeZoneOffset = timeZoneOffset,
+    firmwareVersion = firmwareVersion,
+    hardwareVersion = hardwareVersion,
+    manufacturers = manufacturers?.let { Json.encodeToString(it) },
+    model = model,
+    name = name,
+    serialNumber = serialNumber,
+    softwareVersion = softwareVersion,
+    transmitterId = transmitterId,
+    units = units?.let { Json.encodeToString(it) },
+    origin = origin?.let { Json.encodeToString(it) },
+    payload = payload?.let { Json.encodeToString(it) },
 )
 
 fun CgmSettingsDataEntity.toDto() = CgmSettingsDataDto(
@@ -88,4 +123,17 @@ fun CgmSettingsDataEntity.toDto() = CgmSettingsDataDto(
         .orEmpty(),
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
     timeZoneOffset = timeZoneOffset,
+    firmwareVersion = firmwareVersion,
+    hardwareVersion = hardwareVersion,
+    manufacturers = manufacturers?.takeUnless { it == "null" }?.let { Json.decodeFromString(it) },
+    model = model,
+    name = name,
+    serialNumber = serialNumber,
+    softwareVersion = softwareVersion,
+    transmitterId = transmitterId,
+    units = units?.takeUnless { it == "null" }?.let { Json.decodeFromString(it) },
+    origin = origin?.takeUnless { it == "null" }?.let { Json.decodeFromString<OriginDto>(it) },
+    payload = payload
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<CgmSettingsDataDto.PayloadDto>(it) },
 )

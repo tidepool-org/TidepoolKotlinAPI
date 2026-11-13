@@ -9,6 +9,10 @@ import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.tidepool.sdk.database.LoopKitDatabase
 import org.tidepool.sdk.database.entity.PendingDataDeletionEntity
+import org.tidepool.sdk.database.entity.data.CgmSettingsDataEntity
+import org.tidepool.sdk.database.entity.data.ControllerStatusDataEntity
+import org.tidepool.sdk.database.entity.data.PumpStatusDataEntity
+import org.tidepool.sdk.database.entity.data.SmbgDataEntity
 import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
@@ -91,6 +95,79 @@ class OutboxMigrationUnitTest {
         migrated.insulinDataDao().insert(insulin.copy(origin = """{"id":"sync-3:insulin"}"""))
         assertEquals("""{"id":"sync-2:bolus/normal"}""", migrated.bolusDataDao().getById("bolus-1")?.origin)
         assertEquals("""{"id":"sync-3:insulin"}""", migrated.insulinDataDao().getById("insulin-1")?.origin)
+    }
+
+    @Test
+    fun versionThreeOutboxKeepsItsRowsAndGetsTheNewTables() = runTest {
+        BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
+            VERSION_2_TABLES.forEach { execSQL(it) }
+            // Version 2 -> 3 (MIGRATION_2_3): an origin column on bolus and insulin.
+            execSQL("ALTER TABLE `bolus_data` ADD COLUMN `origin` TEXT")
+            execSQL("ALTER TABLE `insulin_data` ADD COLUMN `origin` TEXT")
+            execSQL("PRAGMA user_version = 3")
+            close()
+        }
+        BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
+            execSQL(
+                "INSERT INTO `bolus_data` (`id`, `type`, `time`, `sub_type`, `delivery_context`, `normal`, `origin`) " +
+                    "VALUES ('bolus-1', '\"bolus\"', 100, 'normal', 'device', 1.5, '{\"id\":\"sync-1:bolus/normal\"}')"
+            )
+            execSQL(
+                "INSERT INTO `continuous_glucose_data` (`id`, `type`, `time`, `value`) " +
+                    "VALUES ('cgm-1', '\"cbg\"', 100, 120.0)"
+            )
+            execSQL(
+                "INSERT INTO `food_data` (`id`, `type`, `time`, `name`) " +
+                    "VALUES ('food-1', '\"food\"', 100, 'Taco')"
+            )
+            close()
+        }
+
+        val migrated = openCurrentDatabase()
+
+        // Existing rows survive, bolus's delivery_context and new expected_normal both readable.
+        val bolus = migrated.bolusDataDao().getAll().single()
+        assertEquals("bolus-1", bolus.id)
+        assertEquals(1.5, bolus.normal)
+        assertNull(bolus.expectedNormal)
+        assertEquals("""{"id":"sync-1:bolus/normal"}""", bolus.origin)
+        val cgm = migrated.continuousGlucoseDataDao().getAll().single()
+        assertEquals("cgm-1", cgm.id)
+        assertEquals(120.0, cgm.value)
+        assertNull(cgm.origin)
+        val food = migrated.foodDataDao().getAll().single()
+        assertEquals("food-1", food.id)
+        assertNull(food.payload)
+
+        // The new columns and tables are usable.
+        migrated.bolusDataDao().insert(bolus.copy(deliveryContext = null, expectedNormal = 2.0))
+        assertNull(migrated.bolusDataDao().getById("bolus-1")?.deliveryContext)
+        assertEquals(2.0, migrated.bolusDataDao().getById("bolus-1")?.expectedNormal)
+        migrated.continuousGlucoseDataDao().insert(
+            cgm.copy(origin = """{"id":"sync-2"}""", payload = """{"syncIdentifier":"sync-2"}""", deviceId = "cgm-device")
+        )
+        assertEquals("cgm-device", migrated.continuousGlucoseDataDao().getById("cgm-1")?.deviceId)
+        migrated.foodDataDao().insert(food.copy(payload = """{"syncIdentifier":"sync-3"}"""))
+        assertEquals("""{"syncIdentifier":"sync-3"}""", migrated.foodDataDao().getById("food-1")?.payload)
+
+        migrated.smbgDataDao().insert(
+            SmbgDataEntity(id = "smbg-1", type = "\"smbg\"", timeZoneOffset = null, value = 100.0)
+        )
+        assertEquals(100.0, migrated.smbgDataDao().getAll().single().value)
+        migrated.pumpStatusDataDao().insert(
+            PumpStatusDataEntity(id = "pump-status-1", type = "\"pumpStatus\"", timeZoneOffset = null)
+        )
+        assertEquals(1, migrated.pumpStatusDataDao().getAll().size)
+        migrated.controllerStatusDataDao().insert(
+            ControllerStatusDataEntity(id = "controller-status-1", type = "\"controllerStatus\"", timeZoneOffset = null)
+        )
+        assertEquals(1, migrated.controllerStatusDataDao().getAll().size)
+
+        // The settings tables were recreated and are usable with their real columns.
+        migrated.cgmSettingsDataDao().insert(
+            CgmSettingsDataEntity(id = "cgm-settings-1", type = "\"cgmSettings\"", timeZoneOffset = null, name = "Dexcom G7")
+        )
+        assertEquals("Dexcom G7", migrated.cgmSettingsDataDao().getAll().single().name)
     }
 
     @Test

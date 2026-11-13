@@ -11,7 +11,6 @@ import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 
-// Not yet wired into LoopKitDatabase: it gets its table in the outbox's v3->v4 migration.
 @Entity(tableName = "controller_status_data")
 data class ControllerStatusDataEntity(
     @PrimaryKey

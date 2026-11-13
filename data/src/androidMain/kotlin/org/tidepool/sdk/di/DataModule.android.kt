@@ -162,8 +162,48 @@ private val VERSION_2_TO_VERSION_3 = listOf(
     "ALTER TABLE `insulin_data` ADD COLUMN `origin` TEXT",
 )
 
+/**
+ * Version 4: cbg gains an origin, a payload and a deviceId; food gains a payload; bolus gains an
+ * expectedNormal and its deliveryContext becomes nullable (SQLite can't alter a column's
+ * nullability in place, so bolus_data is rebuilt: a new table with the final shape, its rows
+ * copied over, the old table dropped, the new one renamed). The three settings tables
+ * (cgmSettings, controllerSettings, pumpSettings) are dropped and recreated with their real
+ * columns, since they've never been drained and have nothing worth keeping. smbg, pumpStatus and
+ * controllerStatus get new tables.
+ */
+internal val MIGRATION_3_4 = object : Migration(3, 4) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        VERSION_3_TO_VERSION_4.forEach { db.execSQL(it) }
+    }
+
+    override fun migrate(connection: SQLiteConnection) {
+        VERSION_3_TO_VERSION_4.forEach { connection.execSQL(it) }
+    }
+}
+
+private val VERSION_3_TO_VERSION_4 = listOf(
+    "ALTER TABLE `continuous_glucose_data` ADD COLUMN `origin` TEXT",
+    "ALTER TABLE `continuous_glucose_data` ADD COLUMN `payload` TEXT",
+    "ALTER TABLE `continuous_glucose_data` ADD COLUMN `device_id` TEXT",
+    "ALTER TABLE `food_data` ADD COLUMN `payload` TEXT",
+    "CREATE TABLE IF NOT EXISTS `bolus_data_new` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `delivery_context` TEXT, `normal` REAL, `expected_normal` REAL, `origin` TEXT, PRIMARY KEY(`id`))",
+    "INSERT INTO `bolus_data_new` (`id`, `type`, `time`, `annotations`, `associations`, `clock_drift_offset`, `conversion_offset`, `data_set_id`, `device_time`, `notes`, `time_zone`, `time_zone_offset`, `sub_type`, `delivery_context`, `normal`, `origin`) " +
+        "SELECT `id`, `type`, `time`, `annotations`, `associations`, `clock_drift_offset`, `conversion_offset`, `data_set_id`, `device_time`, `notes`, `time_zone`, `time_zone_offset`, `sub_type`, `delivery_context`, `normal`, `origin` FROM `bolus_data`",
+    "DROP TABLE `bolus_data`",
+    "ALTER TABLE `bolus_data_new` RENAME TO `bolus_data`",
+    "DROP TABLE IF EXISTS `cgm_settings_data`",
+    "CREATE TABLE IF NOT EXISTS `cgm_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `firmware_version` TEXT, `hardware_version` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `serial_number` TEXT, `software_version` TEXT, `transmitter_id` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+    "DROP TABLE IF EXISTS `controller_settings_data`",
+    "CREATE TABLE IF NOT EXISTS `controller_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `device` TEXT, `notifications` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+    "DROP TABLE IF EXISTS `pump_settings_data`",
+    "CREATE TABLE IF NOT EXISTS `pump_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `active_schedule_name` TEXT, `automated_delivery` INTEGER, `basal` TEXT, `basal_rate_schedules` TEXT, `blood_glucose_safety_limit` REAL, `blood_glucose_target_physical_activity` TEXT, `blood_glucose_target_preprandial` TEXT, `blood_glucose_target_schedules` TEXT, `bolus` TEXT, `carbohydrate_ratio_schedules` TEXT, `display` TEXT, `firmware_version` TEXT, `hardware_version` TEXT, `insulin_formulation` TEXT, `insulin_model` TEXT, `insulin_sensitivity_schedules` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `override_presets` TEXT, `schedule_time_zone_offset` INTEGER, `serial_number` TEXT, `software_version` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `smbg_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `value` REAL, `units` TEXT, `sub_type` TEXT, `origin` TEXT, `payload` TEXT, `device_id` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `pump_status_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `basal_delivery` TEXT, `battery` TEXT, `bolus_delivery` TEXT, `delivery_indeterminant` INTEGER, `reservoir` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `controller_status_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `battery` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+)
+
 /** Every outbox migration, oldest first. The test opens outboxes with the same list. */
-internal val OUTBOX_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3)
+internal val OUTBOX_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
 
 actual fun provideAlertApi(ktorfit: Ktorfit) = ktorfit.createAlertApi()
 actual fun provideAuthorizationApi(ktorfit: Ktorfit) = ktorfit.createAuthorizationApi()
