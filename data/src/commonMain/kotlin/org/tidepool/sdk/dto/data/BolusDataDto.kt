@@ -40,9 +40,11 @@ data class BolusDataDto(
     @SerialName("subType")
     val subType: BolusSubtypeDto = BolusSubtypeDto.Normal,
     @SerialName("deliveryContext")
-    val deliveryContext: DeliveryContextDto,
+    val deliveryContext: DeliveryContextDto? = null,
     @SerialName("normal")
     val normal: Double? = null,
+    @SerialName("expectedNormal")
+    val expectedNormal: Double? = null,
     @SerialName("origin")
     val origin: OriginDto? = null,
 ) : BaseDataDto() {
@@ -95,8 +97,9 @@ fun BolusDataDto.toDomain(): BolusData = BolusData(
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
     subType = subType.toDomain(),
-    deliveryContext = deliveryContext.toDomain(),
+    deliveryContext = deliveryContext?.toDomain(),
     normal = normal,
+    expectedNormal = expectedNormal,
     origin = origin?.toDomain(),
 )
 
@@ -128,8 +131,9 @@ fun BolusData.toDto(): BolusDataDto = BolusDataDto(
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
     subType = subType.toDto(),
-    deliveryContext = deliveryContext.toDto(),
+    deliveryContext = deliveryContext?.toDto(),
     normal = normal,
+    expectedNormal = expectedNormal,
     origin = origin?.toDto(),
 )
 

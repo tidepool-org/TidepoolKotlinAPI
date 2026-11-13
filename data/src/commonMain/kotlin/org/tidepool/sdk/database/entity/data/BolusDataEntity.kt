@@ -41,6 +41,10 @@ data class BolusDataEntity(
 
     @ColumnInfo(name = "sub_type")
     var subType: String = "normal",
+    // NOT NULL column kept as-is for now (the schema changes once, in the v3->v4 migration): a
+    // null BolusDataDto.deliveryContext round-trips through it anyway, since Json.encodeToString
+    // of a null DeliveryContextDto? writes the literal text "null", which Json.decodeFromString
+    // reads back as null.
     @ColumnInfo(name = "delivery_context")
     var deliveryContext: String = "",
     @ColumnInfo(name = "normal")
@@ -49,6 +53,8 @@ data class BolusDataEntity(
     // DataRepositoryImpl), as for basal and food data.
     @ColumnInfo(name = "origin")
     var origin: String? = null, // JSON string
+    // expectedNormal isn't persisted yet: it gets its own column in the v3->v4 migration, so a
+    // cached bolus doesn't carry it through the outbox until then.
 ) : BaseDataEntity(
     id = id,
     type = type,
