@@ -4,7 +4,6 @@ import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tidepool.sdk.AppLifecycleProvider
@@ -60,14 +59,17 @@ class LifecycleAwareDataUploadManager(
             // Wait for initial delay
             delay(initialDelay.inWholeMilliseconds)
             
-            // Observe foreground state changes
+            // The upload loop ends by itself on going to the background, so the collector only has
+            // to start it again on each return to the foreground. It must not cancel itself here:
+            // that ended foreground uploads for good after the app's first trip to the background.
+            //
+            // No distinctUntilChanged: the loop runs inside collect, so a quick background and
+            // foreground while it is winding down is conflated to a second `true`, which has to
+            // start it again rather than be dropped as a repeat.
             lifecycleProvider.foregroundStateFlow
-                .distinctUntilChanged()
-                .collect {
-                    if (it) {
+                .collect { inForeground ->
+                    if (inForeground) {
                         startForegroundUploads()
-                    } else {
-                        stop()
                     }
                 }
         }
