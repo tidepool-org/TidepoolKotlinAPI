@@ -93,6 +93,15 @@ class DataRepositoryImplClearCachedDataTest {
         assertTrue(result.isSuccess)
     }
 
+    @Test
+    fun `a data set id cached by the old lowest-uploadId selection is picked again`() = runTest {
+        keyValueStorage.putString("KEY_CACHED_DATA_SET_ID", "another-clients-data-set")
+
+        val id = repository().awaitOrCreateCachedDataSetId { Result.success("this-clients-data-set") }
+
+        assertEquals(Result.success("this-clients-data-set"), id)
+    }
+
     private fun repository() = DataRepositoryImpl(
         environmentRepository = TestEnvironmentRepository,
         httpClient = HttpClient(MockEngine { respond(content = "{}", status = HttpStatusCode.OK) }),

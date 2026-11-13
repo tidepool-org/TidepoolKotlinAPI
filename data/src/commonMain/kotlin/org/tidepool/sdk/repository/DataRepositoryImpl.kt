@@ -82,7 +82,10 @@ class DataRepositoryImpl(
     private val keyValueStorage: KeyValueStorage,
 ) : DataRepository {
 
-    private val KEY_CACHED_DATA_SET_ID: String = "KEY_CACHED_DATA_SET_ID"
+    // "_V2": ids cached under the old key were chosen as the account's lowest uploadId, from any
+    // client and even deleted. A new key makes every install pick its data set again, once, by
+    // client name.
+    private val KEY_CACHED_DATA_SET_ID: String = "KEY_CACHED_DATA_SET_ID_V2"
 
     private val dataApi: DataApi
         get() = provideDataApi(environmentRepository.getKtorfit(httpClient))
