@@ -5,12 +5,15 @@ import org.tidepool.sdk.database.BolusDataDao
 import org.tidepool.sdk.database.CgmSettingsDataDao
 import org.tidepool.sdk.database.ContinuousGlucoseDataDao
 import org.tidepool.sdk.database.ControllerSettingsDataDao
+import org.tidepool.sdk.database.ControllerStatusDataDao
 import org.tidepool.sdk.database.DeviceEventDataDao
 import org.tidepool.sdk.database.DosingDecisionDataDao
 import org.tidepool.sdk.database.FoodDataDao
 import org.tidepool.sdk.database.InsulinDataDao
 import org.tidepool.sdk.database.PendingDataDeletionDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
+import org.tidepool.sdk.database.PumpStatusDataDao
+import org.tidepool.sdk.database.SmbgDataDao
 import org.tidepool.sdk.database.entity.PendingDataDeletionEntity
 import org.tidepool.sdk.database.entity.data.BaseDataEntity
 import org.tidepool.sdk.database.entity.data.BasalAutomatedDataEntity
@@ -18,11 +21,14 @@ import org.tidepool.sdk.database.entity.data.BolusDataEntity
 import org.tidepool.sdk.database.entity.data.CgmSettingsDataEntity
 import org.tidepool.sdk.database.entity.data.ContinuousGlucoseDataEntity
 import org.tidepool.sdk.database.entity.data.ControllerSettingsDataEntity
+import org.tidepool.sdk.database.entity.data.ControllerStatusDataEntity
 import org.tidepool.sdk.database.entity.data.DeviceEventDataEntity
 import org.tidepool.sdk.database.entity.data.DosingDecisionDataEntity
 import org.tidepool.sdk.database.entity.data.FoodDataEntity
 import org.tidepool.sdk.database.entity.data.InsulinDataEntity
 import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
+import org.tidepool.sdk.database.entity.data.PumpStatusDataEntity
+import org.tidepool.sdk.database.entity.data.SmbgDataEntity
 
 /**
  * One outbox table kept in insertion order, standing in for Room. `getAll(limit)` takes the first
@@ -149,6 +155,39 @@ internal class InMemoryPumpSettingsDataDao : PumpSettingsDataDao {
     override suspend fun delete(data: PumpSettingsDataEntity) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun deleteAll() = table.deleteAll()
+}
+
+internal class InMemorySmbgDataDao : SmbgDataDao {
+    val table = InMemoryTable<SmbgDataEntity>()
+    override suspend fun insert(data: SmbgDataEntity) = table.insert(data)
+    override suspend fun delete(data: SmbgDataEntity) = table.delete(data)
+    override suspend fun delete(data: List<SmbgDataEntity>) = table.delete(data)
+    override suspend fun getById(id: String) = table.getById(id)
+    override suspend fun getAll() = table.getAll()
+    override suspend fun getAll(limit: Int) = table.getAll(limit)
+    override suspend fun deleteAll() = table.deleteAll()
+}
+
+internal class InMemoryPumpStatusDataDao : PumpStatusDataDao {
+    val table = InMemoryTable<PumpStatusDataEntity>()
+    override suspend fun insert(data: PumpStatusDataEntity) = table.insert(data)
+    override suspend fun delete(data: PumpStatusDataEntity) = table.delete(data)
+    override suspend fun delete(data: List<PumpStatusDataEntity>) = table.delete(data)
+    override suspend fun getById(id: String) = table.getById(id)
+    override suspend fun getAll() = table.getAll()
+    override suspend fun getAll(limit: Int) = table.getAll(limit)
+    override suspend fun deleteAll() = table.deleteAll()
+}
+
+internal class InMemoryControllerStatusDataDao : ControllerStatusDataDao {
+    val table = InMemoryTable<ControllerStatusDataEntity>()
+    override suspend fun insert(data: ControllerStatusDataEntity) = table.insert(data)
+    override suspend fun delete(data: ControllerStatusDataEntity) = table.delete(data)
+    override suspend fun delete(data: List<ControllerStatusDataEntity>) = table.delete(data)
+    override suspend fun getById(id: String) = table.getById(id)
+    override suspend fun getAll() = table.getAll()
+    override suspend fun getAll(limit: Int) = table.getAll(limit)
     override suspend fun deleteAll() = table.deleteAll()
 }
 

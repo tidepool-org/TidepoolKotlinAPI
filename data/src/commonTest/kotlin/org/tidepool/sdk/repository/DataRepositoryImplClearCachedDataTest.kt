@@ -33,6 +33,9 @@ class DataRepositoryImplClearCachedDataTest {
     private val cgmSettings = InMemoryCgmSettingsDataDao()
     private val controllerSettings = InMemoryControllerSettingsDataDao()
     private val pumpSettings = InMemoryPumpSettingsDataDao()
+    private val smbg = InMemorySmbgDataDao()
+    private val pumpStatus = InMemoryPumpStatusDataDao()
+    private val controllerStatus = InMemoryControllerStatusDataDao()
     private val deletions = InMemoryPendingDataDeletionDao()
     private val keyValueStorage = InMemoryKeyValueStorage()
 
@@ -68,6 +71,9 @@ class DataRepositoryImplClearCachedDataTest {
         assertTrue(food.table.getAll().isEmpty())
         assertTrue(insulin.table.getAll().isEmpty())
         assertTrue(deviceEvent.table.getAll().isEmpty())
+        assertTrue(smbg.table.getAll().isEmpty())
+        assertTrue(pumpStatus.table.getAll().isEmpty())
+        assertTrue(controllerStatus.table.getAll().isEmpty())
         assertTrue(deletions.rows.isEmpty())
 
         // The cached data set id was cleared too: asking again invokes `create` a second time.
@@ -100,6 +106,9 @@ class DataRepositoryImplClearCachedDataTest {
         cgmSettingsDataDao = cgmSettings,
         controllerSettingsDataDao = controllerSettings,
         pumpSettingsDataDao = pumpSettings,
+        smbgDataDao = smbg,
+        pumpStatusDataDao = pumpStatus,
+        controllerStatusDataDao = controllerStatus,
         pendingDataDeletionDao = deletions,
         keyValueStorage = keyValueStorage,
     )

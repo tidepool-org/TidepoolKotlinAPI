@@ -306,6 +306,9 @@ class DataRepositoryImplOriginAndDeletionTest {
         cgmSettingsDataDao = InMemoryCgmSettingsDataDao(),
         controllerSettingsDataDao = InMemoryControllerSettingsDataDao(),
         pumpSettingsDataDao = InMemoryPumpSettingsDataDao(),
+        smbgDataDao = InMemorySmbgDataDao(),
+        pumpStatusDataDao = InMemoryPumpStatusDataDao(),
+        controllerStatusDataDao = InMemoryControllerStatusDataDao(),
         pendingDataDeletionDao = deletions,
         keyValueStorage = InMemoryKeyValueStorage(),
     )

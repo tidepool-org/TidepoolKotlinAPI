@@ -20,8 +20,11 @@ import org.tidepool.sdk.database.DeviceEventDataDao
 import org.tidepool.sdk.database.DosingDecisionDataDao
 import org.tidepool.sdk.database.FoodDataDao
 import org.tidepool.sdk.database.InsulinDataDao
+import org.tidepool.sdk.database.ControllerStatusDataDao
 import org.tidepool.sdk.database.PendingDataDeletionDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
+import org.tidepool.sdk.database.PumpStatusDataDao
+import org.tidepool.sdk.database.SmbgDataDao
 import org.tidepool.sdk.database.entity.PendingDataDeletionEntity
 import org.tidepool.sdk.database.entity.data.BaseDataEntity
 import org.tidepool.sdk.database.entity.data.toEntity
@@ -31,6 +34,7 @@ import org.tidepool.sdk.dto.data.BolusDataDto
 import org.tidepool.sdk.dto.data.CgmSettingsDataDto
 import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
 import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
+import org.tidepool.sdk.dto.data.ControllerStatusDataDto
 import org.tidepool.sdk.dto.data.DataSelectorDto
 import org.tidepool.sdk.dto.data.DeviceEventDataDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
@@ -38,6 +42,8 @@ import org.tidepool.sdk.dto.data.FoodDataDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
 import org.tidepool.sdk.dto.data.OriginDto
 import org.tidepool.sdk.dto.data.PumpSettingsDataDto
+import org.tidepool.sdk.dto.data.PumpStatusDataDto
+import org.tidepool.sdk.dto.data.SmbgDataDto
 import org.tidepool.sdk.dto.data.toDomain
 import org.tidepool.sdk.dto.data.toDto
 import org.tidepool.sdk.mapList
@@ -69,6 +75,9 @@ class DataRepositoryImpl(
     private val cgmSettingsDataDao: CgmSettingsDataDao,
     private val controllerSettingsDataDao: ControllerSettingsDataDao,
     private val pumpSettingsDataDao: PumpSettingsDataDao,
+    private val smbgDataDao: SmbgDataDao,
+    private val pumpStatusDataDao: PumpStatusDataDao,
+    private val controllerStatusDataDao: ControllerStatusDataDao,
     private val pendingDataDeletionDao: PendingDataDeletionDao,
     private val keyValueStorage: KeyValueStorage,
 ) : DataRepository {
@@ -418,6 +427,27 @@ class DataRepositoryImpl(
                 insulinDataDao::delete,
                 isDeleted = { hasDeletedOrigin(it.origin) },
             ),
+            upload(
+                "smbg",
+                UPLOAD_BATCH_LIMIT,
+                smbgDataDao::getAll,
+                smbgDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
+            upload(
+                "pumpStatus",
+                UPLOAD_BATCH_LIMIT,
+                pumpStatusDataDao::getAll,
+                pumpStatusDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
+            upload(
+                "controllerStatus",
+                UPLOAD_BATCH_LIMIT,
+                controllerStatusDataDao::getAll,
+                controllerStatusDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
             // After the uploads, so a deletion and a newer upload of the same origin land in order.
             uploadDeletions(sessionToken, dataSetId),
         )
@@ -564,6 +594,9 @@ class DataRepositoryImpl(
             dosingDecisionDataDao.getById(deletion.id)?.let { dosingDecisionDataDao.delete(it) }
             foodDataDao.getById(deletion.id)?.let { foodDataDao.delete(it) }
             insulinDataDao.getById(deletion.id)?.let { insulinDataDao.delete(it) }
+            smbgDataDao.getById(deletion.id)?.let { smbgDataDao.delete(it) }
+            pumpStatusDataDao.getById(deletion.id)?.let { pumpStatusDataDao.delete(it) }
+            controllerStatusDataDao.getById(deletion.id)?.let { controllerStatusDataDao.delete(it) }
         }
     }
 
@@ -578,6 +611,9 @@ class DataRepositoryImpl(
             dosingDecisionDataDao.getAll(1).isNotEmpty() ||
             foodDataDao.getAll(1).isNotEmpty() ||
             insulinDataDao.getAll(1).isNotEmpty() ||
+            smbgDataDao.getAll(1).isNotEmpty() ||
+            pumpStatusDataDao.getAll(1).isNotEmpty() ||
+            controllerStatusDataDao.getAll(1).isNotEmpty() ||
             pendingDataDeletionDao.getAll(1).isNotEmpty()
 
     override suspend fun clearCachedData(): Result<Unit> = try {
@@ -591,6 +627,9 @@ class DataRepositoryImpl(
         cgmSettingsDataDao.deleteAll()
         controllerSettingsDataDao.deleteAll()
         pumpSettingsDataDao.deleteAll()
+        smbgDataDao.deleteAll()
+        pumpStatusDataDao.deleteAll()
+        controllerStatusDataDao.deleteAll()
         pendingDataDeletionDao.deleteAll()
         clearCachedDataSetId()
         Result.success(Unit)
@@ -622,6 +661,9 @@ class DataRepositoryImpl(
             is CgmSettingsDataDto -> cgmSettingsDataDao.insert(dto.toEntity())
             is ControllerSettingsDataDto -> controllerSettingsDataDao.insert(dto.toEntity())
             is PumpSettingsDataDto -> pumpSettingsDataDao.insert(dto.toEntity())
+            is SmbgDataDto -> smbgDataDao.insert(dto.toEntity())
+            is PumpStatusDataDto -> pumpStatusDataDao.insert(dto.toEntity())
+            is ControllerStatusDataDto -> controllerStatusDataDao.insert(dto.toEntity())
             else -> Logger.w(javaClass.simpleName) { "Unknown data type: ${dto::class.simpleName}" }
         }
     }
