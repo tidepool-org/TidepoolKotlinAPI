@@ -44,6 +44,8 @@ data class ContinuousGlucoseDataEntity(
     var units: String? = null,
     @ColumnInfo(name = "trend")
     var trend: String? = null,
+    // origin/payload/deviceId aren't persisted yet: they get their own columns in the outbox's
+    // v3->v4 migration, so a cached cbg reading doesn't carry them through the outbox until then.
     @ColumnInfo(name = "trend_rate")
     var trendRate: Double? = null
 ) : BaseDataEntity(

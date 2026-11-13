@@ -57,6 +57,8 @@ data class FoodDataEntity(
     var ingredients: String? = null, // JSON string
     @ColumnInfo(name = "origin")
     var origin: String? = null, // JSON string
+    // payload isn't persisted yet: it gets its own column in the outbox's v3->v4 migration, so a
+    // cached food entry doesn't carry it through the outbox until then.
 ) : BaseDataEntity(
     id = id,
     type = type,

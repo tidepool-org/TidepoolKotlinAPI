@@ -23,7 +23,15 @@ data class ContinuousGlucoseData(
     val value: Double? = null,
     val units: BloodGlucose.Units? = null,
     val trend: BloodGlucose.Trend? = null,
-    val trendRate: Double? = null
+    val trendRate: Double? = null,
+    /**
+     * Where the reading came from. Uploading a datum with the same origin id replaces the
+     * earlier one (the data set deduplicates by origin), and a queued deletion selects it by
+     * that id.
+     */
+    val origin: Origin? = null,
+    val payload: Payload? = null,
+    val deviceId: String? = null,
 ) : BaseData(
     id = id,
     type = type,
@@ -56,4 +64,9 @@ data class ContinuousGlucoseData(
             }
         }
     }
+
+    data class Payload(
+        val syncIdentifier: String,
+        val syncVersion: Int? = null,
+    )
 }

@@ -55,7 +55,32 @@ data class FoodDataDto(
     val ingredients: List<IngredientDto>? = null,
     @SerialName("origin")
     val origin: OriginDto? = null,
+    @SerialName("payload")
+    val payload: PayloadDto? = null,
 ) : BaseDataDto() {
+
+    @Serializable
+    data class PayloadDto(
+        @SerialName("syncIdentifier")
+        val syncIdentifier: String,
+        @SerialName("syncVersion")
+        val syncVersion: Int? = null,
+        @Contextual
+        @SerialName("userCreatedDate")
+        val userCreatedDate: Instant? = null,
+        @Contextual
+        @SerialName("userUpdatedDate")
+        val userUpdatedDate: Instant? = null,
+        @Contextual
+        @SerialName("userDeletedDate")
+        val userDeletedDate: Instant? = null,
+        @Contextual
+        @SerialName("addedDate")
+        val addedDate: Instant? = null,
+        @Contextual
+        @SerialName("supercededDate")
+        val supercededDate: Instant? = null,
+    )
     
     @Serializable
     data class AmountDto(
@@ -167,6 +192,27 @@ fun FoodDataDto.toDomain(): FoodData = FoodData(
     nutrition = nutrition?.toDomain(),
     ingredients = ingredients?.map { it.toDomain() },
     origin = origin?.toDomain(),
+    payload = payload?.toDomain(),
+)
+
+private fun FoodDataDto.PayloadDto.toDomain() = FoodData.Payload(
+    syncIdentifier = syncIdentifier,
+    syncVersion = syncVersion,
+    userCreatedDate = userCreatedDate,
+    userUpdatedDate = userUpdatedDate,
+    userDeletedDate = userDeletedDate,
+    addedDate = addedDate,
+    supercededDate = supercededDate,
+)
+
+private fun FoodData.Payload.toDto() = FoodDataDto.PayloadDto(
+    syncIdentifier = syncIdentifier,
+    syncVersion = syncVersion,
+    userCreatedDate = userCreatedDate,
+    userUpdatedDate = userUpdatedDate,
+    userDeletedDate = userDeletedDate,
+    addedDate = addedDate,
+    supercededDate = supercededDate,
 )
 
 fun FoodData.toDto(): FoodDataDto = FoodDataDto(
@@ -191,6 +237,7 @@ fun FoodData.toDto(): FoodDataDto = FoodDataDto(
     nutrition = nutrition?.toDto(),
     ingredients = ingredients?.map { it.toDto() },
     origin = origin?.toDto(),
+    payload = payload?.toDto(),
 )
 
 private fun FoodDataDto.MealDto.toDomain(): FoodData.Meal = when (this) {
