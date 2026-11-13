@@ -87,6 +87,8 @@ internal class RecordingDataRepository(
         sessionToken: String,
         page: Int?,
         size: Int?,
+        clientName: String?,
+        deleted: Boolean?,
     ): Result<List<DataSet>> = notImplemented()
 
     override suspend fun createDataSet(

@@ -433,22 +433,34 @@ class DataService internal constructor(
 
     suspend fun uploadData(data: BaseData): Result<List<BaseData>> = uploadData(listOf(data))
 
+    /**
+     * Finds this client's own data set, the way iOS's `TidepoolService` does: it asks the server
+     * to filter by client name and non-deleted, then filters again locally in case the server
+     * doesn't honour one of those, and takes the first match rather than picking by upload id.
+     */
     private suspend fun getDataSetId() = dataRepository.awaitOrCreateCachedDataSetId {
-        getUserDataSets()
-            .flatMap { dataSets ->
-                dataSets
-                    .filter { it.uploadId != null }
-                    .minByOrNull { it.uploadId!! }
-                    ?.let {
-                        Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
-                        Result.success(it)
-                    }
-                    ?: createDataSet(newDataSet = newContinuousDataSet(clientInfo = clientInfo))
-            }.flatMap {
-                Logger.d(TAG) { "Created data set: ${it.id}" }
-                it.id?.let { Result.success(it) }
-                    ?: Result.failure(IllegalStateException("No id"))
+        tokenProvider.getToken().flatMap { token ->
+            userRepository.getCurrentUser(token).flatMap { user ->
+                dataRepository.getUserDataSets(
+                    userId = user.userId,
+                    sessionToken = token,
+                    clientName = clientInfo.name,
+                    deleted = false,
+                )
             }
+        }.flatMap { dataSets ->
+            dataSets
+                .firstOrNull { it.client?.name == clientInfo.name && it.deletedTime == null }
+                ?.let {
+                    Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
+                    Result.success(it)
+                }
+                ?: createDataSet(newDataSet = newContinuousDataSet(clientInfo = clientInfo))
+        }.flatMap {
+            Logger.d(TAG) { "Created data set: ${it.id}" }
+            it.id?.let { Result.success(it) }
+                ?: Result.failure(IllegalStateException("No id"))
+        }
     }
 
     fun clearUserDataSetId() {

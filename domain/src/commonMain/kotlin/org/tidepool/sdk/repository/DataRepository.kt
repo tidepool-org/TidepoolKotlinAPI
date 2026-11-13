@@ -40,6 +40,8 @@ interface DataRepository {
         sessionToken: String,
         page: Int? = null,
         size: Int? = null,
+        clientName: String? = null,
+        deleted: Boolean? = null,
     ): Result<List<DataSet>>
     
     suspend fun createDataSet(

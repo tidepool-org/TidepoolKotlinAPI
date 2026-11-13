@@ -163,8 +163,17 @@ class DataRepositoryImpl(
         sessionToken: String,
         page: Int?,
         size: Int?,
+        clientName: String?,
+        deleted: Boolean?,
     ) = runCatchingNetworkExceptions {
-        dataApi.getUserDataSets(sessionToken, userId)
+        dataApi.getUserDataSets(
+            sessionToken = sessionToken,
+            userId = userId,
+            page = page,
+            size = size,
+            clientName = clientName,
+            deleted = deleted,
+        )
     }.mapList { it.toDomain() }
 
     override suspend fun createDataSet(
