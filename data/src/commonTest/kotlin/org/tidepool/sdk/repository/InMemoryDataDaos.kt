@@ -47,6 +47,7 @@ internal class InMemoryTable<T : BaseDataEntity> {
     fun getById(id: String) = rows.find { it.id == id }
     fun getAll() = rows.toList()
     fun getAll(limit: Int) = rows.take(limit)
+    fun deleteAll() = rows.clear()
 }
 
 internal class InMemoryBasalAutomatedDataDao : BasalAutomatedDataDao {
@@ -57,6 +58,7 @@ internal class InMemoryBasalAutomatedDataDao : BasalAutomatedDataDao {
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
     override suspend fun getAll(limit: Int) = table.getAll(limit)
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryBolusDataDao : BolusDataDao {
@@ -67,6 +69,7 @@ internal class InMemoryBolusDataDao : BolusDataDao {
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
     override suspend fun getAll(limit: Int) = table.getAll(limit)
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryContinuousGlucoseDataDao : ContinuousGlucoseDataDao {
@@ -77,6 +80,7 @@ internal class InMemoryContinuousGlucoseDataDao : ContinuousGlucoseDataDao {
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
     override suspend fun getAll(limit: Int) = table.getAll(limit)
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryDosingDecisionDataDao : DosingDecisionDataDao {
@@ -87,6 +91,7 @@ internal class InMemoryDosingDecisionDataDao : DosingDecisionDataDao {
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
     override suspend fun getAll(limit: Int) = table.getAll(limit)
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryFoodDataDao : FoodDataDao {
@@ -97,6 +102,7 @@ internal class InMemoryFoodDataDao : FoodDataDao {
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
     override suspend fun getAll(limit: Int) = table.getAll(limit)
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryInsulinDataDao : InsulinDataDao {
@@ -107,6 +113,7 @@ internal class InMemoryInsulinDataDao : InsulinDataDao {
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
     override suspend fun getAll(limit: Int) = table.getAll(limit)
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryDeviceEventDataDao : DeviceEventDataDao {
@@ -115,6 +122,7 @@ internal class InMemoryDeviceEventDataDao : DeviceEventDataDao {
     override suspend fun delete(data: DeviceEventDataEntity) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryCgmSettingsDataDao : CgmSettingsDataDao {
@@ -123,6 +131,7 @@ internal class InMemoryCgmSettingsDataDao : CgmSettingsDataDao {
     override suspend fun delete(data: CgmSettingsDataEntity) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryControllerSettingsDataDao : ControllerSettingsDataDao {
@@ -131,6 +140,7 @@ internal class InMemoryControllerSettingsDataDao : ControllerSettingsDataDao {
     override suspend fun delete(data: ControllerSettingsDataEntity) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryPumpSettingsDataDao : PumpSettingsDataDao {
@@ -139,6 +149,7 @@ internal class InMemoryPumpSettingsDataDao : PumpSettingsDataDao {
     override suspend fun delete(data: PumpSettingsDataEntity) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun deleteAll() = table.deleteAll()
 }
 
 internal class InMemoryKeyValueStorage : KeyValueStorage {
@@ -172,4 +183,5 @@ internal class InMemoryPendingDataDeletionDao : PendingDataDeletionDao {
     }
     override suspend fun getAll(limit: Int) = rows.take(limit)
     override suspend fun getAllOriginIds() = rows.map { it.originId }
+    override suspend fun deleteAll() = rows.clear()
 }

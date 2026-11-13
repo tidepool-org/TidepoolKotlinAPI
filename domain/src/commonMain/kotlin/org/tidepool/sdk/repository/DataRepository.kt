@@ -165,6 +165,14 @@ interface DataRepository {
     suspend fun hasCachedData(): Boolean
 
     /**
+     * Empties the local outbox: every cached datum of every type, every queued deletion, and the
+     * cached data set id. Works without a session, since it only touches local storage. Intended
+     * for a host that wants to drop local state entirely (e.g. on logout or reset), not for
+     * routine use.
+     */
+    suspend fun clearCachedData(): Result<Unit>
+
+    /**
      * Queues [deletions] in the outbox: a copy of the datum still waiting to upload is dropped,
      * and [uploadCachedData] sends the deletion after that pass's uploads.
      */

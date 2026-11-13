@@ -18,6 +18,9 @@ interface InsulinDataDao {
     @Delete
     suspend fun delete(data: List<InsulinDataEntity>)
 
+    @Query("DELETE FROM insulin_data")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM insulin_data WHERE id = :id")
     suspend fun getById(id: String): InsulinDataEntity?
 

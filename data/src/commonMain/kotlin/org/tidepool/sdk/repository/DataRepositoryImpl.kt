@@ -2,6 +2,7 @@ package org.tidepool.sdk.repository
 
 import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.api.DataApi
 import org.tidepool.sdk.di.provideDataApi
@@ -529,6 +530,26 @@ class DataRepositoryImpl(
             foodDataDao.getAll(1).isNotEmpty() ||
             insulinDataDao.getAll(1).isNotEmpty() ||
             pendingDataDeletionDao.getAll(1).isNotEmpty()
+
+    override suspend fun clearCachedData(): Result<Unit> = try {
+        basalAutomatedDataDao.deleteAll()
+        bolusDataDao.deleteAll()
+        continuousGlucoseDataDao.deleteAll()
+        dosingDecisionDataDao.deleteAll()
+        foodDataDao.deleteAll()
+        insulinDataDao.deleteAll()
+        deviceEventDataDao.deleteAll()
+        cgmSettingsDataDao.deleteAll()
+        controllerSettingsDataDao.deleteAll()
+        pumpSettingsDataDao.deleteAll()
+        pendingDataDeletionDao.deleteAll()
+        clearCachedDataSetId()
+        Result.success(Unit)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Result.failure(e)
+    }
 
     private suspend fun Result<List<BaseDataDto>>.cacheOnFailure(
         toUpload: List<BaseDataDto>,

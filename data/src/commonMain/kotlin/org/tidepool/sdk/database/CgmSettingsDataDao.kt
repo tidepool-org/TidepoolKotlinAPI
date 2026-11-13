@@ -15,6 +15,9 @@ interface CgmSettingsDataDao {
     @Delete
     suspend fun delete(data: CgmSettingsDataEntity)
 
+    @Query("DELETE FROM cgm_settings_data")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM cgm_settings_data WHERE id = :id")
     suspend fun getById(id: String): CgmSettingsDataEntity?
 

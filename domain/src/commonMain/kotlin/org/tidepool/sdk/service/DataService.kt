@@ -470,6 +470,13 @@ class DataService internal constructor(
     /** Whether recorded data is still waiting to be uploaded. */
     suspend fun hasCachedData(): Boolean = dataRepository.hasCachedData()
 
+    /**
+     * Empties the local outbox entirely: every cached datum, every queued deletion, and the
+     * cached data set id. Works without a session. Not for routine use; intended for a host that
+     * wants to drop local state (e.g. on logout or a full reset).
+     */
+    suspend fun clearCachedData(): Result<Unit> = dataRepository.clearCachedData()
+
     private companion object {
         // Together these keep one uploadCachedDataNow() call inside a WorkManager CoroutineWorker's
         // ~10-minute execution budget. A batch is one upload request per data type plus the token

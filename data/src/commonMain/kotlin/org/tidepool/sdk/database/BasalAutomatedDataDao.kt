@@ -18,6 +18,9 @@ interface BasalAutomatedDataDao {
     @Delete
     suspend fun delete(data: List<BasalAutomatedDataEntity>)
 
+    @Query("DELETE FROM basal_automated_data")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM basal_automated_data WHERE id = :id")
     suspend fun getById(id: String): BasalAutomatedDataEntity?
 

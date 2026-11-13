@@ -15,6 +15,9 @@ interface ControllerSettingsDataDao {
     @Delete
     suspend fun delete(data: ControllerSettingsDataEntity)
 
+    @Query("DELETE FROM controller_settings_data")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM controller_settings_data WHERE id = :id")
     suspend fun getById(id: String): ControllerSettingsDataEntity?
 

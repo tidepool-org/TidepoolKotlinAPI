@@ -141,6 +141,8 @@ private class FakeDataSetRepository(
 
     override suspend fun hasCachedData(): Boolean = false
 
+    override suspend fun clearCachedData(): Result<Unit> = notImplemented()
+
     override suspend fun cacheDataDeletions(deletions: List<DataDeletion>) = Unit
 
     override fun clearCachedDataSetId() = Unit

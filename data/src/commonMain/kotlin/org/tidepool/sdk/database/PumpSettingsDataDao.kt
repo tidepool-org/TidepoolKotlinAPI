@@ -15,6 +15,9 @@ interface PumpSettingsDataDao {
     @Delete
     suspend fun delete(data: PumpSettingsDataEntity)
 
+    @Query("DELETE FROM pump_settings_data")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM pump_settings_data WHERE id = :id")
     suspend fun getById(id: String): PumpSettingsDataEntity?
 
