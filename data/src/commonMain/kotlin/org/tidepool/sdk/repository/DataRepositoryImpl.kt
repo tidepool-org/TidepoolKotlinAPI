@@ -3,9 +3,14 @@ package org.tidepool.sdk.repository
 import co.touchlab.kermit.Logger
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.CancellationException
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.tidepool.sdk.BadRequestException
+import org.tidepool.sdk.ValidationException
 import org.tidepool.sdk.api.DataApi
 import org.tidepool.sdk.di.provideDataApi
+import org.tidepool.sdk.dto.ErrorDto
 import org.tidepool.sdk.database.BasalAutomatedDataDao
 import org.tidepool.sdk.database.BolusDataDao
 import org.tidepool.sdk.database.CgmSettingsDataDao
@@ -432,6 +437,12 @@ class DataRepositoryImpl(
      * the server accepts them. Rows [isDeleted] marks are dropped without being sent. Returns null
      * when the table is empty, otherwise whether the batch came back full (more rows may be
      * waiting behind it).
+     *
+     * A 400/422 that names specific rows by pointer (see [rejectedBatchIndices]) drops exactly
+     * those rows and leaves the rest of the batch cached; this is a deliberate Android divergence
+     * from iOS's `TidepoolService`, which retries a rejected batch as a whole, forever. Without
+     * it, a single permanently invalid datum (e.g. an out-of-range value) would sit at the front
+     * of `time ASC, rowid ASC` order and block every row behind it from ever uploading.
      */
     private suspend fun <T : BaseDataEntity> uploadBatch(
         sessionToken: String,
@@ -459,14 +470,52 @@ class DataRepositoryImpl(
                 dataSetId = dataSetId,
                 data = rows.map { it.toDto() },
             )
-        }.map {
-            // One list delete per table: Room runs it as a single transaction instead of one per
-            // row, which matters with up to 1000 rows per batch.
-            delete(rows)
-            batch.size == limit
-        }.onFailure {
-            Logger.e(javaClass.simpleName, it) { "Uploading $type failed, it stays cached for the next attempt" }
-        }
+        }.fold(
+            onSuccess = {
+                // One list delete per table: Room runs it as a single transaction instead of one
+                // per row, which matters with up to 1000 rows per batch.
+                delete(rows)
+                Result.success(batch.size == limit)
+            },
+            onFailure = { ex ->
+                val rejectedRows = ex.rejectedBatchIndices()?.mapNotNull(rows::getOrNull)
+                if (rejectedRows.isNullOrEmpty()) {
+                    Logger.e(javaClass.simpleName, ex) {
+                        "Uploading $type failed, it stays cached for the next attempt"
+                    }
+                    Result.failure(ex)
+                } else {
+                    // Dropping just the row(s) the platform pointed at, rather than leaving the
+                    // whole batch cached, is a deliberate Android divergence: iOS's
+                    // TidepoolService retries a rejected batch as a whole, forever, so a single
+                    // permanently invalid datum would otherwise block every row behind it (ones
+                    // ahead of it in `time ASC, rowid ASC` order) from ever uploading.
+                    Logger.w(javaClass.simpleName, ex) {
+                        "Dropping ${rejectedRows.size} $type entities the platform rejected as invalid; " +
+                            "the rest of the batch stays cached for the next attempt"
+                    }
+                    delete(rejectedRows)
+                    Result.success(false)
+                }
+            },
+        )
+    }
+
+    /**
+     * Indices into the batch just sent that the platform rejected by pointer (e.g. `/3/value` ->
+     * index 3), parsed from a 400 or 422 response body. Null when this isn't a 400/422, the body
+     * can't be parsed, or it has no pointers - the caller keeps today's behaviour (leave the
+     * whole batch cached) in that case.
+     */
+    private fun Throwable.rejectedBatchIndices(): Set<Int>? {
+        if (this !is BadRequestException && this !is ValidationException) return null
+        val body = message?.let(::responseBodyFromExceptionMessage) ?: return null
+        val errors = runCatching {
+            REJECTED_BATCH_JSON.decodeFromString<RejectedBatchErrorsDto>(body)
+        }.getOrNull()?.errors ?: return null
+        return errors.mapNotNull { it.source?.pointer?.let(::batchIndexFromPointer) }
+            .toSet()
+            .takeIf { it.isNotEmpty() }
     }
 
     /**
@@ -588,3 +637,28 @@ class DataRepositoryImpl(
         private const val ORIGIN_ID_LENGTH_MAXIMUM = 100
     }
 }
+
+/** A 400/422 error body's `errors`, read leniently since the full shape isn't guaranteed. */
+@Serializable
+private data class RejectedBatchErrorsDto(
+    @SerialName("errors")
+    val errors: List<ErrorDto> = emptyList(),
+)
+
+private val REJECTED_BATCH_JSON = Json { ignoreUnknownKeys = true }
+
+/**
+ * The response body a ktor [io.ktor.client.plugins.ResponseException] (and its subclasses)
+ * embed in their message as `Text: "<body>"` - the only place it's exposed, since
+ * `cachedResponseText` isn't a public property. Null when the message doesn't have that marker.
+ */
+private fun responseBodyFromExceptionMessage(message: String): String? {
+    val marker = "Text: \""
+    val bodyStart = message.indexOf(marker).takeIf { it != -1 }?.plus(marker.length) ?: return null
+    val bodyEnd = message.lastIndexOf('"')
+    return message.substring(bodyStart, bodyEnd).takeIf { bodyEnd > bodyStart }
+}
+
+/** `/3/value` -> `3`: the batch index a JSON pointer's first segment names, if it's a number. */
+private fun batchIndexFromPointer(pointer: String): Int? =
+    Regex("^/(\\d+)").find(pointer)?.groupValues?.get(1)?.toIntOrNull()
