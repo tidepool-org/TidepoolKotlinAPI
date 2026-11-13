@@ -13,6 +13,7 @@ import org.tidepool.sdk.model.data.DosingDecisionData
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
+import kotlin.math.roundToLong
 
 // TODO: finish implementing dosingdecision.v1
 @Serializable
@@ -94,8 +95,12 @@ data class DosingDecisionDataDto(
     data class RecommendedBasalDto(
         @SerialName("rate")
         val rate: Double = -1.0,
+        /**
+         * Milliseconds, sent as an integer (`Int(duration.milliseconds)` in TidepoolKit's
+         * `TDosingDecisionDatum`), not a floating point number of minutes.
+         */
         @SerialName("duration")
-        val duration: Double? = null,
+        val duration: Long? = null,
     )
     
     @Serializable
@@ -240,12 +245,12 @@ fun DosingDecisionData.InsulinOnBoard.toDto() = InsulinOnBoardDto(
 
 fun RecommendedBasalDto.toDomain() = DosingDecisionData.RecommendedBasal(
     rate = rate,
-    duration = duration,
+    duration = duration?.toDouble(),
 )
 
 fun DosingDecisionData.RecommendedBasal.toDto() = RecommendedBasalDto(
     rate = rate,
-    duration = duration,
+    duration = duration?.roundToLong(),
 )
 
 fun RecommendedBolusDto.toDomain() = DosingDecisionData.RecommendedBolus(

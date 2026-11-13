@@ -69,6 +69,7 @@ data class DosingDecisionData(
     
     data class RecommendedBasal(
         val rate: Double = -1.0,
+        /** Milliseconds. Sent to the platform as an integer number of milliseconds. */
         val duration: Double? = null,
     )
     
