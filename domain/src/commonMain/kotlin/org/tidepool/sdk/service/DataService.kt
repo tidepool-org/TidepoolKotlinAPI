@@ -3,6 +3,10 @@ package org.tidepool.sdk.service
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.Clock
@@ -41,6 +45,18 @@ class DataService internal constructor(
     private val TAG = javaClass.simpleName
     private val uploadMutex = Mutex()
     private var lifecycleAwareDataUploadManager: LifecycleAwareDataUploadManager? = null
+
+    private val _dataQueued = MutableSharedFlow<Unit>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
+
+    /**
+     * Emits each time data or a deletion is queued in the outbox, so the host can upload it soon
+     * rather than at its next periodic upload. iOS uploads on every store update, foreground or
+     * background. Bursts are conflated: a collector only learns that something is waiting.
+     */
+    val dataQueued: SharedFlow<Unit> = _dataQueued.asSharedFlow()
 
     // A property, not a constructor parameter: Koin builds this class with singleOf(::DataService),
     // which resolves every constructor parameter from the graph and ignores defaults.
@@ -240,6 +256,7 @@ class DataService internal constructor(
         data: List<BaseData>,
     ): Result<List<BaseData>> = if (tokenProvider.isLoggedIn) {
         dataRepository.uploadDataToDataSet(data = data)
+            .onSuccess { _dataQueued.tryEmit(Unit) }
     } else {
         Result.failure(UnauthorizedException("Not logged in, data not cached"))
     }
@@ -254,6 +271,7 @@ class DataService internal constructor(
     } else {
         try {
             Result.success(dataRepository.cacheDataDeletions(deletions))
+                .also { _dataQueued.tryEmit(Unit) }
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
