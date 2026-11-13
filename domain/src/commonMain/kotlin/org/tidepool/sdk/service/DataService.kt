@@ -7,6 +7,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.Clock
 import org.tidepool.sdk.AppLifecycleProvider
+import org.tidepool.sdk.ClientInfo
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
@@ -36,6 +37,7 @@ class DataService internal constructor(
     private val dataRepository: DataRepository,
     private val userRepository: UserRepository,
     private val tokenProvider: TokenProvider,
+    private val clientInfo: ClientInfo,
 ) {
 
     private val TAG = javaClass.simpleName
@@ -441,7 +443,7 @@ class DataService internal constructor(
                         Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
                         Result.success(it)
                     }
-                    ?: createDataSet(newDataSet = newContinuousDataSet())
+                    ?: createDataSet(newDataSet = newContinuousDataSet(clientInfo = clientInfo))
             }.flatMap {
                 Logger.d(TAG) { "Created data set: ${it.id}" }
                 it.id?.let { Result.success(it) }
@@ -470,19 +472,18 @@ class DataService internal constructor(
 internal fun newContinuousDataSet(
     time: Instant = Clock.System.now(),
     timeZone: TimeZone = TimeZone.getDefault(),
+    clientInfo: ClientInfo,
 ) = NewDataSet(
     client = ClientSoftware(
-        name = "org.tidepool.loop",
-        version = "TEST",
+        name = clientInfo.name,
+        version = clientInfo.version,
     ),
     dataSetType = "continuous",
     timezone = timeZone.id,
     // Offset at `time`, DST included; rawOffset is standard time only.
     timeZoneOffset = timeZone.getOffset(time.toEpochMilliseconds()).milliseconds.inWholeMinutes.toInt(),
-    deviceManufacturers = listOf(
-        "test"
-    ),
-    deviceId = "test",
+    // No deviceId / deviceManufacturers / deviceSerialNumber / deviceModel: iOS's TidepoolService
+    // sends none of these for the continuous data set it creates for itself.
     time = time,
     deduplicator = DeduplicatorDescriptor(
         name = "org.tidepool.deduplicator.dataset.delete.origin",
@@ -492,6 +493,5 @@ internal fun newContinuousDataSet(
         DeviceTag.Cgm,
         DeviceTag.InsulinPump,
     ),
-    deviceSerialNumber = "test",
     timeProcessing = "none",
 )
