@@ -114,6 +114,25 @@ class SettingsDataDtoTest {
     }
 
     @Test
+    fun `pumpSettings insulinModel action timings encode as integer seconds, not milliseconds`() {
+        // Rapid-acting adult: 10 minute delay, 6 hour duration, 75 minute peak offset.
+        val datum = PumpSettingsData(
+            id = "id",
+            insulinModel = PumpSettingsData.InsulinModel(
+                modelType = PumpSettingsData.InsulinModel.ModelType.RapidAdult,
+                actionDelay = 600.0,
+                actionDuration = 21600.0,
+                actionPeakOffset = 4500.0,
+            ),
+        ).toDto()
+
+        val insulinModel = json.encodeToJsonElement(datum).jsonObject.getValue("insulinModel").jsonObject
+        assertEquals("600", insulinModel.getValue("actionDelay").jsonPrimitive.content)
+        assertEquals("21600", insulinModel.getValue("actionDuration").jsonPrimitive.content)
+        assertEquals("4500", insulinModel.getValue("actionPeakOffset").jsonPrimitive.content)
+    }
+
+    @Test
     fun `controllerSettings device and notifications use TidepoolKit's key names`() {
         val datum = ControllerSettingsDataDto(
             device = ControllerSettingsDataDto.DeviceDto(name = "Pixel", model = "9"),

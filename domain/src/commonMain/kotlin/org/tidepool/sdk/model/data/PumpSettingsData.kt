@@ -114,11 +114,11 @@ data class PumpSettingsData(
 
     data class InsulinModel(
         val modelType: ModelType? = null,
-        /** Milliseconds. */
+        /** Seconds. TidepoolKit encodes an Int number of seconds; platform caps this at 86400 (insulin_model.go). */
         val actionDelay: Double? = null,
-        /** Milliseconds. */
+        /** Seconds. TidepoolKit encodes an Int number of seconds; platform caps this at 86400 (insulin_model.go). */
         val actionDuration: Double? = null,
-        /** Milliseconds. */
+        /** Seconds. TidepoolKit encodes an Int number of seconds; platform caps this at 86400 (insulin_model.go). */
         val actionPeakOffset: Double? = null,
     ) {
         enum class ModelType {
