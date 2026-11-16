@@ -3,6 +3,7 @@ package org.tidepool.sdk.service
 import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
@@ -68,7 +69,9 @@ class LifecycleAwareDataUploadManager(
             // from the last one it delivered, so a return to the foreground while the loop was
             // stopping would read as no change, and the uploads would stay off. Each pass reads
             // the current state instead.
-            while (true) {
+            //
+            // A pass can finish without suspending, so the loop checks for cancellation itself.
+            while (isActive) {
                 if (!lifecycleProvider.isInForeground()) {
                     lifecycleProvider.foregroundStateFlow.first { it }
                 }
@@ -93,7 +96,7 @@ class LifecycleAwareDataUploadManager(
     private suspend fun startForegroundUploads() {
         val action = uploadAction ?: return
         
-        while (scope.isActive && lifecycleProvider.isInForeground()) {
+        while (currentCoroutineContext().isActive && lifecycleProvider.isInForeground()) {
             try {
                 action()
             } catch (e: Exception) {

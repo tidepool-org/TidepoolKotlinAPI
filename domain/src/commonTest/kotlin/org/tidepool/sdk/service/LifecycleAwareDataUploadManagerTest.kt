@@ -1,5 +1,9 @@
 package org.tidepool.sdk.service
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.TestScope
@@ -9,6 +13,7 @@ import kotlinx.coroutines.test.runTest
 import org.tidepool.sdk.AppLifecycleProvider
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
@@ -26,12 +31,20 @@ class LifecycleAwareDataUploadManagerTest {
          */
         var returnAfterBackgroundChecks = 0
 
+        var reads = 0
+
         override fun isInForeground(): Boolean {
+            // Ends a loop that never suspends, which would otherwise hang the test.
+            if (++reads > MAX_READS) throw CancellationException("still reading after $MAX_READS checks")
             val inForeground = state.value
             if (!inForeground && returnAfterBackgroundChecks > 0 && --returnAfterBackgroundChecks == 0) {
                 state.value = true
             }
             return inForeground
+        }
+
+        companion object {
+            const val MAX_READS = 10_000
         }
     }
 
@@ -109,5 +122,26 @@ class LifecycleAwareDataUploadManagerTest {
         lifecycle.state.value = true
         advance(1.seconds)
         assertEquals(1, uploads)
+    }
+
+    @Test
+    fun stopsOnceItsScopeIsCancelledInTheForeground() = runTest {
+        val lifecycle = FakeLifecycle(inForeground = true)
+        val uploadScope = CoroutineScope(backgroundScope.coroutineContext + Job())
+        val manager = LifecycleAwareDataUploadManager(lifecycle, uploadScope).apply {
+            configure(period = 1.minutes, delay = 30.seconds) {
+                // Cancelled during an upload while the app leaves and comes straight back, so the
+                // wind-down reads the background once and then the foreground, without suspending.
+                uploadScope.cancel()
+                lifecycle.returnAfterBackgroundChecks = 1
+                lifecycle.state.value = false
+            }
+            start()
+        }
+
+        advance(30.seconds)
+
+        assertFalse(manager.isActive())
+        assertTrue(lifecycle.reads < 100, "stopped after a few checks, got ${lifecycle.reads}")
     }
 }
