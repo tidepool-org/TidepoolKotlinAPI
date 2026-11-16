@@ -4,8 +4,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -23,7 +23,7 @@ class LifecycleAwareDataUploadManagerTest {
 
     private class FakeLifecycle(inForeground: Boolean) : AppLifecycleProvider {
         val state = MutableStateFlow(inForeground)
-        override val foregroundStateFlow: Flow<Boolean> = state
+        override val foregroundStateFlow: StateFlow<Boolean> = state
 
         /**
          * When above 0, the app returns to the foreground right after this many checks have
