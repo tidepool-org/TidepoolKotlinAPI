@@ -4,6 +4,7 @@ import co.touchlab.kermit.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.tidepool.sdk.AppLifecycleProvider
@@ -59,19 +60,20 @@ class LifecycleAwareDataUploadManager(
             // Wait for initial delay
             delay(initialDelay.inWholeMilliseconds)
             
-            // The upload loop ends by itself on going to the background, so the collector only has
-            // to start it again on each return to the foreground. It must not cancel itself here:
-            // that ended foreground uploads for good after the app's first trip to the background.
+            // The upload loop ends by itself on going to the background; this restarts it on every
+            // return to the foreground. Nothing cancels it, so an upload in progress when the app
+            // leaves still finishes.
             //
-            // No distinctUntilChanged: the loop runs inside collect, so a quick background and
-            // foreground while it is winding down is conflated to a second `true`, which has to
-            // start it again rather than be dropped as a repeat.
-            lifecycleProvider.foregroundStateFlow
-                .collect { inForeground ->
-                    if (inForeground) {
-                        startForegroundUploads()
-                    }
+            // Not a collect on foregroundStateFlow: a StateFlow only delivers a value that differs
+            // from the last one it delivered, so a return to the foreground while the loop was
+            // stopping would read as no change, and the uploads would stay off. Each pass reads
+            // the current state instead.
+            while (true) {
+                if (!lifecycleProvider.isInForeground()) {
+                    lifecycleProvider.foregroundStateFlow.first { it }
                 }
+                startForegroundUploads()
+            }
         }
     }
     

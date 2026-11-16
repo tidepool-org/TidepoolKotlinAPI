@@ -19,7 +19,20 @@ class LifecycleAwareDataUploadManagerTest {
     private class FakeLifecycle(inForeground: Boolean) : AppLifecycleProvider {
         val state = MutableStateFlow(inForeground)
         override val foregroundStateFlow: Flow<Boolean> = state
-        override fun isInForeground(): Boolean = state.value
+
+        /**
+         * When above 0, the app returns to the foreground right after this many checks have
+         * answered "not in the foreground", before anything else reads the state.
+         */
+        var returnAfterBackgroundChecks = 0
+
+        override fun isInForeground(): Boolean {
+            val inForeground = state.value
+            if (!inForeground && returnAfterBackgroundChecks > 0 && --returnAfterBackgroundChecks == 0) {
+                state.value = true
+            }
+            return inForeground
+        }
     }
 
     private fun TestScope.startManager(lifecycle: FakeLifecycle, onUpload: () -> Unit) =
@@ -65,18 +78,24 @@ class LifecycleAwareDataUploadManagerTest {
     }
 
     @Test
-    fun aQuickBackgroundAndForegroundKeepsUploading() = runTest {
-        val lifecycle = FakeLifecycle(inForeground = true)
-        var uploads = 0
-        startManager(lifecycle) { uploads++ }
-        advance(30.seconds)
+    fun returningWhileTheLoopWindsDownKeepsUploading() {
+        // The app returns at each point while the loop is noticing the background and stopping.
+        // Whoever reads the state next sees `true` again, just as before it left.
+        for (checks in 1..3) {
+            runTest {
+                val lifecycle = FakeLifecycle(inForeground = true)
+                var uploads = 0
+                startManager(lifecycle) { uploads++ }
+                advance(30.seconds)
+                assertEquals(1, uploads)
 
-        // Both changes land between two of the loop's once-a-second foreground checks.
-        lifecycle.state.value = false
-        lifecycle.state.value = true
-        advance(5.minutes)
+                lifecycle.returnAfterBackgroundChecks = checks
+                lifecycle.state.value = false
+                advance(5.minutes)
 
-        assertTrue(uploads >= 5, "still uploading every minute, got $uploads")
+                assertTrue(uploads >= 5, "back after $checks check(s): still uploading every minute, got $uploads")
+            }
+        }
     }
 
     @Test

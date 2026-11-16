@@ -10,6 +10,7 @@ interface AppLifecycleProvider {
     
     /**
      * Flow that emits true when app comes to foreground, false when it goes to background.
+     * A new collector must get the current state first, as from a StateFlow.
      */
     val foregroundStateFlow: Flow<Boolean>
     
