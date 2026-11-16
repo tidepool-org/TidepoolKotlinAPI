@@ -7,11 +7,13 @@ import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.BloodGlucoseDto
 import org.tidepool.sdk.dto.toDomain
 import org.tidepool.sdk.dto.toDto
+import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.data.Insulin
 import org.tidepool.sdk.model.data.PumpSettingsData
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Mirrors a subset of TidepoolKit's TPumpSettingsDatum (the fields this SDK actually needs;
@@ -41,8 +43,6 @@ data class PumpSettingsDataDto(
 
     @SerialName("activeSchedule")
     val activeScheduleName: String? = null,
-    @SerialName("automatedDelivery")
-    val automatedDelivery: Boolean? = null,
     @SerialName("basal")
     val basal: BasalDto? = null,
     @SerialName("basalSchedules")
@@ -50,11 +50,11 @@ data class PumpSettingsDataDto(
     @SerialName("bgSafetyLimit")
     val bloodGlucoseSafetyLimit: Double? = null,
     @SerialName("bgTargetPhysicalActivity")
-    val bloodGlucoseTargetPhysicalActivity: BloodGlucoseTargetDto? = null,
+    val bloodGlucoseTargetPhysicalActivity: BloodGlucoseDto.TargetDto? = null,
     @SerialName("bgTargetPreprandial")
-    val bloodGlucoseTargetPreprandial: BloodGlucoseTargetDto? = null,
+    val bloodGlucoseTargetPreprandial: BloodGlucoseDto.TargetDto? = null,
     @SerialName("bgTargets")
-    val bloodGlucoseTargetSchedules: Map<String, List<BloodGlucoseScheduleStartDto>>? = null,
+    val bloodGlucoseTargetSchedules: Map<String, List<BloodGlucoseDto.StartTargetDto>>? = null,
     @SerialName("bolus")
     val bolus: BolusDto? = null,
     @SerialName("carbRatios")
@@ -65,8 +65,6 @@ data class PumpSettingsDataDto(
     val firmwareVersion: String? = null,
     @SerialName("hardwareVersion")
     val hardwareVersion: String? = null,
-    @SerialName("insulinFormulation")
-    val insulinFormulation: String? = null,
     @SerialName("insulinModel")
     val insulinModel: InsulinModelDto? = null,
     @SerialName("insulinSensitivities")
@@ -81,8 +79,6 @@ data class PumpSettingsDataDto(
     val overridePresets: Map<String, OverridePresetDto>? = null,
     @SerialName("scheduleTimeZoneOffset")
     val scheduleTimeZoneOffset: Int? = null,
-    @SerialName("serialNumber")
-    val serialNumber: String? = null,
     @SerialName("softwareVersion")
     val softwareVersion: String? = null,
     @SerialName("units")
@@ -139,33 +135,6 @@ data class PumpSettingsDataDto(
     )
 
     @Serializable
-    /** TidepoolKit's `TBloodGlucose.StartTarget`: the target's fields sit beside [start], not nested. */
-    data class BloodGlucoseScheduleStartDto(
-        @SerialName("start")
-        val start: Long? = null,
-        @SerialName("low")
-        val low: Double? = null,
-        @SerialName("high")
-        val high: Double? = null,
-        @SerialName("target")
-        val target: Double? = null,
-        @SerialName("range")
-        val range: Double? = null,
-    )
-
-    @Serializable
-    data class BloodGlucoseTargetDto(
-        @SerialName("low")
-        val low: Double? = null,
-        @SerialName("high")
-        val high: Double? = null,
-        @SerialName("target")
-        val target: Double? = null,
-        @SerialName("range")
-        val range: Double? = null,
-    )
-
-    @Serializable
     data class DisplayDto(
         @SerialName("bloodGlucose")
         val bloodGlucose: DisplayBloodGlucoseDto? = null,
@@ -210,7 +179,7 @@ data class PumpSettingsDataDto(
         @SerialName("duration")
         val duration: Long? = null,
         @SerialName("bgTarget")
-        val bloodGlucoseTarget: BloodGlucoseTargetDto? = null,
+        val bloodGlucoseTarget: BloodGlucoseDto.TargetDto? = null,
         @SerialName("basalRateScaleFactor")
         val basalRateScaleFactor: Double? = null,
         @SerialName("carbRatioScaleFactor")
@@ -250,7 +219,6 @@ fun PumpSettingsDataDto.toDomain(): PumpSettingsData = PumpSettingsData(
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
     activeScheduleName = activeScheduleName,
-    automatedDelivery = automatedDelivery,
     basal = basal?.toDomain(),
     basalRateSchedules = basalRateSchedules?.mapValues { (_, v) -> v.map { it.toScheduleStartDomain() } },
     bloodGlucoseSafetyLimit = bloodGlucoseSafetyLimit,
@@ -262,7 +230,6 @@ fun PumpSettingsDataDto.toDomain(): PumpSettingsData = PumpSettingsData(
     display = display?.toDomain(),
     firmwareVersion = firmwareVersion,
     hardwareVersion = hardwareVersion,
-    insulinFormulation = insulinFormulation,
     insulinModel = insulinModel?.toDomain(),
     insulinSensitivitySchedules = insulinSensitivitySchedules?.mapValues { (_, v) -> v.map { it.toScheduleStartDomain() } },
     manufacturers = manufacturers,
@@ -270,7 +237,6 @@ fun PumpSettingsDataDto.toDomain(): PumpSettingsData = PumpSettingsData(
     name = name,
     overridePresets = overridePresets?.mapValues { (_, v) -> v.toDomain() },
     scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-    serialNumber = serialNumber,
     softwareVersion = softwareVersion,
     units = units?.toDomain(),
     origin = origin?.toDomain(),
@@ -291,7 +257,6 @@ fun PumpSettingsData.toDto(): PumpSettingsDataDto = PumpSettingsDataDto(
     timeZone = timeZone,
     timeZoneOffset = timeZoneOffset,
     activeScheduleName = activeScheduleName,
-    automatedDelivery = automatedDelivery,
     basal = basal?.toDto(),
     basalRateSchedules = basalRateSchedules?.mapValues { (_, v) -> v.map { it.toBasalRateStartDto() } },
     bloodGlucoseSafetyLimit = bloodGlucoseSafetyLimit,
@@ -303,7 +268,6 @@ fun PumpSettingsData.toDto(): PumpSettingsDataDto = PumpSettingsDataDto(
     display = display?.toDto(),
     firmwareVersion = firmwareVersion,
     hardwareVersion = hardwareVersion,
-    insulinFormulation = insulinFormulation,
     insulinModel = insulinModel?.toDto(),
     insulinSensitivitySchedules = insulinSensitivitySchedules?.mapValues { (_, v) -> v.map { it.toScheduleStartDto() } },
     manufacturers = manufacturers,
@@ -311,7 +275,6 @@ fun PumpSettingsData.toDto(): PumpSettingsDataDto = PumpSettingsDataDto(
     name = name,
     overridePresets = overridePresets?.mapValues { (_, v) -> v.toDto() },
     scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-    serialNumber = serialNumber,
     softwareVersion = softwareVersion,
     units = units?.toDto(),
     origin = origin?.toDto(),
@@ -378,31 +341,34 @@ private fun PumpSettingsData.ScheduleStart.toBasalRateStartDto() = PumpSettingsD
     rate = amount,
 )
 
-private fun PumpSettingsDataDto.BloodGlucoseTargetDto.toDomain() = PumpSettingsData.BloodGlucoseTarget(
+private fun BloodGlucoseDto.TargetDto.toDomain() = BloodGlucose.Target(
     low = low,
     high = high,
     target = target,
     range = range,
 )
 
-private fun PumpSettingsData.BloodGlucoseTarget.toDto() = PumpSettingsDataDto.BloodGlucoseTargetDto(
+private fun BloodGlucose.Target.toDto() = BloodGlucoseDto.TargetDto(
     low = low,
     high = high,
     target = target,
     range = range,
 )
 
-private fun PumpSettingsDataDto.BloodGlucoseScheduleStartDto.toDomain() = PumpSettingsData.BloodGlucoseScheduleStart(
-    start = start?.toDouble(),
-    target = PumpSettingsData.BloodGlucoseTarget(low = low, high = high, target = target, range = range),
+private fun BloodGlucoseDto.StartTargetDto.toDomain() = BloodGlucose.StartTarget(
+    start = start?.milliseconds,
+    low = low,
+    high = high,
+    target = target,
+    range = range,
 )
 
-private fun PumpSettingsData.BloodGlucoseScheduleStart.toDto() = PumpSettingsDataDto.BloodGlucoseScheduleStartDto(
-    start = start?.toLong(),
-    low = target?.low,
-    high = target?.high,
-    target = target?.target,
-    range = target?.range,
+private fun BloodGlucose.StartTarget.toDto() = BloodGlucoseDto.StartTargetDto(
+    start = start?.inWholeMilliseconds,
+    low = low,
+    high = high,
+    target = target,
+    range = range,
 )
 
 private fun PumpSettingsDataDto.DisplayDto.DisplayBloodGlucoseDto.toDomain() =

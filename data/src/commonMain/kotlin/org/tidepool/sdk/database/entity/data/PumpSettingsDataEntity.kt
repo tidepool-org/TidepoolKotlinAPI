@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
+import org.tidepool.sdk.dto.BloodGlucoseDto
 import org.tidepool.sdk.dto.data.OriginDto
 import org.tidepool.sdk.dto.data.PumpSettingsDataDto
 import kotlin.time.Instant
@@ -45,8 +46,6 @@ data class PumpSettingsDataEntity(
 
     @ColumnInfo(name = "active_schedule_name")
     var activeScheduleName: String? = null,
-    @ColumnInfo(name = "automated_delivery")
-    var automatedDelivery: Boolean? = null,
     @ColumnInfo(name = "basal")
     var basal: String? = null, // JSON string
     @ColumnInfo(name = "basal_rate_schedules")
@@ -69,8 +68,6 @@ data class PumpSettingsDataEntity(
     var firmwareVersion: String? = null,
     @ColumnInfo(name = "hardware_version")
     var hardwareVersion: String? = null,
-    @ColumnInfo(name = "insulin_formulation")
-    var insulinFormulation: String? = null,
     @ColumnInfo(name = "insulin_model")
     var insulinModel: String? = null, // JSON string
     @ColumnInfo(name = "insulin_sensitivity_schedules")
@@ -85,8 +82,6 @@ data class PumpSettingsDataEntity(
     var overridePresets: String? = null, // JSON string
     @ColumnInfo(name = "schedule_time_zone_offset")
     var scheduleTimeZoneOffset: Int? = null,
-    @ColumnInfo(name = "serial_number")
-    var serialNumber: String? = null,
     @ColumnInfo(name = "software_version")
     var softwareVersion: String? = null,
     @ColumnInfo(name = "units")
@@ -124,7 +119,6 @@ fun PumpSettingsDataDto.toEntity() = PumpSettingsDataEntity(
     timeZone = timeZone?.id,
     timeZoneOffset = timeZoneOffset,
     activeScheduleName = activeScheduleName,
-    automatedDelivery = automatedDelivery,
     basal = basal?.let { Json.encodeToString(it) },
     basalRateSchedules = basalRateSchedules?.let { Json.encodeToString(it) },
     bloodGlucoseSafetyLimit = bloodGlucoseSafetyLimit,
@@ -136,7 +130,6 @@ fun PumpSettingsDataDto.toEntity() = PumpSettingsDataEntity(
     display = display?.let { Json.encodeToString(it) },
     firmwareVersion = firmwareVersion,
     hardwareVersion = hardwareVersion,
-    insulinFormulation = insulinFormulation,
     insulinModel = insulinModel?.let { Json.encodeToString(it) },
     insulinSensitivitySchedules = insulinSensitivitySchedules?.let { Json.encodeToString(it) },
     manufacturers = manufacturers?.let { Json.encodeToString(it) },
@@ -144,7 +137,6 @@ fun PumpSettingsDataDto.toEntity() = PumpSettingsDataEntity(
     name = name,
     overridePresets = overridePresets?.let { Json.encodeToString(it) },
     scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-    serialNumber = serialNumber,
     softwareVersion = softwareVersion,
     units = units?.let { Json.encodeToString(it) },
     origin = origin?.let { Json.encodeToString(it) },
@@ -171,7 +163,6 @@ fun PumpSettingsDataEntity.toDto() = PumpSettingsDataDto(
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
     timeZoneOffset = timeZoneOffset,
     activeScheduleName = activeScheduleName,
-    automatedDelivery = automatedDelivery,
     basal = basal?.takeUnless { it == "null" }?.let { Json.decodeFromString<PumpSettingsDataDto.BasalDto>(it) },
     basalRateSchedules = basalRateSchedules
         ?.takeUnless { it == "null" }
@@ -179,13 +170,13 @@ fun PumpSettingsDataEntity.toDto() = PumpSettingsDataDto(
     bloodGlucoseSafetyLimit = bloodGlucoseSafetyLimit,
     bloodGlucoseTargetPhysicalActivity = bloodGlucoseTargetPhysicalActivity
         ?.takeUnless { it == "null" }
-        ?.let { Json.decodeFromString<PumpSettingsDataDto.BloodGlucoseTargetDto>(it) },
+        ?.let { Json.decodeFromString<BloodGlucoseDto.TargetDto>(it) },
     bloodGlucoseTargetPreprandial = bloodGlucoseTargetPreprandial
         ?.takeUnless { it == "null" }
-        ?.let { Json.decodeFromString<PumpSettingsDataDto.BloodGlucoseTargetDto>(it) },
+        ?.let { Json.decodeFromString<BloodGlucoseDto.TargetDto>(it) },
     bloodGlucoseTargetSchedules = bloodGlucoseTargetSchedules
         ?.takeUnless { it == "null" }
-        ?.let { Json.decodeFromString<Map<String, List<PumpSettingsDataDto.BloodGlucoseScheduleStartDto>>>(it) },
+        ?.let { Json.decodeFromString<Map<String, List<BloodGlucoseDto.StartTargetDto>>>(it) },
     bolus = bolus?.takeUnless { it == "null" }?.let { Json.decodeFromString<PumpSettingsDataDto.BolusDto>(it) },
     carbohydrateRatioSchedules = carbohydrateRatioSchedules
         ?.takeUnless { it == "null" }
@@ -193,7 +184,6 @@ fun PumpSettingsDataEntity.toDto() = PumpSettingsDataDto(
     display = display?.takeUnless { it == "null" }?.let { Json.decodeFromString<PumpSettingsDataDto.DisplayDto>(it) },
     firmwareVersion = firmwareVersion,
     hardwareVersion = hardwareVersion,
-    insulinFormulation = insulinFormulation,
     insulinModel = insulinModel
         ?.takeUnless { it == "null" }
         ?.let { Json.decodeFromString<PumpSettingsDataDto.InsulinModelDto>(it) },
@@ -207,7 +197,6 @@ fun PumpSettingsDataEntity.toDto() = PumpSettingsDataDto(
         ?.takeUnless { it == "null" }
         ?.let { Json.decodeFromString<Map<String, PumpSettingsDataDto.OverridePresetDto>>(it) },
     scheduleTimeZoneOffset = scheduleTimeZoneOffset,
-    serialNumber = serialNumber,
     softwareVersion = softwareVersion,
     units = units?.takeUnless { it == "null" }?.let { Json.decodeFromString<PumpSettingsDataDto.UnitsDto>(it) },
     origin = origin?.takeUnless { it == "null" }?.let { Json.decodeFromString<OriginDto>(it) },

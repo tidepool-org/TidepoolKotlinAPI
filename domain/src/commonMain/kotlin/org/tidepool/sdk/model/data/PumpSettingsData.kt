@@ -24,19 +24,17 @@ data class PumpSettingsData(
     override val timeZone: TimeZone? = null,
     override val timeZoneOffset: Int? = null,
     val activeScheduleName: String? = null,
-    val automatedDelivery: Boolean? = null,
     val basal: Basal? = null,
     val basalRateSchedules: Map<String, List<ScheduleStart>>? = null,
     val bloodGlucoseSafetyLimit: Double? = null,
-    val bloodGlucoseTargetPhysicalActivity: BloodGlucoseTarget? = null,
-    val bloodGlucoseTargetPreprandial: BloodGlucoseTarget? = null,
-    val bloodGlucoseTargetSchedules: Map<String, List<BloodGlucoseScheduleStart>>? = null,
+    val bloodGlucoseTargetPhysicalActivity: BloodGlucose.Target? = null,
+    val bloodGlucoseTargetPreprandial: BloodGlucose.Target? = null,
+    val bloodGlucoseTargetSchedules: Map<String, List<BloodGlucose.StartTarget>>? = null,
     val bolus: Bolus? = null,
     val carbohydrateRatioSchedules: Map<String, List<ScheduleStart>>? = null,
     val display: Display? = null,
     val firmwareVersion: String? = null,
     val hardwareVersion: String? = null,
-    val insulinFormulation: String? = null,
     val insulinModel: InsulinModel? = null,
     val insulinSensitivitySchedules: Map<String, List<ScheduleStart>>? = null,
     val manufacturers: List<String>? = null,
@@ -44,7 +42,6 @@ data class PumpSettingsData(
     val name: String? = null,
     val overridePresets: Map<String, OverridePreset>? = null,
     val scheduleTimeZoneOffset: Int? = null,
-    val serialNumber: String? = null,
     val softwareVersion: String? = null,
     val units: Units? = null,
     val origin: Origin? = null,
@@ -92,18 +89,6 @@ data class PumpSettingsData(
         val amount: Double? = null,
     )
 
-    data class BloodGlucoseScheduleStart(
-        val start: Double? = null,
-        val target: BloodGlucoseTarget? = null,
-    )
-
-    data class BloodGlucoseTarget(
-        val low: Double? = null,
-        val high: Double? = null,
-        val target: Double? = null,
-        val range: Double? = null,
-    )
-
     data class Display(
         val bloodGlucose: DisplayBloodGlucose? = null,
     ) {
@@ -134,7 +119,7 @@ data class PumpSettingsData(
         val abbreviation: String? = null,
         /** Milliseconds. */
         val duration: Double? = null,
-        val bloodGlucoseTarget: BloodGlucoseTarget? = null,
+        val bloodGlucoseTarget: BloodGlucose.Target? = null,
         val basalRateScaleFactor: Double? = null,
         val carbohydrateRatioScaleFactor: Double? = null,
         val insulinSensitivityScaleFactor: Double? = null,

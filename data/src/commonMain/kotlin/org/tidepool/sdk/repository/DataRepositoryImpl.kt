@@ -409,12 +409,19 @@ class DataRepositoryImpl(
                 bolusDataDao::delete,
                 isDeleted = { hasDeletedOrigin(it.origin) },
             ),
-            upload("cbg", UPLOAD_BATCH_LIMIT, continuousGlucoseDataDao::getAll, continuousGlucoseDataDao::delete),
+            upload(
+                "cbg",
+                UPLOAD_BATCH_LIMIT,
+                continuousGlucoseDataDao::getAll,
+                continuousGlucoseDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
             upload(
                 "dosingDecision",
                 DOSING_DECISION_UPLOAD_BATCH_LIMIT,
                 dosingDecisionDataDao::getAll,
                 dosingDecisionDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
             ),
             upload(
                 "food",

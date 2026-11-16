@@ -60,6 +60,10 @@ data class DosingDecisionDataDto(
     val bgHistorical: List<BloodGlucoseDto.GlucoseReadingDto>? = null,
     @SerialName("bgForecast")
     val bgForecast: List<BloodGlucoseDto.GlucoseReadingDto>? = null,
+    @SerialName("origin")
+    val origin: OriginDto? = null,
+    @SerialName("payload")
+    val payload: PayloadDto? = null,
 ) : BaseDataDto() {
     
     val originalFood: Nothing
@@ -134,6 +138,14 @@ data class DosingDecisionDataDto(
             Grams
         }
     }
+
+    @Serializable
+    data class PayloadDto(
+        @SerialName("syncIdentifier")
+        val syncIdentifier: String,
+        @SerialName("syncVersion")
+        val syncVersion: Int? = null,
+    )
 }
 
 // Named distinctly from the shared InsulinDto.UnitsDto.toDomain() in PumpSettingsDataDto.kt and
@@ -201,6 +213,8 @@ fun DosingDecisionDataDto.toDomain(): DosingDecisionData = DosingDecisionData(
     smbg = smbg?.toDomain(),
     bgHistorical = bgHistorical?.map { it.toDomain() },
     bgForecast = bgForecast?.map { it.toDomain() },
+    origin = origin?.toDomain(),
+    payload = payload?.toDomain(),
 )
 
 fun DosingDecisionData.toDto(): DosingDecisionDataDto = DosingDecisionDataDto(
@@ -227,6 +241,18 @@ fun DosingDecisionData.toDto(): DosingDecisionDataDto = DosingDecisionDataDto(
     smbg = smbg?.toDto(),
     bgHistorical = bgHistorical?.map { it.toDto() },
     bgForecast = bgForecast?.map { it.toDto() },
+    origin = origin?.toDto(),
+    payload = payload?.toDto(),
+)
+
+private fun DosingDecisionDataDto.PayloadDto.toDomain() = DosingDecisionData.Payload(
+    syncIdentifier = syncIdentifier,
+    syncVersion = syncVersion,
+)
+
+private fun DosingDecisionData.Payload.toDto() = DosingDecisionDataDto.PayloadDto(
+    syncIdentifier = syncIdentifier,
+    syncVersion = syncVersion,
 )
 
 fun InsulinOnBoardDto.toDomain() = DosingDecisionData.InsulinOnBoard(

@@ -25,7 +25,6 @@ data class CgmSettingsData(
     val manufacturers: List<String>? = null,
     val model: String? = null,
     val name: String? = null,
-    val serialNumber: String? = null,
     val softwareVersion: String? = null,
     val transmitterId: String? = null,
     val units: BloodGlucose.Units? = null,

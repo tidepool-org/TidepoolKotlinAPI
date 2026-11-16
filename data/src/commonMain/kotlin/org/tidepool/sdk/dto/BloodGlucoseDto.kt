@@ -14,7 +14,6 @@ import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.data.DosingDecisionData
 import kotlin.time.Instant
 import kotlin.math.roundToInt
-import kotlin.time.Duration
 
 class BloodGlucoseDto {
     @Serializable
@@ -131,9 +130,8 @@ class BloodGlucoseDto {
     
     @Serializable
     data class StartTargetDto(
-        @Contextual
         @SerialName("start")
-        val start: Duration?,
+        val start: Long?,
         @SerialName("target")
         val target: Double?,
         @SerialName("range")

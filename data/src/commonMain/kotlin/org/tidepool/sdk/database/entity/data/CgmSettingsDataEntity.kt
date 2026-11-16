@@ -51,8 +51,6 @@ data class CgmSettingsDataEntity(
     var model: String? = null,
     @ColumnInfo(name = "name")
     var name: String? = null,
-    @ColumnInfo(name = "serial_number")
-    var serialNumber: String? = null,
     @ColumnInfo(name = "software_version")
     var softwareVersion: String? = null,
     @ColumnInfo(name = "transmitter_id")
@@ -96,7 +94,6 @@ fun CgmSettingsDataDto.toEntity() = CgmSettingsDataEntity(
     manufacturers = manufacturers?.let { Json.encodeToString(it) },
     model = model,
     name = name,
-    serialNumber = serialNumber,
     softwareVersion = softwareVersion,
     transmitterId = transmitterId,
     units = units?.let { Json.encodeToString(it) },
@@ -128,7 +125,6 @@ fun CgmSettingsDataEntity.toDto() = CgmSettingsDataDto(
     manufacturers = manufacturers?.takeUnless { it == "null" }?.let { Json.decodeFromString(it) },
     model = model,
     name = name,
-    serialNumber = serialNumber,
     softwareVersion = softwareVersion,
     transmitterId = transmitterId,
     units = units?.takeUnless { it == "null" }?.let { Json.decodeFromString(it) },

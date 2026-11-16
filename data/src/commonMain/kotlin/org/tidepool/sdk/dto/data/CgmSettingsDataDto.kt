@@ -45,8 +45,6 @@ data class CgmSettingsDataDto(
     val model: String? = null,
     @SerialName("name")
     val name: String? = null,
-    @SerialName("serialNumber")
-    val serialNumber: String? = null,
     @SerialName("softwareVersion")
     val softwareVersion: String? = null,
     @SerialName("transmitterId")
@@ -84,7 +82,6 @@ fun CgmSettingsDataDto.toDomain(): CgmSettingsData = CgmSettingsData(
     manufacturers = manufacturers,
     model = model,
     name = name,
-    serialNumber = serialNumber,
     softwareVersion = softwareVersion,
     transmitterId = transmitterId,
     units = units?.toDomain(),
@@ -110,7 +107,6 @@ fun CgmSettingsData.toDto(): CgmSettingsDataDto = CgmSettingsDataDto(
     manufacturers = manufacturers,
     model = model,
     name = name,
-    serialNumber = serialNumber,
     softwareVersion = softwareVersion,
     transmitterId = transmitterId,
     units = units?.toDto(),

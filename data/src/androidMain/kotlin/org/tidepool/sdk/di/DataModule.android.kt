@@ -6,6 +6,12 @@ import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.execSQL
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.doubleOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.koin.core.module.Module
 import org.koin.dsl.module
 import org.tidepool.sdk.database.LoopKitDatabase
@@ -34,6 +40,7 @@ import org.tidepool.sdk.DnsResolverImpl
 import org.tidepool.sdk.fake.FakeBackendInterceptor
 import org.tidepool.sdk.fake.FakeBackendRecorder
 import org.tidepool.sdk.repository.KeyValueStorage
+import kotlin.math.roundToLong
 
 actual val platformDataModule: Module
     get() = module {
@@ -166,18 +173,47 @@ private val VERSION_2_TO_VERSION_3 = listOf(
  * Version 4: cbg gains an origin, a payload and a deviceId; food gains a payload; bolus gains an
  * expectedNormal and its deliveryContext becomes nullable (SQLite can't alter a column's
  * nullability in place, so bolus_data is rebuilt: a new table with the final shape, its rows
- * copied over, the old table dropped, the new one renamed). The three settings tables
- * (cgmSettings, controllerSettings, pumpSettings) are dropped and recreated with their real
- * columns, since they've never been drained and have nothing worth keeping. smbg, pumpStatus and
+ * copied over, the old table dropped, the new one renamed). dosingDecision gains an origin and a
+ * payload. The three settings tables (cgmSettings, controllerSettings, pumpSettings) are dropped
+ * and recreated with their real columns, since they've never been drained and have nothing worth
+ * keeping; pumpSettings loses insulinFormulation, automatedDelivery and serialNumber, and
+ * cgmSettings loses serialNumber (TidepoolKit never set them: insulinFormulation is an object
+ * TidepoolKit never sends, and TidepoolKit#75 removed the other three). smbg, pumpStatus and
  * controllerStatus get new tables.
+ *
+ * recommendedBasal.duration also changed from a Double number of minutes to a Long number of
+ * milliseconds: after the SQL runs, [rewriteRecommendedBasalDurationsToMilliseconds] rewrites
+ * every already-queued dosing decision's stored JSON so it keeps decoding.
  */
 internal val MIGRATION_3_4 = object : Migration(3, 4) {
     override fun migrate(db: SupportSQLiteDatabase) {
         VERSION_3_TO_VERSION_4.forEach { db.execSQL(it) }
+        rewriteRecommendedBasalDurationsToMilliseconds(
+            selectRows = {
+                db.query(SELECT_RECOMMENDED_BASAL_SQL).use { cursor ->
+                    buildList { while (cursor.moveToNext()) add(cursor.getString(0) to cursor.getString(1)) }
+                }
+            },
+            updateRow = { id, json -> db.execSQL(UPDATE_RECOMMENDED_BASAL_SQL, arrayOf(json, id)) },
+        )
     }
 
     override fun migrate(connection: SQLiteConnection) {
         VERSION_3_TO_VERSION_4.forEach { connection.execSQL(it) }
+        rewriteRecommendedBasalDurationsToMilliseconds(
+            selectRows = {
+                connection.prepare(SELECT_RECOMMENDED_BASAL_SQL).use { statement ->
+                    buildList { while (statement.step()) add(statement.getText(0) to statement.getText(1)) }
+                }
+            },
+            updateRow = { id, json ->
+                connection.prepare(UPDATE_RECOMMENDED_BASAL_SQL).use { statement ->
+                    statement.bindText(1, json)
+                    statement.bindText(2, id)
+                    statement.step()
+                }
+            },
+        )
     }
 }
 
@@ -186,21 +222,55 @@ private val VERSION_3_TO_VERSION_4 = listOf(
     "ALTER TABLE `continuous_glucose_data` ADD COLUMN `payload` TEXT",
     "ALTER TABLE `continuous_glucose_data` ADD COLUMN `device_id` TEXT",
     "ALTER TABLE `food_data` ADD COLUMN `payload` TEXT",
+    "ALTER TABLE `dosing_decision_data` ADD COLUMN `origin` TEXT",
+    "ALTER TABLE `dosing_decision_data` ADD COLUMN `payload` TEXT",
     "CREATE TABLE IF NOT EXISTS `bolus_data_new` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `delivery_context` TEXT, `normal` REAL, `expected_normal` REAL, `origin` TEXT, PRIMARY KEY(`id`))",
     "INSERT INTO `bolus_data_new` (`id`, `type`, `time`, `annotations`, `associations`, `clock_drift_offset`, `conversion_offset`, `data_set_id`, `device_time`, `notes`, `time_zone`, `time_zone_offset`, `sub_type`, `delivery_context`, `normal`, `origin`) " +
         "SELECT `id`, `type`, `time`, `annotations`, `associations`, `clock_drift_offset`, `conversion_offset`, `data_set_id`, `device_time`, `notes`, `time_zone`, `time_zone_offset`, `sub_type`, `delivery_context`, `normal`, `origin` FROM `bolus_data`",
     "DROP TABLE `bolus_data`",
     "ALTER TABLE `bolus_data_new` RENAME TO `bolus_data`",
     "DROP TABLE IF EXISTS `cgm_settings_data`",
-    "CREATE TABLE IF NOT EXISTS `cgm_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `firmware_version` TEXT, `hardware_version` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `serial_number` TEXT, `software_version` TEXT, `transmitter_id` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `cgm_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `firmware_version` TEXT, `hardware_version` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `software_version` TEXT, `transmitter_id` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
     "DROP TABLE IF EXISTS `controller_settings_data`",
     "CREATE TABLE IF NOT EXISTS `controller_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `device` TEXT, `notifications` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
     "DROP TABLE IF EXISTS `pump_settings_data`",
-    "CREATE TABLE IF NOT EXISTS `pump_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `active_schedule_name` TEXT, `automated_delivery` INTEGER, `basal` TEXT, `basal_rate_schedules` TEXT, `blood_glucose_safety_limit` REAL, `blood_glucose_target_physical_activity` TEXT, `blood_glucose_target_preprandial` TEXT, `blood_glucose_target_schedules` TEXT, `bolus` TEXT, `carbohydrate_ratio_schedules` TEXT, `display` TEXT, `firmware_version` TEXT, `hardware_version` TEXT, `insulin_formulation` TEXT, `insulin_model` TEXT, `insulin_sensitivity_schedules` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `override_presets` TEXT, `schedule_time_zone_offset` INTEGER, `serial_number` TEXT, `software_version` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+    "CREATE TABLE IF NOT EXISTS `pump_settings_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `active_schedule_name` TEXT, `basal` TEXT, `basal_rate_schedules` TEXT, `blood_glucose_safety_limit` REAL, `blood_glucose_target_physical_activity` TEXT, `blood_glucose_target_preprandial` TEXT, `blood_glucose_target_schedules` TEXT, `bolus` TEXT, `carbohydrate_ratio_schedules` TEXT, `display` TEXT, `firmware_version` TEXT, `hardware_version` TEXT, `insulin_model` TEXT, `insulin_sensitivity_schedules` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `override_presets` TEXT, `schedule_time_zone_offset` INTEGER, `software_version` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
     "CREATE TABLE IF NOT EXISTS `smbg_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `value` REAL, `units` TEXT, `sub_type` TEXT, `origin` TEXT, `payload` TEXT, `device_id` TEXT, PRIMARY KEY(`id`))",
     "CREATE TABLE IF NOT EXISTS `pump_status_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `basal_delivery` TEXT, `battery` TEXT, `bolus_delivery` TEXT, `delivery_indeterminant` INTEGER, `reservoir` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
     "CREATE TABLE IF NOT EXISTS `controller_status_data` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `battery` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
 )
+
+private const val SELECT_RECOMMENDED_BASAL_SQL =
+    "SELECT `id`, `recommended_basal` FROM `dosing_decision_data` WHERE `recommended_basal` IS NOT NULL"
+private const val UPDATE_RECOMMENDED_BASAL_SQL =
+    "UPDATE `dosing_decision_data` SET `recommended_basal` = ? WHERE `id` = ?"
+
+/**
+ * `dosing_decision_data.recommended_basal` stored `{"rate":..., "duration": <minutes, a Double>}`
+ * before version 4; `DosingDecisionDataDto.RecommendedBasalDto.duration` is now milliseconds, as a
+ * Long. Rewriting in Kotlin rather than with SQLite's `json_set` because JSON1 isn't guaranteed on
+ * API 26. A row whose JSON can't be parsed, or whose `duration` isn't a number, is left alone
+ * rather than failing the whole migration.
+ */
+private fun rewriteRecommendedBasalDurationsToMilliseconds(
+    selectRows: () -> List<Pair<String, String>>,
+    updateRow: (id: String, json: String) -> Unit,
+) {
+    selectRows().forEach { (id, json) ->
+        rewriteDurationMinutesToMilliseconds(json)?.let { updateRow(id, it) }
+    }
+}
+
+private fun rewriteDurationMinutesToMilliseconds(json: String): String? = runCatching {
+    val recommendedBasal = Json.parseToJsonElement(json).jsonObject
+    val durationMinutes = recommendedBasal["duration"]?.jsonPrimitive?.doubleOrNull ?: return@runCatching null
+    val rewritten = JsonObject(
+        recommendedBasal + ("duration" to JsonPrimitive((durationMinutes * MILLISECONDS_PER_MINUTE).roundToLong())),
+    )
+    Json.encodeToString(JsonObject.serializer(), rewritten)
+}.getOrNull()
+
+private const val MILLISECONDS_PER_MINUTE = 60_000
 
 /** Every outbox migration, oldest first. The test opens outboxes with the same list. */
 internal val OUTBOX_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)

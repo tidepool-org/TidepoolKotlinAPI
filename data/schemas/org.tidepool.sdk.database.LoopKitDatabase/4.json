@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 4,
-    "identityHash": "031ce3445de5513fb9cc710b7160369f",
+    "identityHash": "80a638bb16afa2b5951ad4d7775585c6",
     "entities": [
       {
         "tableName": "BaseDataEntity",
@@ -406,7 +406,7 @@
       },
       {
         "tableName": "dosing_decision_data",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `reason` TEXT NOT NULL, `carbs_on_board` TEXT, `insulin_on_board` TEXT, `recommended_basal` TEXT, `recommended_bolus` TEXT, `requested_bolus` TEXT, `schedule_time_zone_offset` INTEGER, `units` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `reason` TEXT NOT NULL, `carbs_on_board` TEXT, `insulin_on_board` TEXT, `recommended_basal` TEXT, `recommended_bolus` TEXT, `requested_bolus` TEXT, `schedule_time_zone_offset` INTEGER, `units` TEXT NOT NULL, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -511,6 +511,16 @@
             "columnName": "units",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "origin",
+            "columnName": "origin",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "payload",
+            "columnName": "payload",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -836,7 +846,7 @@
       },
       {
         "tableName": "cgm_settings_data",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `firmware_version` TEXT, `hardware_version` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `serial_number` TEXT, `software_version` TEXT, `transmitter_id` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `firmware_version` TEXT, `hardware_version` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `software_version` TEXT, `transmitter_id` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -923,11 +933,6 @@
           {
             "fieldPath": "name",
             "columnName": "name",
-            "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "serialNumber",
-            "columnName": "serial_number",
             "affinity": "TEXT"
           },
           {
@@ -1059,7 +1064,7 @@
       },
       {
         "tableName": "pump_settings_data",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `active_schedule_name` TEXT, `automated_delivery` INTEGER, `basal` TEXT, `basal_rate_schedules` TEXT, `blood_glucose_safety_limit` REAL, `blood_glucose_target_physical_activity` TEXT, `blood_glucose_target_preprandial` TEXT, `blood_glucose_target_schedules` TEXT, `bolus` TEXT, `carbohydrate_ratio_schedules` TEXT, `display` TEXT, `firmware_version` TEXT, `hardware_version` TEXT, `insulin_formulation` TEXT, `insulin_model` TEXT, `insulin_sensitivity_schedules` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `override_presets` TEXT, `schedule_time_zone_offset` INTEGER, `serial_number` TEXT, `software_version` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `active_schedule_name` TEXT, `basal` TEXT, `basal_rate_schedules` TEXT, `blood_glucose_safety_limit` REAL, `blood_glucose_target_physical_activity` TEXT, `blood_glucose_target_preprandial` TEXT, `blood_glucose_target_schedules` TEXT, `bolus` TEXT, `carbohydrate_ratio_schedules` TEXT, `display` TEXT, `firmware_version` TEXT, `hardware_version` TEXT, `insulin_model` TEXT, `insulin_sensitivity_schedules` TEXT, `manufacturers` TEXT, `model` TEXT, `name` TEXT, `override_presets` TEXT, `schedule_time_zone_offset` INTEGER, `software_version` TEXT, `units` TEXT, `origin` TEXT, `payload` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -1129,11 +1134,6 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "automatedDelivery",
-            "columnName": "automated_delivery",
-            "affinity": "INTEGER"
-          },
-          {
             "fieldPath": "basal",
             "columnName": "basal",
             "affinity": "TEXT"
@@ -1189,11 +1189,6 @@
             "affinity": "TEXT"
           },
           {
-            "fieldPath": "insulinFormulation",
-            "columnName": "insulin_formulation",
-            "affinity": "TEXT"
-          },
-          {
             "fieldPath": "insulinModel",
             "columnName": "insulin_model",
             "affinity": "TEXT"
@@ -1227,11 +1222,6 @@
             "fieldPath": "scheduleTimeZoneOffset",
             "columnName": "schedule_time_zone_offset",
             "affinity": "INTEGER"
-          },
-          {
-            "fieldPath": "serialNumber",
-            "columnName": "serial_number",
-            "affinity": "TEXT"
           },
           {
             "fieldPath": "softwareVersion",
@@ -1584,7 +1574,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '031ce3445de5513fb9cc710b7160369f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '80a638bb16afa2b5951ad4d7775585c6')"
     ]
   }
 }

@@ -6,10 +6,12 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.tidepool.sdk.di.createTidepoolJson
 import org.tidepool.sdk.dto.BloodGlucoseDto
+import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.data.PumpSettingsData
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.time.Duration
 
 /**
  * Settings datums (pumpSettings, cgmSettings, controllerSettings) round-trip their new fields
@@ -33,7 +35,6 @@ class SettingsDataDtoTest {
     fun `pumpSettings basal rate maximum and schedules use TidepoolKit's key names`() {
         val datum = PumpSettingsDataDto(
             activeScheduleName = "Default",
-            automatedDelivery = true,
             basal = PumpSettingsDataDto.BasalDto(
                 rateMaximum = PumpSettingsDataDto.BasalDto.RateMaximumDto(
                     value = 3.0,
@@ -47,7 +48,6 @@ class SettingsDataDtoTest {
 
         val encoded = json.encodeToJsonElement(datum).jsonObject
         assertEquals("Default", encoded.getValue("activeSchedule").jsonPrimitive.content)
-        assertEquals("true", encoded.getValue("automatedDelivery").jsonPrimitive.content)
         val rateMaximum = encoded.getValue("basal").jsonObject.getValue("rateMaximum").jsonObject
         assertEquals("3.0", rateMaximum.getValue("value").jsonPrimitive.content)
         assertEquals("Units/hour", rateMaximum.getValue("units").jsonPrimitive.content)
@@ -90,9 +90,12 @@ class SettingsDataDtoTest {
             carbohydrateRatioSchedules = mapOf("Default" to listOf(PumpSettingsData.ScheduleStart(start = 0.0, amount = 10.0))),
             bloodGlucoseTargetSchedules = mapOf(
                 "Default" to listOf(
-                    PumpSettingsData.BloodGlucoseScheduleStart(
-                        start = 0.0,
-                        target = PumpSettingsData.BloodGlucoseTarget(low = 100.0, high = 110.0),
+                    BloodGlucose.StartTarget(
+                        start = Duration.ZERO,
+                        target = null,
+                        range = null,
+                        low = 100.0,
+                        high = 110.0,
                     ),
                 ),
             ),

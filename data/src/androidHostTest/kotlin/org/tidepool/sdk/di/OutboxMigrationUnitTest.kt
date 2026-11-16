@@ -13,6 +13,7 @@ import org.tidepool.sdk.database.entity.data.CgmSettingsDataEntity
 import org.tidepool.sdk.database.entity.data.ControllerStatusDataEntity
 import org.tidepool.sdk.database.entity.data.PumpStatusDataEntity
 import org.tidepool.sdk.database.entity.data.SmbgDataEntity
+import org.tidepool.sdk.database.entity.data.toDto
 import java.io.File
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
@@ -120,6 +121,17 @@ class OutboxMigrationUnitTest {
                 "INSERT INTO `food_data` (`id`, `type`, `time`, `name`) " +
                     "VALUES ('food-1', '\"food\"', 100, 'Taco')"
             )
+            // recommended_basal.duration was a Double number of minutes before version 4.
+            execSQL(
+                "INSERT INTO `dosing_decision_data` (`id`, `type`, `time`, `reason`, `units`, `recommended_basal`) " +
+                    "VALUES ('dosing-decision-1', '\"dosingDecision\"', 100, 'loop', '{}', " +
+                    "'{\"rate\":0.5,\"duration\":30.0}')"
+            )
+            // Not valid JSON: the migration must not crash on it, whatever it leaves behind.
+            execSQL(
+                "INSERT INTO `dosing_decision_data` (`id`, `type`, `time`, `reason`, `units`, `recommended_basal`) " +
+                    "VALUES ('dosing-decision-2', '\"dosingDecision\"', 100, 'loop', '{}', 'not json')"
+            )
             close()
         }
 
@@ -138,6 +150,9 @@ class OutboxMigrationUnitTest {
         val food = migrated.foodDataDao().getAll().single()
         assertEquals("food-1", food.id)
         assertNull(food.payload)
+        val dosingDecisions = migrated.dosingDecisionDataDao().getAll().associateBy { it.id }
+        assertEquals(1_800_000L, dosingDecisions.getValue("dosing-decision-1").toDto().recommendedBasal?.duration)
+        assertEquals("not json", dosingDecisions.getValue("dosing-decision-2").recommendedBasal)
 
         // The new columns and tables are usable.
         migrated.bolusDataDao().insert(bolus.copy(deliveryContext = null, expectedNormal = 2.0))
