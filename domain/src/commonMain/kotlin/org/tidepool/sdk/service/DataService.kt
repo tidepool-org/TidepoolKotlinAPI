@@ -474,8 +474,12 @@ class DataService internal constructor(
      * Empties the local outbox entirely: every cached datum, every queued deletion, and the
      * cached data set id. Works without a session. Not for routine use; intended for a host that
      * wants to drop local state (e.g. on logout or a full reset).
+     *
+     * Takes [uploadMutex], the same lock an in-flight [uploadCachedDataNow] batch holds while
+     * awaiting [getDataSetId]: without it, a data set creation already in flight when this is
+     * called could finish afterwards and re-save the old account's id under the cleared cache.
      */
-    suspend fun clearCachedData(): Result<Unit> = dataRepository.clearCachedData()
+    suspend fun clearCachedData(): Result<Unit> = uploadMutex.withLock { dataRepository.clearCachedData() }
 
     private companion object {
         // Together these keep one uploadCachedDataNow() call inside a WorkManager CoroutineWorker's
