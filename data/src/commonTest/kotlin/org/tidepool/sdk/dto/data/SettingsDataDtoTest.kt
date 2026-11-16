@@ -6,6 +6,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import org.tidepool.sdk.di.createTidepoolJson
 import org.tidepool.sdk.dto.BloodGlucoseDto
+import org.tidepool.sdk.model.data.PumpSettingsData
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -60,14 +61,14 @@ class SettingsDataDtoTest {
             units = PumpSettingsDataDto.UnitsDto(
                 bloodGlucose = BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter,
                 carbohydrate = DosingDecisionDataDto.UnitsDto.CarbDto.Grams,
-                insulin = InsulinDto.UnitsDto.Units,
+                insulin = PumpSettingsDataDto.InsulinUnitsDto.Units,
             ),
         )
 
         val units = json.encodeToJsonElement(datum).jsonObject.getValue("units").jsonObject
         assertEquals("mg/dL", units.getValue("bg").jsonPrimitive.content)
         assertEquals("grams", units.getValue("carb").jsonPrimitive.content)
-        assertEquals("units", units.getValue("insulin").jsonPrimitive.content)
+        assertEquals("Units", units.getValue("insulin").jsonPrimitive.content)
     }
 
     @Test
@@ -77,6 +78,39 @@ class SettingsDataDtoTest {
 
         assertFalse("units" in json.encodeToJsonElement(cgm).jsonObject)
         assertFalse("device" in json.encodeToJsonElement(controller).jsonObject)
+    }
+
+    @Test
+    fun `pumpSettings schedules and limits encode the way TidepoolKit's TPumpSettingsDatum does`() {
+        // Basal entries are BasalRateStart {start, rate}; target entries are TBloodGlucose.StartTarget
+        // with low/high beside start; bolus.amountMaximum units is TInsulin.Units "Units".
+        val datum = PumpSettingsData(
+            id = "id",
+            basalRateSchedules = mapOf("Default" to listOf(PumpSettingsData.ScheduleStart(start = 0.0, amount = 1.0))),
+            carbohydrateRatioSchedules = mapOf("Default" to listOf(PumpSettingsData.ScheduleStart(start = 0.0, amount = 10.0))),
+            bloodGlucoseTargetSchedules = mapOf(
+                "Default" to listOf(
+                    PumpSettingsData.BloodGlucoseScheduleStart(
+                        start = 0.0,
+                        target = PumpSettingsData.BloodGlucoseTarget(low = 100.0, high = 110.0),
+                    ),
+                ),
+            ),
+            bolus = PumpSettingsData.Bolus(
+                amountMaximum = PumpSettingsData.Bolus.AmountMaximum(value = 10.0, units = org.tidepool.sdk.model.data.Insulin.Units.Units),
+            ),
+        ).toDto()
+
+        val encoded = json.encodeToJsonElement(datum).jsonObject
+        val basal = encoded.getValue("basalSchedules").jsonObject.getValue("Default").jsonArray.single().jsonObject
+        assertEquals(setOf("start", "rate"), basal.keys)
+        val carbRatio = encoded.getValue("carbRatios").jsonObject.getValue("Default").jsonArray.single().jsonObject
+        assertEquals(setOf("start", "amount"), carbRatio.keys)
+        val target = encoded.getValue("bgTargets").jsonObject.getValue("Default").jsonArray.single().jsonObject
+        assertEquals(setOf("start", "low", "high"), target.keys)
+        assertEquals("100.0", target.getValue("low").jsonPrimitive.content)
+        val amountMaximum = encoded.getValue("bolus").jsonObject.getValue("amountMaximum").jsonObject
+        assertEquals("Units", amountMaximum.getValue("units").jsonPrimitive.content)
     }
 
     @Test

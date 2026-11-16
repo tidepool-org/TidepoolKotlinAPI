@@ -123,7 +123,7 @@ data class PumpSettingsDataDto(
             @SerialName("value")
             val value: Double? = null,
             @SerialName("units")
-            val units: InsulinDto.UnitsDto? = null,
+            val units: PumpSettingsDataDto.InsulinUnitsDto? = null,
         )
     }
 
@@ -139,11 +139,18 @@ data class PumpSettingsDataDto(
     )
 
     @Serializable
+    /** TidepoolKit's `TBloodGlucose.StartTarget`: the target's fields sit beside [start], not nested. */
     data class BloodGlucoseScheduleStartDto(
         @SerialName("start")
         val start: Long? = null,
+        @SerialName("low")
+        val low: Double? = null,
+        @SerialName("high")
+        val high: Double? = null,
         @SerialName("target")
-        val target: BloodGlucoseTargetDto? = null,
+        val target: Double? = null,
+        @SerialName("range")
+        val range: Double? = null,
     )
 
     @Serializable
@@ -212,6 +219,13 @@ data class PumpSettingsDataDto(
         val insulinSensitivityScaleFactor: Double? = null,
     )
 
+    /** TidepoolKit's `TInsulin.Units`: "Units", capitalised, unlike the SDK's `insulin` datum units. */
+    @Serializable
+    enum class InsulinUnitsDto {
+        @SerialName("Units")
+        Units,
+    }
+
     @Serializable
     data class UnitsDto(
         @SerialName("bg")
@@ -219,7 +233,7 @@ data class PumpSettingsDataDto(
         @SerialName("carb")
         val carbohydrate: DosingDecisionDataDto.UnitsDto.CarbDto? = null,
         @SerialName("insulin")
-        val insulin: InsulinDto.UnitsDto? = null,
+        val insulin: PumpSettingsDataDto.InsulinUnitsDto? = null,
     )
 
     @Serializable
@@ -286,7 +300,7 @@ fun PumpSettingsData.toDto(): PumpSettingsDataDto = PumpSettingsDataDto(
     activeScheduleName = activeScheduleName,
     automatedDelivery = automatedDelivery,
     basal = basal?.toDto(),
-    basalRateSchedules = basalRateSchedules?.mapValues { (_, v) -> v.map { it.toScheduleStartDto() } },
+    basalRateSchedules = basalRateSchedules?.mapValues { (_, v) -> v.map { it.toBasalRateStartDto() } },
     bloodGlucoseSafetyLimit = bloodGlucoseSafetyLimit,
     bloodGlucoseTargetPhysicalActivity = bloodGlucoseTargetPhysicalActivity?.toDto(),
     bloodGlucoseTargetPreprandial = bloodGlucoseTargetPreprandial?.toDto(),
@@ -333,12 +347,12 @@ private fun PumpSettingsDataDto.BasalDto.toDomain() = PumpSettingsData.Basal(rat
 
 private fun PumpSettingsData.Basal.toDto() = PumpSettingsDataDto.BasalDto(rateMaximum = rateMaximum?.toDto())
 
-private fun InsulinDto.UnitsDto.toDomain(): Insulin.Units = when (this) {
-    InsulinDto.UnitsDto.Units -> Insulin.Units.Units
+private fun PumpSettingsDataDto.InsulinUnitsDto.toDomain(): Insulin.Units = when (this) {
+    PumpSettingsDataDto.InsulinUnitsDto.Units -> Insulin.Units.Units
 }
 
-private fun Insulin.Units.toDto(): InsulinDto.UnitsDto = when (this) {
-    Insulin.Units.Units -> InsulinDto.UnitsDto.Units
+private fun Insulin.Units.toDto(): PumpSettingsDataDto.InsulinUnitsDto = when (this) {
+    Insulin.Units.Units -> PumpSettingsDataDto.InsulinUnitsDto.Units
 }
 
 private fun PumpSettingsDataDto.BolusDto.AmountMaximumDto.toDomain() = PumpSettingsData.Bolus.AmountMaximum(
@@ -365,6 +379,12 @@ private fun PumpSettingsData.ScheduleStart.toScheduleStartDto() = PumpSettingsDa
     amount = amount,
 )
 
+/** TidepoolKit's `BasalRateStart` names its value `rate`; carb ratio and sensitivity entries use `amount`. */
+private fun PumpSettingsData.ScheduleStart.toBasalRateStartDto() = PumpSettingsDataDto.ScheduleStartDto(
+    start = start?.toLong(),
+    rate = amount,
+)
+
 private fun PumpSettingsDataDto.BloodGlucoseTargetDto.toDomain() = PumpSettingsData.BloodGlucoseTarget(
     low = low,
     high = high,
@@ -381,12 +401,15 @@ private fun PumpSettingsData.BloodGlucoseTarget.toDto() = PumpSettingsDataDto.Bl
 
 private fun PumpSettingsDataDto.BloodGlucoseScheduleStartDto.toDomain() = PumpSettingsData.BloodGlucoseScheduleStart(
     start = start?.toDouble(),
-    target = target?.toDomain(),
+    target = PumpSettingsData.BloodGlucoseTarget(low = low, high = high, target = target, range = range),
 )
 
 private fun PumpSettingsData.BloodGlucoseScheduleStart.toDto() = PumpSettingsDataDto.BloodGlucoseScheduleStartDto(
     start = start?.toLong(),
-    target = target?.toDto(),
+    low = target?.low,
+    high = target?.high,
+    target = target?.target,
+    range = target?.range,
 )
 
 private fun PumpSettingsDataDto.DisplayDto.DisplayBloodGlucoseDto.toDomain() =
