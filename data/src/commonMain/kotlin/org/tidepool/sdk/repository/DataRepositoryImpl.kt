@@ -458,14 +458,27 @@ class DataRepositoryImpl(
                 controllerStatusDataDao::delete,
                 isDeleted = { hasDeletedOrigin(it.origin) },
             ),
-            upload("cgmSettings", UPLOAD_BATCH_LIMIT, cgmSettingsDataDao::getAll, cgmSettingsDataDao::delete),
+            upload(
+                "cgmSettings",
+                UPLOAD_BATCH_LIMIT,
+                cgmSettingsDataDao::getAll,
+                cgmSettingsDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
             upload(
                 "controllerSettings",
                 UPLOAD_BATCH_LIMIT,
                 controllerSettingsDataDao::getAll,
                 controllerSettingsDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
             ),
-            upload("pumpSettings", UPLOAD_BATCH_LIMIT, pumpSettingsDataDao::getAll, pumpSettingsDataDao::delete),
+            upload(
+                "pumpSettings",
+                UPLOAD_BATCH_LIMIT,
+                pumpSettingsDataDao::getAll,
+                pumpSettingsDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
             // After the uploads, so a deletion and a newer upload of the same origin land in order.
             uploadDeletions(sessionToken, dataSetId),
         )

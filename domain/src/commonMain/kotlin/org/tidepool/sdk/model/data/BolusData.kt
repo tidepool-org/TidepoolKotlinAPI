@@ -21,7 +21,7 @@ data class BolusData(
     override val timeZone: TimeZone? = null,
     override val timeZoneOffset: Int? = null,
     val subType: BolusSubtype = BolusSubtype.Normal,
-    /** Omitted from the uploaded datum when null: iOS sends none for a bolus without one. */
+    /** Never sent: TidepoolKit's bolus datums have no deliveryContext. */
     val deliveryContext: DeliveryContext? = null,
     val normal: Double? = null,
     val expectedNormal: Double? = null,
