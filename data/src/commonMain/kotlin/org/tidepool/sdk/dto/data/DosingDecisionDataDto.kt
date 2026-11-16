@@ -122,29 +122,25 @@ data class DosingDecisionDataDto(
         @SerialName("carb")
         val carb: CarbDto = CarbDto.Exchanges,
         @SerialName("insulin")
-        val insulin: InsulinDto = InsulinDto.Units,
+        val insulin: InsulinDto.UnitsDto = InsulinDto.UnitsDto.Units,
     ) {
         @Serializable
         enum class CarbDto {
-            
+
             @SerialName("exchanges")
             Exchanges,
-            
+
             @SerialName("grams")
             Grams
-        }
-        
-        @Serializable
-        enum class InsulinDto {
-            
-            @SerialName("Units")
-            Units,
         }
     }
 }
 
-internal fun UnitsDto.InsulinDto.toDomain() = when (this) {
-    UnitsDto.InsulinDto.Units -> DosingDecisionData.Units.Insulin.Units
+// Named distinctly from the shared InsulinDto.UnitsDto.toDomain() in PumpSettingsDataDto.kt and
+// PumpStatusDataDto.kt (which map to the unrelated Insulin.Units domain type) so the two don't
+// conflict as overloads differing only by return type.
+internal fun InsulinDto.UnitsDto.toDosingDecisionDomain() = when (this) {
+    InsulinDto.UnitsDto.Units -> DosingDecisionData.Units.Insulin.Units
 }
 
 internal fun UnitsDto.CarbDto.toDomain() = when (this) {
@@ -158,7 +154,7 @@ internal fun BloodGlucoseDto.UnitsDto.toDomain() = when (this) {
 }
 
 internal fun DosingDecisionData.Units.Insulin.toDto() = when (this) {
-    DosingDecisionData.Units.Insulin.Units -> UnitsDto.InsulinDto.Units
+    DosingDecisionData.Units.Insulin.Units -> InsulinDto.UnitsDto.Units
 }
 
 internal fun DosingDecisionData.Units.Carb.toDto() = when (this) {

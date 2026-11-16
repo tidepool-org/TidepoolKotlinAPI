@@ -61,7 +61,7 @@ class SettingsDataDtoTest {
             units = PumpSettingsDataDto.UnitsDto(
                 bloodGlucose = BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter,
                 carbohydrate = DosingDecisionDataDto.UnitsDto.CarbDto.Grams,
-                insulin = PumpSettingsDataDto.InsulinUnitsDto.Units,
+                insulin = InsulinDto.UnitsDto.Units,
             ),
         )
 

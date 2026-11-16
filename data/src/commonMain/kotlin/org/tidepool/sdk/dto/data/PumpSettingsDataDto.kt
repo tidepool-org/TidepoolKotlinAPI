@@ -123,7 +123,7 @@ data class PumpSettingsDataDto(
             @SerialName("value")
             val value: Double? = null,
             @SerialName("units")
-            val units: PumpSettingsDataDto.InsulinUnitsDto? = null,
+            val units: InsulinDto.UnitsDto? = null,
         )
     }
 
@@ -219,13 +219,6 @@ data class PumpSettingsDataDto(
         val insulinSensitivityScaleFactor: Double? = null,
     )
 
-    /** TidepoolKit's `TInsulin.Units`: "Units", capitalised, unlike the SDK's `insulin` datum units. */
-    @Serializable
-    enum class InsulinUnitsDto {
-        @SerialName("Units")
-        Units,
-    }
-
     @Serializable
     data class UnitsDto(
         @SerialName("bg")
@@ -233,7 +226,7 @@ data class PumpSettingsDataDto(
         @SerialName("carb")
         val carbohydrate: DosingDecisionDataDto.UnitsDto.CarbDto? = null,
         @SerialName("insulin")
-        val insulin: PumpSettingsDataDto.InsulinUnitsDto? = null,
+        val insulin: InsulinDto.UnitsDto? = null,
     )
 
     @Serializable
@@ -347,12 +340,12 @@ private fun PumpSettingsDataDto.BasalDto.toDomain() = PumpSettingsData.Basal(rat
 
 private fun PumpSettingsData.Basal.toDto() = PumpSettingsDataDto.BasalDto(rateMaximum = rateMaximum?.toDto())
 
-private fun PumpSettingsDataDto.InsulinUnitsDto.toDomain(): Insulin.Units = when (this) {
-    PumpSettingsDataDto.InsulinUnitsDto.Units -> Insulin.Units.Units
+private fun InsulinDto.UnitsDto.toDomain(): Insulin.Units = when (this) {
+    InsulinDto.UnitsDto.Units -> Insulin.Units.Units
 }
 
-private fun Insulin.Units.toDto(): PumpSettingsDataDto.InsulinUnitsDto = when (this) {
-    Insulin.Units.Units -> PumpSettingsDataDto.InsulinUnitsDto.Units
+private fun Insulin.Units.toDto(): InsulinDto.UnitsDto = when (this) {
+    Insulin.Units.Units -> InsulinDto.UnitsDto.Units
 }
 
 private fun PumpSettingsDataDto.BolusDto.AmountMaximumDto.toDomain() = PumpSettingsData.Bolus.AmountMaximum(

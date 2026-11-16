@@ -8,6 +8,7 @@ import org.tidepool.sdk.dto.BloodGlucoseDto.UnitsDto.MilligramsPerDeciliter
 import org.tidepool.sdk.dto.BloodGlucoseDto.UnitsDto.MillimolesPerLiter
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.dto.data.toDomain
+import org.tidepool.sdk.dto.data.toDosingDecisionDomain
 import org.tidepool.sdk.dto.data.toDto
 import org.tidepool.sdk.model.BloodGlucose
 import org.tidepool.sdk.model.data.DosingDecisionData
@@ -224,7 +225,7 @@ fun BloodGlucoseDto.TrendDto.toDomain() = when (this) {
 fun DosingDecisionDataDto.UnitsDto.toDomain(): DosingDecisionData.Units = DosingDecisionData.Units(
     bg = bg.toDomain(),
     carb = carb.toDomain(),
-    insulin = insulin.toDomain()
+    insulin = insulin.toDosingDecisionDomain()
 )
 
 fun DosingDecisionData.Units.toDto() = DosingDecisionDataDto.UnitsDto(

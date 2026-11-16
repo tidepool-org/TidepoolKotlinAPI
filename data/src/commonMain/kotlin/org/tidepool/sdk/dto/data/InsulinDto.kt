@@ -2,16 +2,25 @@ package org.tidepool.sdk.dto.data
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.JsonNames
 import org.tidepool.sdk.model.data.Dose
 import org.tidepool.sdk.model.data.Insulin
 
 @Serializable
 class InsulinDto {
-    
+
+    /**
+     * The one insulin-units DTO enum, shared by the insulin dose, pump status reservoir, pump
+     * settings insulin units/amountMaximum and dosing decision units.insulin. Platform only
+     * accepts "Units" (data/types/insulin/dose.go, data/types/status/pump/reservoir.go);
+     * [JsonNames] keeps decoding old cached rows that were queued under the previous lowercase
+     * "units" spelling.
+     */
     @Serializable
     enum class UnitsDto {
-        
-        @SerialName("units")
+
+        @SerialName("Units")
+        @JsonNames("units")
         Units
     }
 }
