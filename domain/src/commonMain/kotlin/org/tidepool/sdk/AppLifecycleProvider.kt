@@ -1,6 +1,6 @@
 package org.tidepool.sdk
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Pure Kotlin interface for providing app lifecycle events.
@@ -11,7 +11,7 @@ interface AppLifecycleProvider {
     /**
      * Flow that emits true when app comes to foreground, false when it goes to background.
      */
-    val foregroundStateFlow: Flow<Boolean>
+    val foregroundStateFlow: StateFlow<Boolean>
     
     /**
      * Current foreground state of the app.

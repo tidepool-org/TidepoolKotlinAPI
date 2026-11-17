@@ -1,5 +1,8 @@
 package org.tidepool.sdk.service
 
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.tidepool.sdk.TokenProvider
 import org.tidepool.sdk.UnauthorizedException
@@ -67,6 +70,45 @@ class DataServiceUploadDataTest {
 
         assertTrue(result.isSuccess)
         assertEquals(listOf(deletion), dataRepository.cachedDeletions)
+    }
+
+    @Test
+    fun signalsWhenDataIsQueued() = runTest {
+        val dataService = dataServiceWith(RecordingDataRepository(), FakeTokenProvider())
+        val signals = countDataQueued(dataService)
+
+        dataService.uploadData(sample)
+
+        assertEquals(1, signals())
+    }
+
+    @Test
+    fun signalsWhenADeletionIsQueued() = runTest {
+        val dataService = dataServiceWith(RecordingDataRepository(), FakeTokenProvider())
+        val signals = countDataQueued(dataService)
+
+        dataService.deleteData(listOf(DataDeletion(id = "food-1", originId = "sync-1")))
+
+        assertEquals(1, signals())
+    }
+
+    @Test
+    fun noSignalWhenNothingIsQueued() = runTest {
+        val dataService = dataServiceWith(RecordingDataRepository(), FakeTokenProvider(isLoggedIn = false))
+        val signals = countDataQueued(dataService)
+
+        dataService.uploadData(sample)
+        dataService.deleteData(emptyList())
+
+        assertEquals(0, signals())
+    }
+
+    private fun TestScope.countDataQueued(dataService: DataService): () -> Int {
+        var count = 0
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) {
+            dataService.dataQueued.collect { count++ }
+        }
+        return { count }
     }
 
     private fun dataServiceWith(
