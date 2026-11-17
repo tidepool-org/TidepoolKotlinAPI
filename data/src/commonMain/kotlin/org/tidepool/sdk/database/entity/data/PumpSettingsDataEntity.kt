@@ -68,6 +68,8 @@ data class PumpSettingsDataEntity(
     var firmwareVersion: String? = null,
     @ColumnInfo(name = "hardware_version")
     var hardwareVersion: String? = null,
+    @ColumnInfo(name = "insulin_formulation")
+    var insulinFormulation: String? = null, // JSON string
     @ColumnInfo(name = "insulin_model")
     var insulinModel: String? = null, // JSON string
     @ColumnInfo(name = "insulin_sensitivity_schedules")
@@ -130,6 +132,7 @@ fun PumpSettingsDataDto.toEntity() = PumpSettingsDataEntity(
     display = display?.let { Json.encodeToString(it) },
     firmwareVersion = firmwareVersion,
     hardwareVersion = hardwareVersion,
+    insulinFormulation = insulinFormulation?.let { Json.encodeToString(it) },
     insulinModel = insulinModel?.let { Json.encodeToString(it) },
     insulinSensitivitySchedules = insulinSensitivitySchedules?.let { Json.encodeToString(it) },
     manufacturers = manufacturers?.let { Json.encodeToString(it) },
@@ -184,6 +187,9 @@ fun PumpSettingsDataEntity.toDto() = PumpSettingsDataDto(
     display = display?.takeUnless { it == "null" }?.let { Json.decodeFromString<PumpSettingsDataDto.DisplayDto>(it) },
     firmwareVersion = firmwareVersion,
     hardwareVersion = hardwareVersion,
+    insulinFormulation = insulinFormulation
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<PumpSettingsDataDto.InsulinFormulationDto>(it) },
     insulinModel = insulinModel
         ?.takeUnless { it == "null" }
         ?.let { Json.decodeFromString<PumpSettingsDataDto.InsulinModelDto>(it) },

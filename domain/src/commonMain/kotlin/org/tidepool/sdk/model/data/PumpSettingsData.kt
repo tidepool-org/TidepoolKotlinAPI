@@ -35,6 +35,7 @@ data class PumpSettingsData(
     val display: Display? = null,
     val firmwareVersion: String? = null,
     val hardwareVersion: String? = null,
+    val insulinFormulation: InsulinFormulation? = null,
     val insulinModel: InsulinModel? = null,
     val insulinSensitivitySchedules: Map<String, List<ScheduleStart>>? = null,
     val manufacturers: List<String>? = null,
@@ -95,6 +96,27 @@ data class PumpSettingsData(
         data class DisplayBloodGlucose(
             val units: BloodGlucose.Units? = null,
         )
+    }
+
+    /**
+     * TidepoolKit's TInsulinDatum.Formulation, in the simple form iOS sends for the pump's insulin
+     * type: an acting type and a brand. TidepoolKit's compounds and concentration aren't modelled.
+     */
+    data class InsulinFormulation(
+        val name: String? = null,
+        val simple: Simple? = null,
+    ) {
+        data class Simple(
+            val actingType: ActingType? = null,
+            val brand: String? = null,
+        ) {
+            enum class ActingType {
+                Rapid,
+                Short,
+                Intermediate,
+                Long,
+            }
+        }
     }
 
     data class InsulinModel(

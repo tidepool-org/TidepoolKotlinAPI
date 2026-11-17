@@ -1,5 +1,6 @@
 package org.tidepool.sdk.dto.data
 
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.encodeToJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -133,6 +134,23 @@ class SettingsDataDtoTest {
         assertEquals("600", insulinModel.getValue("actionDelay").jsonPrimitive.content)
         assertEquals("21600", insulinModel.getValue("actionDuration").jsonPrimitive.content)
         assertEquals("4500", insulinModel.getValue("actionPeakOffset").jsonPrimitive.content)
+    }
+
+    @Test
+    fun `pumpSettings insulinFormulation encodes as TidepoolKit's formulation object and round-trips`() {
+        val formulation = PumpSettingsData.InsulinFormulation(
+            simple = PumpSettingsData.InsulinFormulation.Simple(
+                actingType = PumpSettingsData.InsulinFormulation.Simple.ActingType.Rapid,
+                brand = "Fiasp",
+            ),
+        )
+        val dto = PumpSettingsData(id = "id", insulinFormulation = formulation).toDto()
+
+        assertEquals(
+            Json.parseToJsonElement("""{"simple":{"actingType":"rapid","brand":"Fiasp"}}"""),
+            json.encodeToJsonElement(dto).jsonObject.getValue("insulinFormulation"),
+        )
+        assertEquals(formulation, dto.toDomain().insulinFormulation)
     }
 
     @Test

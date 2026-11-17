@@ -65,6 +65,8 @@ data class PumpSettingsDataDto(
     val firmwareVersion: String? = null,
     @SerialName("hardwareVersion")
     val hardwareVersion: String? = null,
+    @SerialName("insulinFormulation")
+    val insulinFormulation: InsulinFormulationDto? = null,
     @SerialName("insulinModel")
     val insulinModel: InsulinModelDto? = null,
     @SerialName("insulinSensitivities")
@@ -172,6 +174,38 @@ data class PumpSettingsDataDto(
         }
     }
 
+    /** TidepoolKit's `TInsulinDatum.Formulation`: `{"simple": {"actingType": "rapid", "brand": "Fiasp"}}`. */
+    @Serializable
+    data class InsulinFormulationDto(
+        @SerialName("name")
+        val name: String? = null,
+        @SerialName("simple")
+        val simple: SimpleDto? = null,
+    ) {
+        @Serializable
+        data class SimpleDto(
+            @SerialName("actingType")
+            val actingType: ActingTypeDto? = null,
+            @SerialName("brand")
+            val brand: String? = null,
+        ) {
+            @Serializable
+            enum class ActingTypeDto {
+                @SerialName("rapid")
+                Rapid,
+
+                @SerialName("short")
+                Short,
+
+                @SerialName("intermediate")
+                Intermediate,
+
+                @SerialName("long")
+                Long,
+            }
+        }
+    }
+
     @Serializable
     data class OverridePresetDto(
         @SerialName("abbreviation")
@@ -230,6 +264,7 @@ fun PumpSettingsDataDto.toDomain(): PumpSettingsData = PumpSettingsData(
     display = display?.toDomain(),
     firmwareVersion = firmwareVersion,
     hardwareVersion = hardwareVersion,
+    insulinFormulation = insulinFormulation?.toDomain(),
     insulinModel = insulinModel?.toDomain(),
     insulinSensitivitySchedules = insulinSensitivitySchedules?.mapValues { (_, v) -> v.map { it.toScheduleStartDomain() } },
     manufacturers = manufacturers,
@@ -268,6 +303,7 @@ fun PumpSettingsData.toDto(): PumpSettingsDataDto = PumpSettingsDataDto(
     display = display?.toDto(),
     firmwareVersion = firmwareVersion,
     hardwareVersion = hardwareVersion,
+    insulinFormulation = insulinFormulation?.toDto(),
     insulinModel = insulinModel?.toDto(),
     insulinSensitivitySchedules = insulinSensitivitySchedules?.mapValues { (_, v) -> v.map { it.toScheduleStartDto() } },
     manufacturers = manufacturers,
@@ -396,6 +432,28 @@ private fun PumpSettingsData.InsulinModel.ModelType.toDto(): PumpSettingsDataDto
     PumpSettingsData.InsulinModel.ModelType.RapidChild -> PumpSettingsDataDto.InsulinModelDto.ModelTypeDto.RapidChild
     PumpSettingsData.InsulinModel.ModelType.Walsh -> PumpSettingsDataDto.InsulinModelDto.ModelTypeDto.Walsh
 }
+
+private fun PumpSettingsDataDto.InsulinFormulationDto.toDomain() = PumpSettingsData.InsulinFormulation(
+    name = name,
+    simple = simple?.let { simple ->
+        PumpSettingsData.InsulinFormulation.Simple(
+            actingType = simple.actingType?.let { PumpSettingsData.InsulinFormulation.Simple.ActingType.valueOf(it.name) },
+            brand = simple.brand,
+        )
+    },
+)
+
+private fun PumpSettingsData.InsulinFormulation.toDto() = PumpSettingsDataDto.InsulinFormulationDto(
+    name = name,
+    simple = simple?.let { simple ->
+        PumpSettingsDataDto.InsulinFormulationDto.SimpleDto(
+            actingType = simple.actingType?.let {
+                PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.valueOf(it.name)
+            },
+            brand = simple.brand,
+        )
+    },
+)
 
 private fun PumpSettingsDataDto.InsulinModelDto.toDomain() = PumpSettingsData.InsulinModel(
     modelType = modelType?.toDomain(),
