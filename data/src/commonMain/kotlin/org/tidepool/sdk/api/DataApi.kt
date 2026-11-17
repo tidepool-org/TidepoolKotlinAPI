@@ -57,6 +57,8 @@ interface DataApi {
         @Path("userId") userId: String,
         @Query("page") page: Int? = null,
         @Query("size") size: Int? = null,
+        @Query("client.name") clientName: String? = null,
+        @Query("deleted") deleted: Boolean? = null,
     ): List<DataSetDto>
     
     @POST("v1/users/{userId}/data_sets")

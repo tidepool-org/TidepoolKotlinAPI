@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
@@ -37,7 +38,7 @@ data class ContinuousGlucoseDataEntity(
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
     override var timeZoneOffset: Int?, // Duration in minutes
-    
+
     @ColumnInfo(name = "value")
     var value: Double? = null,
     @ColumnInfo(name = "units")
@@ -45,7 +46,15 @@ data class ContinuousGlucoseDataEntity(
     @ColumnInfo(name = "trend")
     var trend: String? = null,
     @ColumnInfo(name = "trend_rate")
-    var trendRate: Double? = null
+    var trendRate: Double? = null,
+    // Without it an updated reading can't replace its earlier upload (the data set deduplicates
+    // by origin), and a queued deletion can't drop a copy still waiting.
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
+    @ColumnInfo(name = "payload")
+    var payload: String? = null, // JSON string
+    @ColumnInfo(name = "device_id")
+    var deviceId: String? = null,
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -78,6 +87,9 @@ fun ContinuousGlucoseDataDto.toEntity() = ContinuousGlucoseDataEntity(
     units = units?.let { Json.encodeToString(it) },
     trend = trend?.let { Json.encodeToString(it) },
     trendRate = trendRate,
+    origin = origin?.let { Json.encodeToString(it) },
+    payload = payload?.let { Json.encodeToString(it) },
+    deviceId = deviceId,
 )
 
 fun ContinuousGlucoseDataEntity.toDto() = ContinuousGlucoseDataDto(
@@ -103,4 +115,9 @@ fun ContinuousGlucoseDataEntity.toDto() = ContinuousGlucoseDataDto(
     units = units?.let { Json.decodeFromString(it) },
     trend = trend?.let { Json.decodeFromString(it) },
     trendRate = trendRate,
+    origin = origin?.takeUnless { it == "null" }?.let { Json.decodeFromString<OriginDto>(it) },
+    payload = payload
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<ContinuousGlucoseDataDto.PayloadDto>(it) },
+    deviceId = deviceId,
 )

@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlin.time.Clock
 import org.tidepool.sdk.AppLifecycleProvider
+import org.tidepool.sdk.ClientInfo
 import org.tidepool.sdk.Paginator
 import org.tidepool.sdk.PaginatorImpl
 import org.tidepool.sdk.TokenProvider
@@ -40,6 +41,7 @@ class DataService internal constructor(
     private val dataRepository: DataRepository,
     private val userRepository: UserRepository,
     private val tokenProvider: TokenProvider,
+    private val clientInfo: ClientInfo,
 ) {
 
     private val TAG = javaClass.simpleName
@@ -449,22 +451,34 @@ class DataService internal constructor(
 
     suspend fun uploadData(data: BaseData): Result<List<BaseData>> = uploadData(listOf(data))
 
+    /**
+     * Finds this client's own data set, the way iOS's `TidepoolService` does: it asks the server
+     * to filter by client name and non-deleted, then filters again locally in case the server
+     * doesn't honour one of those, and takes the first match rather than picking by upload id.
+     */
     private suspend fun getDataSetId() = dataRepository.awaitOrCreateCachedDataSetId {
-        getUserDataSets()
-            .flatMap { dataSets ->
-                dataSets
-                    .filter { it.uploadId != null }
-                    .minByOrNull { it.uploadId!! }
-                    ?.let {
-                        Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
-                        Result.success(it)
-                    }
-                    ?: createDataSet(newDataSet = newContinuousDataSet())
-            }.flatMap {
-                Logger.d(TAG) { "Created data set: ${it.id}" }
-                it.id?.let { Result.success(it) }
-                    ?: Result.failure(IllegalStateException("No id"))
+        tokenProvider.getToken().flatMap { token ->
+            userRepository.getCurrentUser(token).flatMap { user ->
+                dataRepository.getUserDataSets(
+                    userId = user.userId,
+                    sessionToken = token,
+                    clientName = clientInfo.name,
+                    deleted = false,
+                )
             }
+        }.flatMap { dataSets ->
+            dataSets
+                .firstOrNull { it.client?.name == clientInfo.name && it.deletedTime == null }
+                ?.let {
+                    Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
+                    Result.success(it)
+                }
+                ?: createDataSet(newDataSet = newContinuousDataSet(clientInfo = clientInfo))
+        }.flatMap {
+            Logger.d(TAG) { "Created data set: ${it.id}" }
+            it.id?.let { Result.success(it) }
+                ?: Result.failure(IllegalStateException("No id"))
+        }
     }
 
     fun clearUserDataSetId() {
@@ -473,6 +487,17 @@ class DataService internal constructor(
 
     /** Whether recorded data is still waiting to be uploaded. */
     suspend fun hasCachedData(): Boolean = dataRepository.hasCachedData()
+
+    /**
+     * Empties the local outbox entirely: every cached datum, every queued deletion, and the
+     * cached data set id. Works without a session. Not for routine use; intended for a host that
+     * wants to drop local state (e.g. on logout or a full reset).
+     *
+     * Takes [uploadMutex], the same lock an in-flight [uploadCachedDataNow] batch holds while
+     * awaiting [getDataSetId]: without it, a data set creation already in flight when this is
+     * called could finish afterwards and re-save the old account's id under the cleared cache.
+     */
+    suspend fun clearCachedData(): Result<Unit> = uploadMutex.withLock { dataRepository.clearCachedData() }
 
     private companion object {
         // Together these keep one uploadCachedDataNow() call inside a WorkManager CoroutineWorker's
@@ -488,19 +513,18 @@ class DataService internal constructor(
 internal fun newContinuousDataSet(
     time: Instant = Clock.System.now(),
     timeZone: TimeZone = TimeZone.getDefault(),
+    clientInfo: ClientInfo,
 ) = NewDataSet(
     client = ClientSoftware(
-        name = "org.tidepool.loop",
-        version = "TEST",
+        name = clientInfo.name,
+        version = clientInfo.version,
     ),
     dataSetType = "continuous",
     timezone = timeZone.id,
     // Offset at `time`, DST included; rawOffset is standard time only.
     timeZoneOffset = timeZone.getOffset(time.toEpochMilliseconds()).milliseconds.inWholeMinutes.toInt(),
-    deviceManufacturers = listOf(
-        "test"
-    ),
-    deviceId = "test",
+    // No deviceId / deviceManufacturers / deviceSerialNumber / deviceModel: iOS's TidepoolService
+    // sends none of these for the continuous data set it creates for itself.
     time = time,
     deduplicator = DeduplicatorDescriptor(
         name = "org.tidepool.deduplicator.dataset.delete.origin",
@@ -510,6 +534,5 @@ internal fun newContinuousDataSet(
         DeviceTag.Cgm,
         DeviceTag.InsulinPump,
     ),
-    deviceSerialNumber = "test",
     timeProcessing = "none",
 )

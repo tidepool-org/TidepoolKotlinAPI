@@ -18,6 +18,9 @@ interface FoodDataDao {
     @Delete
     suspend fun delete(data: List<FoodDataEntity>)
 
+    @Query("DELETE FROM food_data")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM food_data WHERE id = :id")
     suspend fun getById(id: String): FoodDataEntity?
 

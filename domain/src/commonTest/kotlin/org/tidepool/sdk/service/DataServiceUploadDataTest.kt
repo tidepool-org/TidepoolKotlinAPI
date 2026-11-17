@@ -13,6 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import org.tidepool.sdk.model.data.DataDeletion
+import org.tidepool.sdk.ClientInfo
 
 /**
  * Verifies that [DataService.uploadData] caches data for the next upload whenever a session is
@@ -118,5 +119,6 @@ class DataServiceUploadDataTest {
         dataRepository = dataRepository,
         userRepository = FakeUserRepository(),
         tokenProvider = tokenProvider,
+        clientInfo = ClientInfo(name = "org.tidepool.loop", version = "TEST"),
     )
 }

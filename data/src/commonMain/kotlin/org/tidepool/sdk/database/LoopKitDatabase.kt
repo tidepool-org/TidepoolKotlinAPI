@@ -10,14 +10,17 @@ import org.tidepool.sdk.database.entity.data.BolusDataEntity
 import org.tidepool.sdk.database.entity.data.CgmSettingsDataEntity
 import org.tidepool.sdk.database.entity.data.ContinuousGlucoseDataEntity
 import org.tidepool.sdk.database.entity.data.ControllerSettingsDataEntity
+import org.tidepool.sdk.database.entity.data.ControllerStatusDataEntity
 import org.tidepool.sdk.database.entity.data.DeviceEventDataEntity
 import org.tidepool.sdk.database.entity.data.DosingDecisionDataEntity
 import org.tidepool.sdk.database.entity.data.FoodDataEntity
 import org.tidepool.sdk.database.entity.data.InsulinDataEntity
 import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
+import org.tidepool.sdk.database.entity.data.PumpStatusDataEntity
+import org.tidepool.sdk.database.entity.data.SmbgDataEntity
 
 @Database(
-    version = 3,
+    version = 4,
     exportSchema = true,
     entities = [
         BaseDataEntity::class,
@@ -31,6 +34,9 @@ import org.tidepool.sdk.database.entity.data.PumpSettingsDataEntity
         CgmSettingsDataEntity::class,
         ControllerSettingsDataEntity::class,
         PumpSettingsDataEntity::class,
+        SmbgDataEntity::class,
+        PumpStatusDataEntity::class,
+        ControllerStatusDataEntity::class,
         PendingDataDeletionEntity::class,
     ],
 )
@@ -46,5 +52,8 @@ abstract class LoopKitDatabase : RoomDatabase() {
     abstract fun cgmSettingsDataDao(): CgmSettingsDataDao
     abstract fun controllerSettingsDataDao(): ControllerSettingsDataDao
     abstract fun pumpSettingsDataDao(): PumpSettingsDataDao
+    abstract fun smbgDataDao(): SmbgDataDao
+    abstract fun pumpStatusDataDao(): PumpStatusDataDao
+    abstract fun controllerStatusDataDao(): ControllerStatusDataDao
     abstract fun pendingDataDeletionDao(): PendingDataDeletionDao
 }

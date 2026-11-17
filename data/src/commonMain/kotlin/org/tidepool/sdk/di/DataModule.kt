@@ -28,6 +28,7 @@ import org.tidepool.sdk.database.BasalAutomatedDataDao
 import org.tidepool.sdk.database.BolusDataDao
 import org.tidepool.sdk.database.CgmSettingsDataDao
 import org.tidepool.sdk.database.ControllerSettingsDataDao
+import org.tidepool.sdk.database.ControllerStatusDataDao
 import org.tidepool.sdk.database.ContinuousGlucoseDataDao
 import org.tidepool.sdk.database.DeviceEventDataDao
 import org.tidepool.sdk.database.DosingDecisionDataDao
@@ -36,15 +37,23 @@ import org.tidepool.sdk.database.InsulinDataDao
 import org.tidepool.sdk.database.LoopKitDatabase
 import org.tidepool.sdk.database.PendingDataDeletionDao
 import org.tidepool.sdk.database.PumpSettingsDataDao
+import org.tidepool.sdk.database.PumpStatusDataDao
+import org.tidepool.sdk.database.SmbgDataDao
 import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import org.tidepool.sdk.dto.data.BasalAutomatedDataDto
 import org.tidepool.sdk.dto.data.BaseDataDto
 import org.tidepool.sdk.dto.data.BolusDataDto
+import org.tidepool.sdk.dto.data.CgmSettingsDataDto
 import org.tidepool.sdk.dto.data.ContinuousGlucoseDataDto
+import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
+import org.tidepool.sdk.dto.data.ControllerStatusDataDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
 import org.tidepool.sdk.dto.data.FoodDataDto
 import org.tidepool.sdk.dto.data.InsulinDataDto
+import org.tidepool.sdk.dto.data.PumpSettingsDataDto
+import org.tidepool.sdk.dto.data.PumpStatusDataDto
+import org.tidepool.sdk.dto.data.SmbgDataDto
 import org.tidepool.sdk.dto.summary.SummaryDto
 import org.tidepool.sdk.dto.summary.CgmSummaryDto
 import org.tidepool.sdk.dto.summary.BgmSummaryDto
@@ -161,6 +170,9 @@ public val dataModule = module {
     single<CgmSettingsDataDao> { get<LoopKitDatabase>().cgmSettingsDataDao() }
     single<ControllerSettingsDataDao> { get<LoopKitDatabase>().controllerSettingsDataDao() }
     single<PumpSettingsDataDao> { get<LoopKitDatabase>().pumpSettingsDataDao() }
+    single<SmbgDataDao> { get<LoopKitDatabase>().smbgDataDao() }
+    single<PumpStatusDataDao> { get<LoopKitDatabase>().pumpStatusDataDao() }
+    single<ControllerStatusDataDao> { get<LoopKitDatabase>().controllerStatusDataDao() }
     single<PendingDataDeletionDao> { get<LoopKitDatabase>().pendingDataDeletionDao() }
     
     singleOf(::AlertRepositoryImpl) bind AlertRepository::class
@@ -201,6 +213,12 @@ internal fun createTidepoolJson(): Json =
                 subclass(DosingDecisionDataDto::class)
                 subclass(FoodDataDto::class)
                 subclass(InsulinDataDto::class)
+                subclass(SmbgDataDto::class)
+                subclass(PumpStatusDataDto::class)
+                subclass(ControllerStatusDataDto::class)
+                subclass(CgmSettingsDataDto::class)
+                subclass(ControllerSettingsDataDto::class)
+                subclass(PumpSettingsDataDto::class)
                 // Add other BaseData subclasses as they get implemented
             }
             // Configure SummaryDto polymorphism

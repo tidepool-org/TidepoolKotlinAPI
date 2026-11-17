@@ -43,6 +43,12 @@ data class ContinuousGlucoseDataDto(
     val trend: BloodGlucoseDto.TrendDto? = null,
     @SerialName("trendRate")
     val trendRate: Double? = null,
+    @SerialName("origin")
+    val origin: OriginDto? = null,
+    @SerialName("payload")
+    val payload: PayloadDto? = null,
+    @SerialName("deviceId")
+    val deviceId: String? = null,
 ) : BaseDataDto() {
 
     val reading: GlucoseReadingDto? by lazy {
@@ -52,6 +58,14 @@ data class ContinuousGlucoseDataDto(
             }
         }
     }
+
+    @Serializable
+    data class PayloadDto(
+        @SerialName("syncIdentifier")
+        val syncIdentifier: String,
+        @SerialName("syncVersion")
+        val syncVersion: Int? = null,
+    )
 }
 
 fun ContinuousGlucoseDataDto.toDomain(): ContinuousGlucoseData = ContinuousGlucoseData(
@@ -71,6 +85,19 @@ fun ContinuousGlucoseDataDto.toDomain(): ContinuousGlucoseData = ContinuousGluco
     units = units?.toDomain(),
     trend = trend?.toDomain(),
     trendRate = trendRate,
+    origin = origin?.toDomain(),
+    payload = payload?.toDomain(),
+    deviceId = deviceId,
+)
+
+private fun ContinuousGlucoseDataDto.PayloadDto.toDomain() = ContinuousGlucoseData.Payload(
+    syncIdentifier = syncIdentifier,
+    syncVersion = syncVersion,
+)
+
+private fun ContinuousGlucoseData.Payload.toDto() = ContinuousGlucoseDataDto.PayloadDto(
+    syncIdentifier = syncIdentifier,
+    syncVersion = syncVersion,
 )
 
 fun ContinuousGlucoseData.toDto() = ContinuousGlucoseDataDto(
@@ -90,4 +117,7 @@ fun ContinuousGlucoseData.toDto() = ContinuousGlucoseDataDto(
     units = units?.toDto(),
     trend = trend?.toDto(),
     trendRate = trendRate,
+    origin = origin?.toDto(),
+    payload = payload?.toDto(),
+    deviceId = deviceId,
 )

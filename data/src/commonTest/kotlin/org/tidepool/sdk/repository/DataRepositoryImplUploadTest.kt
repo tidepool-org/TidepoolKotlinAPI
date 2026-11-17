@@ -48,6 +48,9 @@ class DataRepositoryImplUploadTest {
     /** Data types the server rejects with a 400. */
     private val rejectedTypes = mutableSetOf<String>()
 
+    /** Body a rejected request gets back. */
+    private var rejectedResponseBody = "{}"
+
     @Test
     fun `each data type goes out in its own request`() = runTest {
         val repository = repository()
@@ -120,6 +123,73 @@ class DataRepositoryImplUploadTest {
         assertFalse(repository.hasCachedData())
     }
 
+    // Before this fix, a 400/422 left the whole batch cached regardless of its body, so a single
+    // permanently invalid row (e.g. an out-of-range value) sat at the front of `time ASC, rowid
+    // ASC` order and blocked every row behind it, forever: confirmed by temporarily asserting
+    // that `cgm.table.rows` still held both an old rejected row and a newer one after two
+    // `uploadCachedData` passes, with no change to production code. These tests cover the fix.
+    @Test
+    fun `a rejected row named by pointer is dropped without blocking the rest of the batch`() = runTest {
+        rejectedResponseBody = """
+            {"code":"value-out-of-range","errors":[{"code":"value-out-of-range","title":"value is out of range","detail":"value 1000 is not between 0 and 1000","source":{"pointer":"/0/value"},"meta":{"type":"cbg"}}]}
+        """.trimIndent()
+        rejectedTypes += "cbg"
+        val repository = repository()
+        repository.cache(ContinuousGlucoseData(id = "cgm-bad"), ContinuousGlucoseData(id = "cgm-ok"))
+
+        val result = repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(Result.success(false), result)
+        assertEquals(listOf("cgm-ok"), cgm.table.rows.map { it.id })
+    }
+
+    @Test
+    fun `multiple rows named by pointer in one rejection are all dropped`() = runTest {
+        rejectedResponseBody = """
+            {"errors":[{"source":{"pointer":"/0/value"},"meta":{"type":"cbg"}},{"source":{"pointer":"/2/value"},"meta":{"type":"cbg"}}]}
+        """.trimIndent()
+        rejectedTypes += "cbg"
+        val repository = repository()
+        repository.cache(
+            ContinuousGlucoseData(id = "cgm-bad-0"),
+            ContinuousGlucoseData(id = "cgm-ok-1"),
+            ContinuousGlucoseData(id = "cgm-bad-2"),
+        )
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(listOf("cgm-ok-1"), cgm.table.rows.map { it.id })
+    }
+
+    @Test
+    fun `the surviving rows of a partially rejected batch upload on the next pass`() = runTest {
+        rejectedResponseBody = """{"errors":[{"source":{"pointer":"/0/value"},"meta":{"type":"cbg"}}]}"""
+        rejectedTypes += "cbg"
+        val repository = repository()
+        repository.cache(ContinuousGlucoseData(id = "cgm-bad"), ContinuousGlucoseData(id = "cgm-ok"))
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+        rejectedTypes.clear()
+
+        val result = repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(Result.success(false), result)
+        assertFalse(repository.hasCachedData())
+    }
+
+    @Test
+    fun `a rejection body that can't be parsed into pointers leaves the whole batch cached`() = runTest {
+        // No "errors" key at all: today's behaviour (the whole batch stays cached) applies.
+        rejectedResponseBody = """{"code":"internal-server-error"}"""
+        rejectedTypes += "cbg"
+        val repository = repository()
+        repository.cache(ContinuousGlucoseData(id = "cgm-1"))
+
+        val result = repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertTrue(result.isFailure)
+        assertEquals(listOf("cgm-1"), cgm.table.rows.map { it.id })
+    }
+
     @Test
     fun `an empty outbox sends nothing`() = runTest {
         val result = repository().uploadCachedData(sessionToken = "token", dataSetId = "data-set")
@@ -143,7 +213,7 @@ class DataRepositoryImplUploadTest {
                 .toSet()
             requests += types
             if (types.any { it in rejectedTypes }) {
-                respond(content = "{}", status = HttpStatusCode.BadRequest, headers = jsonHeaders)
+                respond(content = rejectedResponseBody, status = HttpStatusCode.BadRequest, headers = jsonHeaders)
             } else {
                 respond(content = "{}", status = HttpStatusCode.OK, headers = jsonHeaders)
             }
@@ -163,6 +233,9 @@ class DataRepositoryImplUploadTest {
         cgmSettingsDataDao = InMemoryCgmSettingsDataDao(),
         controllerSettingsDataDao = InMemoryControllerSettingsDataDao(),
         pumpSettingsDataDao = InMemoryPumpSettingsDataDao(),
+        smbgDataDao = InMemorySmbgDataDao(),
+        pumpStatusDataDao = InMemoryPumpStatusDataDao(),
+        controllerStatusDataDao = InMemoryControllerStatusDataDao(),
         pendingDataDeletionDao = InMemoryPendingDataDeletionDao(),
         keyValueStorage = InMemoryKeyValueStorage(),
     )

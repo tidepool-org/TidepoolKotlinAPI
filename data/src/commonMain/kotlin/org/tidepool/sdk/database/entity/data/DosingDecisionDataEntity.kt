@@ -9,6 +9,7 @@ import org.tidepool.sdk.deserialization.InstantSerializer
 import org.tidepool.sdk.deserialization.TimeZoneSerializer
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.DosingDecisionDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
@@ -57,6 +58,12 @@ data class DosingDecisionDataEntity(
     var scheduleTimeZoneOffset: Int? = null,
     @ColumnInfo(name = "units")
     var units: String = "", // JSON string
+    // Without it an updated decision can't replace its earlier upload (the data set
+    // deduplicates by origin), and a queued deletion can't drop a copy still waiting.
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
+    @ColumnInfo(name = "payload")
+    var payload: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -108,6 +115,8 @@ fun DosingDecisionDataDto.toEntity(): DosingDecisionDataEntity {
         requestedBolus = requestedBolus?.let { json.encodeToString(it) },
         scheduleTimeZoneOffset = scheduleTimeZoneOffset,
         units = json.encodeToString(units),
+        origin = origin?.let { json.encodeToString(it) },
+        payload = payload?.let { json.encodeToString(it) },
     )
 }
 
@@ -138,4 +147,8 @@ fun DosingDecisionDataEntity.toDto() = DosingDecisionDataDto(
     requestedBolus = requestedBolus?.let { Json.decodeFromString(it) },
     scheduleTimeZoneOffset = scheduleTimeZoneOffset,
     units = Json.decodeFromString(units),
+    origin = origin?.takeUnless { it == "null" }?.let { Json.decodeFromString<OriginDto>(it) },
+    payload = payload
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<DosingDecisionDataDto.PayloadDto>(it) },
 )

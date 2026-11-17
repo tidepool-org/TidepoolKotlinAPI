@@ -40,6 +40,8 @@ interface DataRepository {
         sessionToken: String,
         page: Int? = null,
         size: Int? = null,
+        clientName: String? = null,
+        deleted: Boolean? = null,
     ): Result<List<DataSet>>
     
     suspend fun createDataSet(
@@ -161,6 +163,14 @@ interface DataRepository {
 
     /** Whether any record that [uploadCachedData] sends is still waiting in the outbox. */
     suspend fun hasCachedData(): Boolean
+
+    /**
+     * Empties the local outbox: every cached datum of every type, every queued deletion, and the
+     * cached data set id. Works without a session, since it only touches local storage. Intended
+     * for a host that wants to drop local state entirely (e.g. on logout or reset), not for
+     * routine use.
+     */
+    suspend fun clearCachedData(): Result<Unit>
 
     /**
      * Queues [deletions] in the outbox: a copy of the datum still waiting to upload is dropped,

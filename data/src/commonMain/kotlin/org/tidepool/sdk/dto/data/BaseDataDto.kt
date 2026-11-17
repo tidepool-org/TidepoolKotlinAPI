@@ -17,6 +17,9 @@ import org.tidepool.sdk.model.data.DosingDecisionData
 import org.tidepool.sdk.model.data.FoodData
 import org.tidepool.sdk.model.data.InsulinData
 import org.tidepool.sdk.model.data.PumpSettingsData
+import org.tidepool.sdk.model.data.PumpStatusData
+import org.tidepool.sdk.model.data.ControllerStatusData
+import org.tidepool.sdk.model.data.SmbgData
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.reflect.KClass
@@ -83,7 +86,7 @@ abstract class BaseDataDto {
         ControllerSettings(ControllerSettingsDataDto::class),
 
         @SerialName("controllerStatus")
-        ControllerStatus(BaseDataDto::class),
+        ControllerStatus(ControllerStatusDataDto::class),
 
         @SerialName("deviceEvent")
         DeviceEvent(DeviceEventDataDto::class),
@@ -104,13 +107,13 @@ abstract class BaseDataDto {
         PumpSettings(PumpSettingsDataDto::class),
 
         @SerialName("pumpStatus")
-        PumpStatus(BaseDataDto::class),
+        PumpStatus(PumpStatusDataDto::class),
 
         @SerialName("reportedState")
         ReportedState(BaseDataDto::class),
 
         @SerialName("smbg")
-        Smbg(BaseDataDto::class)
+        Smbg(SmbgDataDto::class)
     }
 }
 
@@ -125,6 +128,9 @@ internal fun BaseDataDto.toDomain(): BaseData = when (this) {
     is ControllerSettingsDataDto    -> toDomain()
     is PumpSettingsDataDto          -> toDomain()
     is DeviceEventDataDto           -> toDomain()
+    is SmbgDataDto                  -> toDomain()
+    is PumpStatusDataDto            -> toDomain()
+    is ControllerStatusDataDto      -> toDomain()
     else -> throw IllegalArgumentException("Unknown BaseDataDto type: ${this::class.simpleName}")
 }
 
@@ -160,6 +166,9 @@ internal fun BaseData.toDto(): BaseDataDto = when (this) {
     is ControllerSettingsData   -> toDto()
     is PumpSettingsData         -> toDto()
     is DeviceEventData          -> toDto()
+    is SmbgData                 -> toDto()
+    is PumpStatusData           -> toDto()
+    is ControllerStatusData     -> toDto()
 }
 
 internal fun DataType.toDto(): BaseDataDto.DataTypeDto = when (this) {

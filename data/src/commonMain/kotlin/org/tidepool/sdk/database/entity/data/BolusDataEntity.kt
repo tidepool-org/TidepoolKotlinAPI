@@ -41,10 +41,14 @@ data class BolusDataEntity(
 
     @ColumnInfo(name = "sub_type")
     var subType: String = "normal",
+    // Nullable since the v3->v4 migration rebuilt this column: iOS sends no deliveryContext for
+    // a bolus without one.
     @ColumnInfo(name = "delivery_context")
-    var deliveryContext: String = "",
+    var deliveryContext: String? = null, // JSON string
     @ColumnInfo(name = "normal")
     var normal: Double? = null,
+    @ColumnInfo(name = "expected_normal")
+    var expectedNormal: Double? = null,
     // Kept so the upload replaces an earlier copy and a queued deletion can drop this one (see
     // DataRepositoryImpl), as for basal and food data.
     @ColumnInfo(name = "origin")
@@ -78,8 +82,9 @@ fun BolusDataDto.toEntity() = BolusDataEntity(
     timeZone = timeZone?.id,
     timeZoneOffset = timeZoneOffset,
     subType = Json.encodeToString(subType),
-    deliveryContext = Json.encodeToString(deliveryContext),
+    deliveryContext = deliveryContext?.let { Json.encodeToString(it) },
     normal = normal,
+    expectedNormal = expectedNormal,
     origin = origin?.let { Json.encodeToString(it) },
 )
 
@@ -103,8 +108,11 @@ fun BolusDataEntity.toDto() = BolusDataDto(
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
     timeZoneOffset = timeZoneOffset,
     subType = Json.decodeFromString(subType),
-    deliveryContext = Json.decodeFromString(deliveryContext),
+    deliveryContext = deliveryContext
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString(it) },
     normal = normal,
+    expectedNormal = expectedNormal,
     origin = origin
         ?.takeUnless { it == "null" }
         ?.let { Json.decodeFromString<OriginDto>(it) },

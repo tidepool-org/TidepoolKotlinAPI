@@ -4,6 +4,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.test.runTest
 import org.tidepool.sdk.repository.DataRepository
+import org.tidepool.sdk.ClientInfo
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -25,6 +26,7 @@ class DataServiceUploadMutexTest {
             dataRepository = dataRepository,
             userRepository = FakeUserRepository(),
             tokenProvider = FakeTokenProvider(),
+            clientInfo = testClientInfo,
         )
 
         val results = listOf(
@@ -51,6 +53,7 @@ class DataServiceUploadMutexTest {
             dataRepository = RecordingDataRepository(),
             userRepository = FakeUserRepository(),
             tokenProvider = FailingTokenProvider(expected),
+            clientInfo = testClientInfo,
         )
 
         val result = dataService.uploadCachedDataNow()
@@ -120,5 +123,8 @@ class DataServiceUploadMutexTest {
         dataRepository = dataRepository,
         userRepository = FakeUserRepository(),
         tokenProvider = FakeTokenProvider(),
+        clientInfo = testClientInfo,
     )
+
+    private val testClientInfo = ClientInfo(name = "org.tidepool.loop", version = "TEST")
 }

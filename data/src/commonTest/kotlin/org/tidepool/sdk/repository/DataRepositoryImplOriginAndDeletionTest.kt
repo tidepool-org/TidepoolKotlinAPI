@@ -150,6 +150,22 @@ class DataRepositoryImplOriginAndDeletionTest {
         assertFalse(repository.hasCachedData())
     }
 
+    // A copy still waiting when the deletion is queued is out of date, as for bolus and insulin.
+    @Test
+    fun `a waiting cbg upload whose origin has a queued deletion is dropped instead of sent`() = runTest {
+        val repository = repository()
+        repository.uploadDataToDataSet(
+            listOf(ContinuousGlucoseData(id = "cgm-1", origin = origin.copy(id = "sync-1:cbg")))
+        )
+        repository.cacheDataDeletions(listOf(DataDeletion(id = "cgm-1", originId = "sync-1:cbg")))
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(listOf(HttpMethod.Delete), requests.map { it.first })
+        assertTrue(cgm.table.rows.isEmpty())
+        assertFalse(repository.hasCachedData())
+    }
+
     @Test
     fun `a payload with no delivered amount goes out without the key`() = runTest {
         val repository = repository()
@@ -306,6 +322,9 @@ class DataRepositoryImplOriginAndDeletionTest {
         cgmSettingsDataDao = InMemoryCgmSettingsDataDao(),
         controllerSettingsDataDao = InMemoryControllerSettingsDataDao(),
         pumpSettingsDataDao = InMemoryPumpSettingsDataDao(),
+        smbgDataDao = InMemorySmbgDataDao(),
+        pumpStatusDataDao = InMemoryPumpStatusDataDao(),
+        controllerStatusDataDao = InMemoryControllerStatusDataDao(),
         pendingDataDeletionDao = deletions,
         keyValueStorage = InMemoryKeyValueStorage(),
     )

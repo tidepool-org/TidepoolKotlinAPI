@@ -13,6 +13,7 @@ import org.tidepool.sdk.model.data.DosingDecisionData
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
+import kotlin.math.roundToLong
 
 // TODO: finish implementing dosingdecision.v1
 @Serializable
@@ -59,6 +60,10 @@ data class DosingDecisionDataDto(
     val bgHistorical: List<BloodGlucoseDto.GlucoseReadingDto>? = null,
     @SerialName("bgForecast")
     val bgForecast: List<BloodGlucoseDto.GlucoseReadingDto>? = null,
+    @SerialName("origin")
+    val origin: OriginDto? = null,
+    @SerialName("payload")
+    val payload: PayloadDto? = null,
 ) : BaseDataDto() {
     
     val originalFood: Nothing
@@ -94,8 +99,12 @@ data class DosingDecisionDataDto(
     data class RecommendedBasalDto(
         @SerialName("rate")
         val rate: Double = -1.0,
+        /**
+         * Milliseconds, sent as an integer (`Int(duration.milliseconds)` in TidepoolKit's
+         * `TDosingDecisionDatum`), not a floating point number of minutes.
+         */
         @SerialName("duration")
-        val duration: Double? = null,
+        val duration: Long? = null,
     )
     
     @Serializable
@@ -117,29 +126,33 @@ data class DosingDecisionDataDto(
         @SerialName("carb")
         val carb: CarbDto = CarbDto.Exchanges,
         @SerialName("insulin")
-        val insulin: InsulinDto = InsulinDto.Units,
+        val insulin: InsulinDto.UnitsDto = InsulinDto.UnitsDto.Units,
     ) {
         @Serializable
         enum class CarbDto {
-            
+
             @SerialName("exchanges")
             Exchanges,
-            
+
             @SerialName("grams")
             Grams
         }
-        
-        @Serializable
-        enum class InsulinDto {
-            
-            @SerialName("Units")
-            Units,
-        }
     }
+
+    @Serializable
+    data class PayloadDto(
+        @SerialName("syncIdentifier")
+        val syncIdentifier: String,
+        @SerialName("syncVersion")
+        val syncVersion: Int? = null,
+    )
 }
 
-internal fun UnitsDto.InsulinDto.toDomain() = when (this) {
-    UnitsDto.InsulinDto.Units -> DosingDecisionData.Units.Insulin.Units
+// Named distinctly from the shared InsulinDto.UnitsDto.toDomain() in PumpSettingsDataDto.kt and
+// PumpStatusDataDto.kt (which map to the unrelated Insulin.Units domain type) so the two don't
+// conflict as overloads differing only by return type.
+internal fun InsulinDto.UnitsDto.toDosingDecisionDomain() = when (this) {
+    InsulinDto.UnitsDto.Units -> DosingDecisionData.Units.Insulin.Units
 }
 
 internal fun UnitsDto.CarbDto.toDomain() = when (this) {
@@ -153,7 +166,7 @@ internal fun BloodGlucoseDto.UnitsDto.toDomain() = when (this) {
 }
 
 internal fun DosingDecisionData.Units.Insulin.toDto() = when (this) {
-    DosingDecisionData.Units.Insulin.Units -> UnitsDto.InsulinDto.Units
+    DosingDecisionData.Units.Insulin.Units -> InsulinDto.UnitsDto.Units
 }
 
 internal fun DosingDecisionData.Units.Carb.toDto() = when (this) {
@@ -200,6 +213,8 @@ fun DosingDecisionDataDto.toDomain(): DosingDecisionData = DosingDecisionData(
     smbg = smbg?.toDomain(),
     bgHistorical = bgHistorical?.map { it.toDomain() },
     bgForecast = bgForecast?.map { it.toDomain() },
+    origin = origin?.toDomain(),
+    payload = payload?.toDomain(),
 )
 
 fun DosingDecisionData.toDto(): DosingDecisionDataDto = DosingDecisionDataDto(
@@ -226,6 +241,18 @@ fun DosingDecisionData.toDto(): DosingDecisionDataDto = DosingDecisionDataDto(
     smbg = smbg?.toDto(),
     bgHistorical = bgHistorical?.map { it.toDto() },
     bgForecast = bgForecast?.map { it.toDto() },
+    origin = origin?.toDto(),
+    payload = payload?.toDto(),
+)
+
+private fun DosingDecisionDataDto.PayloadDto.toDomain() = DosingDecisionData.Payload(
+    syncIdentifier = syncIdentifier,
+    syncVersion = syncVersion,
+)
+
+private fun DosingDecisionData.Payload.toDto() = DosingDecisionDataDto.PayloadDto(
+    syncIdentifier = syncIdentifier,
+    syncVersion = syncVersion,
 )
 
 fun InsulinOnBoardDto.toDomain() = DosingDecisionData.InsulinOnBoard(
@@ -240,12 +267,12 @@ fun DosingDecisionData.InsulinOnBoard.toDto() = InsulinOnBoardDto(
 
 fun RecommendedBasalDto.toDomain() = DosingDecisionData.RecommendedBasal(
     rate = rate,
-    duration = duration,
+    duration = duration?.toDouble(),
 )
 
 fun DosingDecisionData.RecommendedBasal.toDto() = RecommendedBasalDto(
     rate = rate,
-    duration = duration,
+    duration = duration?.roundToLong(),
 )
 
 fun RecommendedBolusDto.toDomain() = DosingDecisionData.RecommendedBolus(

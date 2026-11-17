@@ -31,6 +31,13 @@ data class DosingDecisionData(
     val smbg: BloodGlucose.GlucoseReading? = null,
     val bgHistorical: List<BloodGlucose.GlucoseReading>? = null,
     val bgForecast: List<BloodGlucose.GlucoseReading>? = null,
+    /**
+     * Where the decision came from. Uploading a datum with the same origin id replaces the
+     * earlier one (the data set deduplicates by origin), and a queued deletion selects it by
+     * that id.
+     */
+    val origin: Origin? = null,
+    val payload: Payload? = null,
 ) : BaseData(
     id = id,
     type = type,
@@ -69,6 +76,7 @@ data class DosingDecisionData(
     
     data class RecommendedBasal(
         val rate: Double = -1.0,
+        /** Milliseconds. Sent to the platform as an integer number of milliseconds. */
         val duration: Double? = null,
     )
     
@@ -96,4 +104,9 @@ data class DosingDecisionData(
             Units,
         }
     }
+
+    data class Payload(
+        val syncIdentifier: String,
+        val syncVersion: Int? = null,
+    )
 }

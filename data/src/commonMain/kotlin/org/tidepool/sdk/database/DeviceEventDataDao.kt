@@ -15,6 +15,9 @@ interface DeviceEventDataDao {
     @Delete
     suspend fun delete(data: DeviceEventDataEntity)
 
+    @Query("DELETE FROM device_event_data")
+    suspend fun deleteAll()
+
     @Query("SELECT * FROM device_event_data WHERE id = :id")
     suspend fun getById(id: String): DeviceEventDataEntity?
 

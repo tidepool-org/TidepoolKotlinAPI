@@ -13,7 +13,10 @@ import org.tidepool.sdk.dto.data.InsulinDataDto
 import org.tidepool.sdk.dto.data.DeviceEventDataDto
 import org.tidepool.sdk.dto.data.CgmSettingsDataDto
 import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
+import org.tidepool.sdk.dto.data.ControllerStatusDataDto
 import org.tidepool.sdk.dto.data.PumpSettingsDataDto
+import org.tidepool.sdk.dto.data.PumpStatusDataDto
+import org.tidepool.sdk.dto.data.SmbgDataDto
 import org.tidepool.sdk.model.data.BaseData
 import org.tidepool.sdk.model.data.DataType
 import kotlin.time.Instant
@@ -46,6 +49,9 @@ internal fun BaseDataEntity.toDomain(): BaseData = when (this) {
     is InsulinDataEntity            -> toDomain()
     is DeviceEventDataEntity        -> toDomain()
     is PumpSettingsDataEntity       -> toDomain()
+    is SmbgDataEntity               -> toDomain()
+    is PumpStatusDataEntity         -> toDomain()
+    is ControllerStatusDataEntity   -> toDomain()
 }
 
 internal fun BaseDataEntity.toDto(): BaseDataDto {
@@ -61,6 +67,9 @@ internal fun BaseDataEntity.toDto(): BaseDataDto {
         is InsulinDataEntity -> toDto()
         is DeviceEventDataEntity -> toDto()
         is PumpSettingsDataEntity -> toDto()
+        is SmbgDataEntity -> toDto()
+        is PumpStatusDataEntity -> toDto()
+        is ControllerStatusDataEntity -> toDto()
     }
 }
 
@@ -75,6 +84,9 @@ fun BaseDataDto.toEntity(): BaseDataEntity = when (this) {
     is InsulinDataDto               -> toEntity()
     is DeviceEventDataDto           -> toEntity()
     is PumpSettingsDataDto          -> toEntity()
+    is SmbgDataDto                  -> toEntity()
+    is PumpStatusDataDto            -> toEntity()
+    is ControllerStatusDataDto      -> toEntity()
     else                            -> throw IllegalArgumentException(
         "Unknown BaseDataDto subtype: ${this::class}"
     )

@@ -11,30 +11,33 @@ class ResponseDto<T>(
     val errors: List<ErrorDto> = emptyList(),
 )
 
+// Fields are nullable with no required ones: real error bodies vary (e.g. `meta` without a
+// `deliveryType`), and this is decoded defensively from a caught exception's message rather than
+// from a response the server contract guarantees the shape of.
 @Serializable
 data class ErrorDto(
     @SerialName("code")
-    val code: String,
+    val code: String? = null,
     @SerialName("title")
-    val title: String,
+    val title: String? = null,
     @SerialName("detail")
-    val detail: String,
+    val detail: String? = null,
     @SerialName("source")
-    val source: ErrorSourceDto,
+    val source: ErrorSourceDto? = null,
     @SerialName("meta")
-    val meta: ErrorMetaDto,
+    val meta: ErrorMetaDto? = null,
 )
 
 @Serializable
 data class ErrorSourceDto(
     @SerialName("pointer")
-    val pointer: String,
+    val pointer: String? = null,
 )
 
 @Serializable
 data class ErrorMetaDto(
     @SerialName("type")
-    val type: String,
+    val type: String? = null,
     @SerialName("deliveryType")
-    val deliveryType: String,
+    val deliveryType: String? = null,
 )

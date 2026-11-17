@@ -21,8 +21,10 @@ data class BolusData(
     override val timeZone: TimeZone? = null,
     override val timeZoneOffset: Int? = null,
     val subType: BolusSubtype = BolusSubtype.Normal,
-    val deliveryContext: DeliveryContext,
+    /** Never sent: TidepoolKit's bolus datums have no deliveryContext. */
+    val deliveryContext: DeliveryContext? = null,
     val normal: Double? = null,
+    val expectedNormal: Double? = null,
     /**
      * Where the bolus came from. Uploading a datum with the same origin id replaces the earlier
      * one, and a deletion selects it by that id (the data set deduplicates by origin).

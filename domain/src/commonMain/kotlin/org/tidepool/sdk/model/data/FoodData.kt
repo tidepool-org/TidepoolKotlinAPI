@@ -33,6 +33,7 @@ data class FoodData(
      * origin).
      */
     val origin: Origin? = null,
+    val payload: Payload? = null,
 ) : BaseData(
     id = id,
     type = type,
@@ -55,6 +56,16 @@ data class FoodData(
         Snack,
         Other,
     }
+
+    data class Payload(
+        val syncIdentifier: String,
+        val syncVersion: Int? = null,
+        val userCreatedDate: Instant? = null,
+        val userUpdatedDate: Instant? = null,
+        val userDeletedDate: Instant? = null,
+        val addedDate: Instant? = null,
+        val supercededDate: Instant? = null,
+    )
     
     data class Amount(
         val value: Double? = null,

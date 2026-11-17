@@ -55,6 +55,12 @@ internal class RecordingDataRepository(
 
     override suspend fun hasCachedData() = cachedData.isNotEmpty()
 
+    override suspend fun clearCachedData(): Result<Unit> {
+        cachedData.clear()
+        cachedDeletions.clear()
+        return Result.success(Unit)
+    }
+
     val cachedDeletions = mutableListOf<DataDeletion>()
 
     override suspend fun cacheDataDeletions(deletions: List<DataDeletion>) {
@@ -87,6 +93,8 @@ internal class RecordingDataRepository(
         sessionToken: String,
         page: Int?,
         size: Int?,
+        clientName: String?,
+        deleted: Boolean?,
     ): Result<List<DataSet>> = notImplemented()
 
     override suspend fun createDataSet(

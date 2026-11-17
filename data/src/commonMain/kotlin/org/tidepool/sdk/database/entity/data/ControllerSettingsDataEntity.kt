@@ -6,10 +6,13 @@ import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
 import org.tidepool.sdk.dto.data.ControllerSettingsDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
 
+// Table dropped and recreated with these columns in the outbox's v3->v4 migration: it had never
+// been drained, so there was nothing to lose.
 @Entity(tableName = "controller_settings_data")
 data class ControllerSettingsDataEntity(
     @PrimaryKey
@@ -37,6 +40,15 @@ data class ControllerSettingsDataEntity(
     override var timeZone: String? = null, // TimeZone ID
     @ColumnInfo(name = "time_zone_offset")
     override var timeZoneOffset: Int?, // Duration in minutes
+
+    @ColumnInfo(name = "device")
+    var device: String? = null, // JSON string
+    @ColumnInfo(name = "notifications")
+    var notifications: String? = null, // JSON string
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
+    @ColumnInfo(name = "payload")
+    var payload: String? = null, // JSON string
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -65,6 +77,10 @@ fun ControllerSettingsDataDto.toEntity() = ControllerSettingsDataEntity(
     notes = notes.let { Json.encodeToString(it) },
     timeZone = timeZone?.id,
     timeZoneOffset = timeZoneOffset,
+    device = device?.let { Json.encodeToString(it) },
+    notifications = notifications?.let { Json.encodeToString(it) },
+    origin = origin?.let { Json.encodeToString(it) },
+    payload = payload?.let { Json.encodeToString(it) },
 )
 
 fun ControllerSettingsDataEntity.toDto() = ControllerSettingsDataDto(
@@ -86,4 +102,14 @@ fun ControllerSettingsDataEntity.toDto() = ControllerSettingsDataDto(
         .orEmpty(),
     timeZone = timeZone?.let { TimeZone.getTimeZone(it) },
     timeZoneOffset = timeZoneOffset,
+    device = device
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<ControllerSettingsDataDto.DeviceDto>(it) },
+    notifications = notifications
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<ControllerSettingsDataDto.NotificationsDto>(it) },
+    origin = origin?.takeUnless { it == "null" }?.let { Json.decodeFromString<OriginDto>(it) },
+    payload = payload
+        ?.takeUnless { it == "null" }
+        ?.let { Json.decodeFromString<ControllerSettingsDataDto.PayloadDto>(it) },
 )
