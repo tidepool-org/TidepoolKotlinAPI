@@ -433,11 +433,29 @@ private fun PumpSettingsData.InsulinModel.ModelType.toDto(): PumpSettingsDataDto
     PumpSettingsData.InsulinModel.ModelType.Walsh -> PumpSettingsDataDto.InsulinModelDto.ModelTypeDto.Walsh
 }
 
+private fun PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.toDomain():
+    PumpSettingsData.InsulinFormulation.Simple.ActingType = when (this) {
+    PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.Rapid -> PumpSettingsData.InsulinFormulation.Simple.ActingType.Rapid
+    PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.Short -> PumpSettingsData.InsulinFormulation.Simple.ActingType.Short
+    PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.Intermediate ->
+        PumpSettingsData.InsulinFormulation.Simple.ActingType.Intermediate
+    PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.Long -> PumpSettingsData.InsulinFormulation.Simple.ActingType.Long
+}
+
+private fun PumpSettingsData.InsulinFormulation.Simple.ActingType.toDto():
+    PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto = when (this) {
+    PumpSettingsData.InsulinFormulation.Simple.ActingType.Rapid -> PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.Rapid
+    PumpSettingsData.InsulinFormulation.Simple.ActingType.Short -> PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.Short
+    PumpSettingsData.InsulinFormulation.Simple.ActingType.Intermediate ->
+        PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.Intermediate
+    PumpSettingsData.InsulinFormulation.Simple.ActingType.Long -> PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.Long
+}
+
 private fun PumpSettingsDataDto.InsulinFormulationDto.toDomain() = PumpSettingsData.InsulinFormulation(
     name = name,
     simple = simple?.let { simple ->
         PumpSettingsData.InsulinFormulation.Simple(
-            actingType = simple.actingType?.let { PumpSettingsData.InsulinFormulation.Simple.ActingType.valueOf(it.name) },
+            actingType = simple.actingType?.toDomain(),
             brand = simple.brand,
         )
     },
@@ -447,9 +465,7 @@ private fun PumpSettingsData.InsulinFormulation.toDto() = PumpSettingsDataDto.In
     name = name,
     simple = simple?.let { simple ->
         PumpSettingsDataDto.InsulinFormulationDto.SimpleDto(
-            actingType = simple.actingType?.let {
-                PumpSettingsDataDto.InsulinFormulationDto.SimpleDto.ActingTypeDto.valueOf(it.name)
-            },
+            actingType = simple.actingType?.toDto(),
             brand = simple.brand,
         )
     },
