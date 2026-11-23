@@ -24,6 +24,7 @@ import org.tidepool.sdk.model.data.CgmSettingsData
 import org.tidepool.sdk.model.data.ControllerSettingsData
 import org.tidepool.sdk.model.data.ControllerStatusData
 import org.tidepool.sdk.model.data.DataDeletion
+import org.tidepool.sdk.model.data.DeviceEventData
 import org.tidepool.sdk.model.data.Origin
 import org.tidepool.sdk.model.data.PumpSettingsData
 import org.tidepool.sdk.model.data.PumpStatusData
@@ -47,6 +48,7 @@ class NewDatumTypesUploadTest {
     private val cgmSettings = InMemoryCgmSettingsDataDao()
     private val controllerSettings = InMemoryControllerSettingsDataDao()
     private val pumpSettings = InMemoryPumpSettingsDataDao()
+    private val deviceEvents = InMemoryDeviceEventDataDao()
 
     private val requests = mutableListOf<Set<String>>()
 
@@ -121,6 +123,53 @@ class NewDatumTypesUploadTest {
         assertFalse(repository.hasCachedData())
     }
 
+    @Test
+    fun `device events are drained in their own request and counted by hasCachedData`() = runTest {
+        val repository = repository()
+        repository.uploadDataToDataSet(
+            listOf(
+                DeviceEventData(
+                    id = "status-1",
+                    subType = DeviceEventData.SubType.Status,
+                    origin = origin.copy(id = "raw-1:deviceEvent/status"),
+                    status = DeviceEventData.Status.Suspended,
+                    statusReason = DeviceEventData.StatusReason.Manual,
+                ),
+            )
+        )
+        assertTrue(repository.hasCachedData())
+
+        val result = repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertEquals(Result.success(false), result)
+        assertEquals(listOf(setOf("deviceEvent")), requests)
+        assertTrue(deviceEvents.table.getAll().isEmpty())
+        assertFalse(repository.hasCachedData())
+    }
+
+    @Test
+    fun `a waiting device event whose origin has a queued deletion is dropped instead of sent`() = runTest {
+        val repository = repository()
+        repository.uploadDataToDataSet(
+            listOf(
+                DeviceEventData(
+                    id = "override-1",
+                    subType = DeviceEventData.SubType.PumpSettingsOverride,
+                    origin = origin.copy(id = "sync-1:deviceEvent/pumpSettingsOverride"),
+                    overrideType = DeviceEventData.OverrideType.Preprandial,
+                ),
+            )
+        )
+        repository.cacheDataDeletions(
+            listOf(DataDeletion(id = "override-1", originId = "sync-1:deviceEvent/pumpSettingsOverride"))
+        )
+
+        repository.uploadCachedData(sessionToken = "token", dataSetId = "data-set")
+
+        assertTrue(requests.none { "deviceEvent" in it })
+        assertFalse(repository.hasCachedData())
+    }
+
     private fun repository() = DataRepositoryImpl(
         environmentRepository = TestEnvironmentRepository,
         httpClient = HttpClient(MockEngine { request ->
@@ -143,7 +192,7 @@ class NewDatumTypesUploadTest {
         dosingDecisionDataDao = InMemoryDosingDecisionDataDao(),
         foodDataDao = InMemoryFoodDataDao(),
         insulinDataDao = InMemoryInsulinDataDao(),
-        deviceEventDataDao = InMemoryDeviceEventDataDao(),
+        deviceEventDataDao = deviceEvents,
         cgmSettingsDataDao = cgmSettings,
         controllerSettingsDataDao = controllerSettings,
         pumpSettingsDataDao = pumpSettings,

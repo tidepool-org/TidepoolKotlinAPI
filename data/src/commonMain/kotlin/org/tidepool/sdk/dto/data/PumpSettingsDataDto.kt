@@ -377,14 +377,14 @@ private fun PumpSettingsData.ScheduleStart.toBasalRateStartDto() = PumpSettingsD
     rate = amount,
 )
 
-private fun BloodGlucoseDto.TargetDto.toDomain() = BloodGlucose.Target(
+internal fun BloodGlucoseDto.TargetDto.toDomain() = BloodGlucose.Target(
     low = low,
     high = high,
     target = target,
     range = range,
 )
 
-private fun BloodGlucose.Target.toDto() = BloodGlucoseDto.TargetDto(
+internal fun BloodGlucose.Target.toDto() = BloodGlucoseDto.TargetDto(
     low = low,
     high = high,
     target = target,

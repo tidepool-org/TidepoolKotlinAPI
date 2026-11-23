@@ -5,7 +5,9 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.serialization.json.Json
 import org.tidepool.sdk.dto.AssociationDto
+import org.tidepool.sdk.dto.BloodGlucoseDto
 import org.tidepool.sdk.dto.data.DeviceEventDataDto
+import org.tidepool.sdk.dto.data.OriginDto
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration.Companion.milliseconds
@@ -48,6 +50,32 @@ data class DeviceEventDataEntity(
     var warmupPeriodSeconds: Double? = null,
     @ColumnInfo(name = "failure_message")
     var failureMessage: String? = null,
+    @ColumnInfo(name = "origin")
+    var origin: String? = null, // JSON string
+    @ColumnInfo(name = "payload")
+    var payload: String? = null, // JSON string
+    @ColumnInfo(name = "status")
+    var status: String? = null, // JSON string
+    @ColumnInfo(name = "reason")
+    var reason: String? = null, // JSON string
+    @ColumnInfo(name = "override_type")
+    var overrideType: String? = null, // JSON string
+    @ColumnInfo(name = "override_preset")
+    var overridePreset: String? = null,
+    @ColumnInfo(name = "method")
+    var method: String? = null, // JSON string
+    @ColumnInfo(name = "duration")
+    var duration: Long? = null, // milliseconds
+    @ColumnInfo(name = "bg_target")
+    var bgTarget: String? = null, // JSON string
+    @ColumnInfo(name = "units")
+    var units: String? = null, // JSON string
+    @ColumnInfo(name = "basal_rate_scale_factor")
+    var basalRateScaleFactor: Double? = null,
+    @ColumnInfo(name = "carb_ratio_scale_factor")
+    var carbRatioScaleFactor: Double? = null,
+    @ColumnInfo(name = "insulin_sensitivity_scale_factor")
+    var insulinSensitivityScaleFactor: Double? = null,
 ) : BaseDataEntity(
     id = id,
     type = type,
@@ -81,6 +109,19 @@ fun DeviceEventDataDto.toEntity() = DeviceEventDataEntity(
     expectedLifetimeSeconds = expectedLifetimeSeconds,
     warmupPeriodSeconds = warmupPeriodSeconds,
     failureMessage = failureMessage,
+    origin = origin?.let { Json.encodeToString(it) },
+    payload = payload?.let { Json.encodeToString(it) },
+    status = status?.let { Json.encodeToString(it) },
+    reason = reason?.let { Json.encodeToString(it) },
+    overrideType = overrideType?.let { Json.encodeToString(it) },
+    overridePreset = overridePreset,
+    method = method?.let { Json.encodeToString(it) },
+    duration = duration,
+    bgTarget = bgTarget?.let { Json.encodeToString(it) },
+    units = units?.let { Json.encodeToString(it) },
+    basalRateScaleFactor = basalRateScaleFactor,
+    carbRatioScaleFactor = carbRatioScaleFactor,
+    insulinSensitivityScaleFactor = insulinSensitivityScaleFactor,
 )
 
 fun DeviceEventDataEntity.toDto() = DeviceEventDataDto(
@@ -107,4 +148,19 @@ fun DeviceEventDataEntity.toDto() = DeviceEventDataDto(
     expectedLifetimeSeconds = expectedLifetimeSeconds,
     warmupPeriodSeconds = warmupPeriodSeconds,
     failureMessage = failureMessage,
+    origin = origin?.takeUnless { it == "null" }?.let { Json.decodeFromString<OriginDto>(it) },
+    payload = payload?.takeUnless { it == "null" }?.let { Json.decodeFromString<DeviceEventDataDto.PayloadDto>(it) },
+    status = status?.let { Json.decodeFromString<DeviceEventDataDto.StatusDto>(it) },
+    reason = reason?.let {
+        Json.decodeFromString<Map<DeviceEventDataDto.StatusDto, DeviceEventDataDto.StatusReasonDto>>(it)
+    },
+    overrideType = overrideType?.let { Json.decodeFromString<DeviceEventDataDto.OverrideTypeDto>(it) },
+    overridePreset = overridePreset,
+    method = method?.let { Json.decodeFromString<DeviceEventDataDto.MethodDto>(it) },
+    duration = duration,
+    bgTarget = bgTarget?.let { Json.decodeFromString<BloodGlucoseDto.TargetDto>(it) },
+    units = units?.let { Json.decodeFromString<DeviceEventDataDto.UnitsDto>(it) },
+    basalRateScaleFactor = basalRateScaleFactor,
+    carbRatioScaleFactor = carbRatioScaleFactor,
+    insulinSensitivityScaleFactor = insulinSensitivityScaleFactor,
 )

@@ -15,6 +15,9 @@ interface DeviceEventDataDao {
     @Delete
     suspend fun delete(data: DeviceEventDataEntity)
 
+    @Delete
+    suspend fun delete(data: List<DeviceEventDataEntity>)
+
     @Query("DELETE FROM device_event_data")
     suspend fun deleteAll()
 
@@ -23,4 +26,7 @@ interface DeviceEventDataDao {
 
     @Query("SELECT * FROM device_event_data")
     suspend fun getAll(): List<DeviceEventDataEntity>
+
+    @Query("SELECT * FROM device_event_data ORDER BY time ASC, rowid ASC LIMIT :limit")
+    suspend fun getAll(limit: Int): List<DeviceEventDataEntity>
 }

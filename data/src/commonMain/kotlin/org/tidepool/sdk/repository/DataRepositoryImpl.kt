@@ -459,6 +459,13 @@ class DataRepositoryImpl(
                 isDeleted = { hasDeletedOrigin(it.origin) },
             ),
             upload(
+                "deviceEvent",
+                UPLOAD_BATCH_LIMIT,
+                deviceEventDataDao::getAll,
+                deviceEventDataDao::delete,
+                isDeleted = { hasDeletedOrigin(it.origin) },
+            ),
+            upload(
                 "cgmSettings",
                 UPLOAD_BATCH_LIMIT,
                 cgmSettingsDataDao::getAll,
@@ -628,6 +635,7 @@ class DataRepositoryImpl(
             smbgDataDao.getById(deletion.id)?.let { smbgDataDao.delete(it) }
             pumpStatusDataDao.getById(deletion.id)?.let { pumpStatusDataDao.delete(it) }
             controllerStatusDataDao.getById(deletion.id)?.let { controllerStatusDataDao.delete(it) }
+            deviceEventDataDao.getById(deletion.id)?.let { deviceEventDataDao.delete(it) }
         }
     }
 
@@ -645,6 +653,7 @@ class DataRepositoryImpl(
             smbgDataDao.getAll(1).isNotEmpty() ||
             pumpStatusDataDao.getAll(1).isNotEmpty() ||
             controllerStatusDataDao.getAll(1).isNotEmpty() ||
+            deviceEventDataDao.getAll(1).isNotEmpty() ||
             cgmSettingsDataDao.getAll(1).isNotEmpty() ||
             controllerSettingsDataDao.getAll(1).isNotEmpty() ||
             pumpSettingsDataDao.getAll(1).isNotEmpty() ||

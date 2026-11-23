@@ -11,6 +11,7 @@ import org.tidepool.sdk.database.LoopKitDatabase
 import org.tidepool.sdk.database.entity.PendingDataDeletionEntity
 import org.tidepool.sdk.database.entity.data.CgmSettingsDataEntity
 import org.tidepool.sdk.database.entity.data.ControllerStatusDataEntity
+import org.tidepool.sdk.database.entity.data.DeviceEventDataEntity
 import org.tidepool.sdk.database.entity.data.PumpStatusDataEntity
 import org.tidepool.sdk.database.entity.data.SmbgDataEntity
 import org.tidepool.sdk.database.entity.data.toDto
@@ -183,6 +184,45 @@ class OutboxMigrationUnitTest {
             CgmSettingsDataEntity(id = "cgm-settings-1", type = "\"cgmSettings\"", timeZoneOffset = null, name = "Dexcom G7")
         )
         assertEquals("Dexcom G7", migrated.cgmSettingsDataDao().getAll().single().name)
+    }
+
+    @Test
+    fun versionFourOutboxKeepsQueuedDeviceEventsAndGetsTheirNewColumns() = runTest {
+        BundledSQLiteDriver().open(databaseFile.absolutePath).apply {
+            VERSION_2_TABLES.forEach { execSQL(it) }
+            execSQL("ALTER TABLE `bolus_data` ADD COLUMN `origin` TEXT")
+            execSQL("ALTER TABLE `insulin_data` ADD COLUMN `origin` TEXT")
+            execSQL("PRAGMA user_version = 3")
+            execSQL(
+                "INSERT INTO `device_event_data` (`id`, `type`, `time`, `sub_type`, `device_identifier`) " +
+                    "VALUES ('sensor-start-1', '\"deviceEvent\"', 100, '\"sensorStart\"', 'G7')"
+            )
+            close()
+        }
+
+        val migrated = openCurrentDatabase()
+
+        val sensorStart = migrated.deviceEventDataDao().getAll().single()
+        assertEquals("sensor-start-1", sensorStart.id)
+        assertEquals("G7", sensorStart.deviceIdentifier)
+        assertNull(sensorStart.origin)
+        migrated.deviceEventDataDao().insert(
+            DeviceEventDataEntity(
+                id = "override-1",
+                type = "\"deviceEvent\"",
+                timeZoneOffset = null,
+                subType = "\"pumpSettingsOverride\"",
+                origin = """{"id":"sync-1:deviceEvent/pumpSettingsOverride"}""",
+                overrideType = "\"preset\"",
+                overridePreset = "Exercise",
+                duration = 3_600_000L,
+                basalRateScaleFactor = 0.5,
+            )
+        )
+        val override = migrated.deviceEventDataDao().getById("override-1")
+        assertEquals("Exercise", override?.overridePreset)
+        assertEquals(3_600_000L, override?.duration)
+        assertEquals(2, migrated.deviceEventDataDao().getAll(10).size)
     }
 
     @Test
