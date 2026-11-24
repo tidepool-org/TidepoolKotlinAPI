@@ -1,6 +1,7 @@
 package org.tidepool.sdk.dto.prescription
 
 import org.tidepool.sdk.di.createTidepoolJson
+import org.tidepool.sdk.model.data.PumpSettingsData
 import org.tidepool.sdk.model.prescription.GlucoseTargetRange
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -81,5 +82,35 @@ class PrescriptionDtoTest {
         )
 
         assertNull(dto.toDomain().preMealTargetRange)
+    }
+
+    // NEMO-558: the prescribed insulin model was dropped on decode, so a child prescription dosed
+    // with the adult model. iOS types it as TPumpSettingsDatum.InsulinModel.ModelType.
+    @Test
+    fun `toDomain maps the prescribed insulin model`() {
+        fun decode(model: String) = createTidepoolJson().decodeFromString<InitialSettingsDto>(
+            """{"bloodGlucoseUnits":"mg/dL","insulinModel":"$model"}""",
+        ).toDomain().insulinModel
+
+        assertEquals(PumpSettingsData.InsulinModel.ModelType.RapidAdult, decode("rapidAdult"))
+        assertEquals(PumpSettingsData.InsulinModel.ModelType.RapidChild, decode("rapidChild"))
+        assertEquals(PumpSettingsData.InsulinModel.ModelType.Fiasp, decode("fiasp"))
+    }
+
+    @Test
+    fun `toDomain leaves the insulin model null when the prescription has none`() {
+        val dto = createTidepoolJson().decodeFromString<InitialSettingsDto>("""{"bloodGlucoseUnits":"mg/dL"}""")
+
+        assertNull(dto.toDomain().insulinModel)
+    }
+
+    // An unknown model must not fail the whole claim.
+    @Test
+    fun `toDomain reads an unknown insulin model as none`() {
+        val dto = createTidepoolJson().decodeFromString<InitialSettingsDto>(
+            """{"bloodGlucoseUnits":"mg/dL","insulinModel":"ultraRapid"}""",
+        )
+
+        assertNull(dto.toDomain().insulinModel)
     }
 }
