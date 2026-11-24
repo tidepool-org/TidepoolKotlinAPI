@@ -51,7 +51,6 @@ internal class PaginatorImpl<Key, Item>(
     override val items: Flow<List<Item>> = _items.filterNotNull()
     
     override suspend fun loadNextItems() {
-        println("Paginator: loadNextItems() called with key: $currentKey, ${requestMutex.isLocked} $isEndReached")
         if (requestMutex.isLocked || isEndReached) {
             return
         }
