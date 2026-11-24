@@ -1,12 +1,15 @@
 package org.tidepool.sdk.model.data
 
 import org.tidepool.sdk.model.Association
+import org.tidepool.sdk.model.BloodGlucose
 import kotlin.time.Instant
 import java.util.TimeZone
 import kotlin.time.Duration
 
 /**
- * Generic device event datum (e.g., CGM sensor/transmitter lifecycle events).
+ * A device event datum: CGM sensor and transmitter lifecycle events, a pump's suspend and resume
+ * (TidepoolKit's TStatusDeviceEventDatum) and a preset or pre-meal override
+ * (TPumpSettingsOverrideDeviceEventDatum). Only the fields of its [subType] are set.
  */
 data class DeviceEventData(
     override val id: String,
@@ -28,6 +31,31 @@ data class DeviceEventData(
     /** seconds */
     val warmupPeriodSeconds: Double? = null,
     val failureMessage: String? = null,
+    /**
+     * Where the event came from. Uploading a datum with the same origin id replaces the earlier
+     * one (the data set deduplicates by origin), so an override's later end replaces its start.
+     */
+    val origin: Origin? = null,
+    val payload: Payload? = null,
+    /** [SubType.Status]: whether delivery was suspended or resumed. */
+    val status: Status? = null,
+    /** [SubType.Status]: who suspended or resumed delivery. */
+    val statusReason: StatusReason? = null,
+    /** [SubType.PumpSettingsOverride] */
+    val overrideType: OverrideType? = null,
+    /** [SubType.PumpSettingsOverride]: the preset's name, for [OverrideType.Preset] only. */
+    val overridePreset: String? = null,
+    /** [SubType.PumpSettingsOverride] */
+    val method: Method? = null,
+    /** [SubType.PumpSettingsOverride]: milliseconds; null while an open-ended override is running. */
+    val durationMillis: Long? = null,
+    /** [SubType.PumpSettingsOverride]: the correction range, in [bloodGlucoseUnits]. */
+    val bloodGlucoseTarget: BloodGlucose.Target? = null,
+    /** [SubType.PumpSettingsOverride]: set exactly when [bloodGlucoseTarget] is. */
+    val bloodGlucoseUnits: BloodGlucose.Units? = null,
+    val basalRateScaleFactor: Double? = null,
+    val carbRatioScaleFactor: Double? = null,
+    val insulinSensitivityScaleFactor: Double? = null,
 ) : BaseData(
     id = id,
     type = type,
@@ -47,5 +75,34 @@ data class DeviceEventData(
         SensorEnd,
         TransmitterStart,
         TransmitterEnd,
+        Status,
+        PumpSettingsOverride,
     }
+
+    enum class Status {
+        Suspended,
+        Resumed,
+    }
+
+    enum class StatusReason {
+        Automatic,
+        Manual,
+    }
+
+    enum class OverrideType {
+        Custom,
+        PhysicalActivity,
+        Preprandial,
+        Preset,
+        Sleep,
+    }
+
+    enum class Method {
+        Automatic,
+        Manual,
+    }
+
+    data class Payload(
+        val syncIdentifier: String,
+    )
 }

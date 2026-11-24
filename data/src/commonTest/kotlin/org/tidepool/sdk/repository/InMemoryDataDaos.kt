@@ -126,8 +126,10 @@ internal class InMemoryDeviceEventDataDao : DeviceEventDataDao {
     val table = InMemoryTable<DeviceEventDataEntity>()
     override suspend fun insert(data: DeviceEventDataEntity) = table.insert(data)
     override suspend fun delete(data: DeviceEventDataEntity) = table.delete(data)
+    override suspend fun delete(data: List<DeviceEventDataEntity>) = table.delete(data)
     override suspend fun getById(id: String) = table.getById(id)
     override suspend fun getAll() = table.getAll()
+    override suspend fun getAll(limit: Int) = table.getAll(limit)
     override suspend fun deleteAll() = table.deleteAll()
 }
 

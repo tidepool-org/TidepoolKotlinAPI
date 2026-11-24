@@ -20,7 +20,7 @@ import org.tidepool.sdk.database.entity.data.PumpStatusDataEntity
 import org.tidepool.sdk.database.entity.data.SmbgDataEntity
 
 @Database(
-    version = 4,
+    version = 5,
     exportSchema = true,
     entities = [
         BaseDataEntity::class,

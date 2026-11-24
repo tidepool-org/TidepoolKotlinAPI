@@ -272,8 +272,33 @@ private fun rewriteDurationMinutesToMilliseconds(json: String): String? = runCat
 
 private const val MILLISECONDS_PER_MINUTE = 60_000
 
+/**
+ * Version 5: device events gain what a pump's suspend and resume (`deviceEvent/status`) and a
+ * preset run (`deviceEvent/pumpSettingsOverride`) need, plus an origin and payload so a preset's
+ * later end replaces the datum sent when it started. The table is rebuilt rather than altered, so
+ * its columns match what Room expects whichever version 2 path created it; any CGM event rows
+ * still queued are kept.
+ */
+internal val MIGRATION_4_5 = object : Migration(4, 5) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        VERSION_4_TO_VERSION_5.forEach { db.execSQL(it) }
+    }
+
+    override fun migrate(connection: SQLiteConnection) {
+        VERSION_4_TO_VERSION_5.forEach { connection.execSQL(it) }
+    }
+}
+
+private val VERSION_4_TO_VERSION_5 = listOf(
+    "CREATE TABLE IF NOT EXISTS `device_event_data_new` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `time` INTEGER, `annotations` TEXT, `associations` TEXT, `clock_drift_offset` INTEGER, `conversion_offset` INTEGER, `data_set_id` TEXT, `device_time` TEXT, `notes` TEXT, `time_zone` TEXT, `time_zone_offset` INTEGER, `sub_type` TEXT NOT NULL, `device_identifier` TEXT, `expected_lifetime_seconds` REAL, `warmup_period_seconds` REAL, `failure_message` TEXT, `origin` TEXT, `payload` TEXT, `status` TEXT, `reason` TEXT, `override_type` TEXT, `override_preset` TEXT, `method` TEXT, `duration` INTEGER, `bg_target` TEXT, `units` TEXT, `basal_rate_scale_factor` REAL, `carb_ratio_scale_factor` REAL, `insulin_sensitivity_scale_factor` REAL, PRIMARY KEY(`id`))",
+    "INSERT INTO `device_event_data_new` (`id`, `type`, `time`, `annotations`, `associations`, `clock_drift_offset`, `conversion_offset`, `data_set_id`, `device_time`, `notes`, `time_zone`, `time_zone_offset`, `sub_type`, `device_identifier`, `expected_lifetime_seconds`, `warmup_period_seconds`, `failure_message`) " +
+        "SELECT `id`, `type`, `time`, `annotations`, `associations`, `clock_drift_offset`, `conversion_offset`, `data_set_id`, `device_time`, `notes`, `time_zone`, `time_zone_offset`, `sub_type`, `device_identifier`, `expected_lifetime_seconds`, `warmup_period_seconds`, `failure_message` FROM `device_event_data`",
+    "DROP TABLE `device_event_data`",
+    "ALTER TABLE `device_event_data_new` RENAME TO `device_event_data`",
+)
+
 /** Every outbox migration, oldest first. The test opens outboxes with the same list. */
-internal val OUTBOX_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+internal val OUTBOX_MIGRATIONS = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
 
 actual fun provideAlertApi(ktorfit: Ktorfit) = ktorfit.createAlertApi()
 actual fun provideAuthorizationApi(ktorfit: Ktorfit) = ktorfit.createAuthorizationApi()
