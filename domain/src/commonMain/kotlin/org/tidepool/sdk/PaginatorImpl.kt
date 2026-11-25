@@ -1,5 +1,6 @@
 package org.tidepool.sdk
 
+import co.touchlab.kermit.Logger
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.filterNotNull
@@ -32,6 +33,8 @@ internal class PaginatorImpl<Key, Item>(
     onFailure: suspend (result: Throwable) -> Unit,
     private val endReached: (result: Item, currentKey: Key) -> Boolean,
 ) : Paginator<Key, Item>(onSuccess, onFailure) {
+
+    private val TAG = javaClass.simpleName
     
     /** Internal state flow holding the accumulated list of items */
     private val _items = MutableStateFlow<List<Item>?>(null)
@@ -51,7 +54,7 @@ internal class PaginatorImpl<Key, Item>(
     override val items: Flow<List<Item>> = _items.filterNotNull()
     
     override suspend fun loadNextItems() {
-        println("Paginator: loadNextItems() called with key: $currentKey, ${requestMutex.isLocked} $isEndReached")
+        Logger.d(TAG) { "loadNextItems() called with key: $currentKey, locked: ${requestMutex.isLocked}, end reached: $isEndReached" }
         if (requestMutex.isLocked || isEndReached) {
             return
         }
