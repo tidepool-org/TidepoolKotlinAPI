@@ -76,14 +76,12 @@ class BlobService internal constructor(
     // Device logs operations
     suspend fun uploadDeviceLogs(
         userId: String,
-        digest: String,
         startAtTime: Instant,
         endAtTime: Instant,
         logs: List<DeviceLogContent>
     ): Result<DeviceLogsMetadata> = tokenProvider.getToken().flatMap {
         blobRepository.uploadDeviceLogs(
             userId = userId,
-            digest = digest,
             startAtTime = startAtTime,
             endAtTime = endAtTime,
             logs = logs,

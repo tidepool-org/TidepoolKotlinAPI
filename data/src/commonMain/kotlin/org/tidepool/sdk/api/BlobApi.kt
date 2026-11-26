@@ -2,7 +2,6 @@ package org.tidepool.sdk.api
 
 import org.tidepool.sdk.dto.blob.BlobMetadataDto
 import org.tidepool.sdk.dto.blob.BlobStatusDto
-import org.tidepool.sdk.dto.blob.DeviceLogContentDto
 import org.tidepool.sdk.dto.blob.DeviceLogsMetadataDto
 import de.jensklingenberg.ktorfit.http.Body
 import de.jensklingenberg.ktorfit.http.DELETE
@@ -56,7 +55,8 @@ interface BlobApi {
 //        @Path("blobId") blobId: String,
 //    ): ResponseBody
     
-    // Device logs operations
+    // Device logs operations. The body is the JSON array already encoded, because `digest` is the
+    // MD5 of exactly these bytes; see BlobRepositoryImpl.uploadDeviceLogs.
     @POST("v1/users/{userId}/device_logs")
     suspend fun uploadDeviceLogs(
         @Header("X-Tidepool-Session-Token") sessionToken: String,
@@ -64,7 +64,7 @@ interface BlobApi {
         @Header("Digest") digest: String,
         @Header("X-Logs-Start-At-Time") startAtTime: String,
         @Header("X-Logs-End-At-Time") endAtTime: String,
-        @Body logs: List<DeviceLogContentDto>,
+        @Body body: ByteArray,
     ): DeviceLogsMetadataDto
     
     @GET("v1/users/{userId}/device_logs")
