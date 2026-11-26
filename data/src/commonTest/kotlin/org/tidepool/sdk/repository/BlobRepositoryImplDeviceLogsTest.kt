@@ -1,11 +1,10 @@
 package org.tidepool.sdk.repository
 
-import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond
 import io.ktor.client.engine.mock.toByteArray
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.request.HttpRequestData
 import io.ktor.http.ContentType
 import io.ktor.http.HttpHeaders
@@ -13,9 +12,9 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.http.headersOf
-import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.test.runTest
 import org.tidepool.sdk.Environment
+import org.tidepool.sdk.di.createTidepoolHttpClient
 import org.tidepool.sdk.di.createTidepoolJson
 import org.tidepool.sdk.dto.blob.DeviceLogTypeDto
 import org.tidepool.sdk.model.blob.DeviceLogContent
@@ -130,21 +129,22 @@ class BlobRepositoryImplDeviceLogsTest {
         val json = createTidepoolJson()
         return BlobRepositoryImpl(
             environmentRepository = TestEnvironmentRepository,
-            httpClient = HttpClient(MockEngine { request ->
-                requests += request
-                bodies += request.body.toByteArray()
-                respond(content = listBody, status = HttpStatusCode.OK, headers = jsonHeaders)
-            }) {
-                // The parts of the production client (DataModule) this path relies on.
-                expectSuccess = true
-                install(ContentNegotiation) { json(json) }
-                defaultRequest {
-                    headers.append("Content-Type", "application/json")
-                    contentType(ContentType.Application.Json)
-                }
-            },
+            httpClient = createTidepoolHttpClient(
+                engine = MockEngine { request ->
+                    requests += request
+                    bodies += request.body.toByteArray()
+                    respond(content = listBody, status = HttpStatusCode.OK, headers = jsonHeaders)
+                },
+                tidepoolJson = json,
+                httpLogger = NoLogger,
+                logLevel = LogLevel.NONE,
+            ),
             json = json,
         )
+    }
+
+    private object NoLogger : Logger {
+        override fun log(message: String) = Unit
     }
 
     private object TestEnvironmentRepository : EnvironmentRepository {
