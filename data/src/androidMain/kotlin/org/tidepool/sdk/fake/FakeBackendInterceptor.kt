@@ -28,11 +28,15 @@ internal class FakeBackendInterceptor(
             return chain.proceed(request)
         }
 
+        val body = request.body?.let { Buffer().also(it::writeTo).readByteArray() }
         val fakeResponse = FakeBackendResponses.respond(
             method = request.method,
             pathSegments = request.url.pathSegments,
+            body = body,
+            header = request::header,
+            now = now(),
         )
-        record(request, fakeResponse)
+        record(request, body, fakeResponse)
 
         return Response.Builder()
             .request(request)
@@ -46,14 +50,14 @@ internal class FakeBackendInterceptor(
 
     // A throw here would escape on OkHttp's dispatcher thread and crash the app, so a failing
     // recorder only costs the log entry.
-    private fun record(request: Request, response: FakeResponse) = runCatching {
+    private fun record(request: Request, body: ByteArray?, response: FakeResponse) = runCatching {
         recorder.record(
             RecordedRequest(
                 time = now(),
                 method = request.method,
                 url = request.url.toString(),
                 status = response.status,
-                requestBody = request.body?.let { body -> Buffer().also(body::writeTo).readUtf8() },
+                requestBody = body?.decodeToString(),
                 responseBody = response.body,
             )
         )

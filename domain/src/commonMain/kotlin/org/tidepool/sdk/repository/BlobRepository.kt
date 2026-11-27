@@ -47,7 +47,6 @@ interface BlobRepository {
     // Device logs operations
     suspend fun uploadDeviceLogs(
         userId: String,
-        digest: String,
         startAtTime: Instant,
         endAtTime: Instant,
         logs: List<DeviceLogContent>,

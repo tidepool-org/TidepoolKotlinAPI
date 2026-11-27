@@ -6,6 +6,7 @@ import kotlinx.serialization.Serializable
 import org.tidepool.sdk.model.blob.DeviceLogContent
 import org.tidepool.sdk.model.blob.DeviceLogType
 import org.tidepool.sdk.model.blob.DeviceLogsMetadata
+import org.tidepool.sdk.util.TidepoolTimeStringSerializer
 import kotlin.time.Instant
 
 @Serializable
@@ -42,19 +43,23 @@ fun DeviceLogsMetadataDto.toDomain(): DeviceLogsMetadata = DeviceLogsMetadata(
     endAtTime = endAtTime
 )
 
+/**
+ * Property order is alphabetical on purpose: the body is hashed and must be byte-identical to
+ * iOS's `.sortedKeys` output.
+ */
 @Serializable
 data class DeviceLogContentDto(
-    @SerialName("type")
-    val type: DeviceLogTypeDto,
-    @SerialName("managerIdentifier")
-    val managerIdentifier: String,
     @SerialName("deviceIdentifier")
     val deviceIdentifier: String,
-    @Contextual
+    @SerialName("managerIdentifier")
+    val managerIdentifier: String,
+    @SerialName("message")
+    val message: String,
+    @Serializable(with = TidepoolTimeStringSerializer::class)
     @SerialName("timestamp")
     val timestamp: Instant,
-    @SerialName("message")
-    val message: String
+    @SerialName("type")
+    val type: DeviceLogTypeDto,
 )
 
 fun DeviceLogContent.toDto() = DeviceLogContentDto(

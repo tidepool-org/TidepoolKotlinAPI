@@ -1,7 +1,10 @@
 package org.tidepool.sdk.repository
 
 import io.ktor.client.HttpClient
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import org.tidepool.sdk.api.BlobApi
+import org.tidepool.sdk.dto.blob.DeviceLogContentDto
 import org.tidepool.sdk.dto.blob.toDomain
 import org.tidepool.sdk.dto.blob.toDto
 import org.tidepool.sdk.di.provideBlobApi
@@ -9,11 +12,14 @@ import org.tidepool.sdk.mapList
 import org.tidepool.sdk.model.blob.BlobStatus
 import org.tidepool.sdk.model.blob.DeviceLogContent
 import org.tidepool.sdk.runCatchingNetworkExceptions
+import org.tidepool.sdk.util.md5Base64
+import org.tidepool.sdk.util.toTidepoolTimeString
 import kotlin.time.Instant
 
 class BlobRepositoryImpl(
     private val environmentRepository: EnvironmentRepository,
     private val httpClient: HttpClient,
+    private val json: Json,
 ) : BlobRepository {
 
     private val blobApi: BlobApi
@@ -84,19 +90,23 @@ class BlobRepositoryImpl(
     
     override suspend fun uploadDeviceLogs(
         userId: String,
-        digest: String,
         startAtTime: Instant,
         endAtTime: Instant,
         logs: List<DeviceLogContent>,
         sessionToken: String,
     ) = runCatchingNetworkExceptions {
+        // Encode once: the Digest header is the MD5 of these exact bytes, and they are what is sent.
+        val body = json.encodeToString(
+            ListSerializer(DeviceLogContentDto.serializer()),
+            logs.map { it.toDto() },
+        ).encodeToByteArray()
         blobApi.uploadDeviceLogs(
             sessionToken = sessionToken,
             userId = userId,
-            digest = digest,
-            startAtTime = startAtTime.toString(),
-            endAtTime = endAtTime.toString(),
-            logs = logs.map { it.toDto() },
+            digest = "MD5=${md5Base64(body)}",
+            startAtTime = startAtTime.toTidepoolTimeString(),
+            endAtTime = endAtTime.toTidepoolTimeString(),
+            body = body,
         )
     }.map { it.toDomain() }
     
@@ -109,8 +119,8 @@ class BlobRepositoryImpl(
         blobApi.listDeviceLogs(
             sessionToken = sessionToken,
             userId = userId,
-            startAtTime = startAtTime.toString(),
-            endAtTime = endAtTime.toString()
+            startAtTime = startAtTime.toTidepoolTimeString(),
+            endAtTime = endAtTime.toTidepoolTimeString()
         )
     }.mapList { it.toDomain() }
 }

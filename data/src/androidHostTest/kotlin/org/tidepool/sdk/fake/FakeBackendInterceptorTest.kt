@@ -81,8 +81,62 @@ class FakeBackendInterceptorTest {
         assertTrue(response.body.string().contains(FakeBackendResponses.USER_ID))
     }
 
+    @Test
+    fun `device logs list is empty`() {
+        val client = clientWith(FakeBackendInterceptor(recorder = { recorded += it }))
+
+        val response = client.newCall(
+            Request.Builder().url("https://${Environment.Fake.url}/v1/users/fake-user/device_logs").build()
+        ).execute()
+
+        assertEquals(200, response.code)
+        assertEquals("[]", response.body.string())
+    }
+
+    @Test
+    fun `device logs with a matching digest are created`() {
+        val client = clientWith(FakeBackendInterceptor(recorder = { recorded += it }, now = { fixedNow }))
+
+        val response = client.newCall(deviceLogsRequest(digest = "MD5=$DEVICE_LOGS_MD5")).execute()
+
+        assertEquals(201, response.code)
+        assertEquals(
+            """{"id":"fake-device-logs","userId":"fake-user","digestMD5":"$DEVICE_LOGS_MD5",""" +
+                """"mediaType":"application/json","size":17,"createdTime":"2026-09-29T10:00:00Z",""" +
+                """"startAtTime":"2026-09-29T08:00:00.000Z","endAtTime":"2026-09-29T09:00:00.000Z"}""",
+            response.body.string(),
+        )
+        assertEquals(DEVICE_LOGS_BODY, recorded.single().requestBody)
+    }
+
+    @Test
+    fun `device logs with a digest that does not match the body are rejected`() {
+        val client = clientWith(FakeBackendInterceptor(recorder = { recorded += it }))
+
+        val response = client.newCall(deviceLogsRequest(digest = "MD5=AAAAAAAAAAAAAAAAAAAAAA==")).execute()
+
+        assertEquals(400, response.code)
+        assertTrue(response.body.string().contains("digests-not-equal"))
+        assertEquals(400, recorded.single().status)
+    }
+
+    private fun deviceLogsRequest(digest: String) = Request.Builder()
+        .url("https://${Environment.Fake.url}/v1/users/fake-user/device_logs")
+        .header("Digest", digest)
+        .header("X-Logs-Start-At-Time", "2026-09-29T08:00:00.000Z")
+        .header("X-Logs-End-At-Time", "2026-09-29T09:00:00.000Z")
+        .post(DEVICE_LOGS_BODY.toRequestBody("application/json".toMediaType()))
+        .build()
+
     private fun clientWith(interceptor: FakeBackendInterceptor) = OkHttpClient.Builder()
         .addInterceptor(interceptor)
         .addInterceptor(network)
         .build()
+
+    private companion object {
+        const val DEVICE_LOGS_BODY = """[{"type":"send"}]"""
+
+        // printf '[{"type":"send"}]' | openssl md5 -binary | base64
+        const val DEVICE_LOGS_MD5 = "oR0/4YWID8W/FiqpMzEBng=="
+    }
 }

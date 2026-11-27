@@ -5,6 +5,8 @@ import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import org.tidepool.sdk.util.md5Base64
+import kotlin.time.Instant
 
 internal data class FakeResponse(
     val status: Int,
@@ -21,10 +23,21 @@ internal object FakeBackendResponses {
     const val USER_ID = "fake-user"
     const val USERNAME = "fake@tidepool.invalid"
     const val DATA_SET_ID = "fake-data-set"
+    const val DEVICE_LOGS_ID = "fake-device-logs"
 
     private const val ANY = "*"
 
-    fun respond(method: String, pathSegments: List<String>): FakeResponse {
+    /**
+     * [body] and [header] matter only for device logs, whose `Digest` header is checked against
+     * the body bytes the way the platform checks it.
+     */
+    fun respond(
+        method: String,
+        pathSegments: List<String>,
+        body: ByteArray? = null,
+        header: (String) -> String? = { null },
+        now: Instant = Instant.fromEpochMilliseconds(0),
+    ): FakeResponse {
         val path = pathSegments.filter { it.isNotEmpty() }
         return when {
             method == "GET" && (path.matches("auth", "user") || path.matches("auth", "user", ANY)) ->
@@ -53,6 +66,12 @@ internal object FakeBackendResponses {
 
             method == "GET" && path.matches("v1", "patients", ANY, "prescriptions") -> ok(JsonArray(emptyList()))
 
+            // Stateless like the rest: nothing is ever listed, so the uploader resumes two days back each run.
+            method == "GET" && path.matches("v1", "users", ANY, "device_logs") -> ok(JsonArray(emptyList()))
+
+            method == "POST" && path.matches("v1", "users", ANY, "device_logs") ->
+                deviceLogsCreated(body ?: ByteArray(0), header, now)
+
             else -> response(
                 status = 404,
                 reason = "Not Found",
@@ -62,6 +81,34 @@ internal object FakeBackendResponses {
                 },
             )
         }
+    }
+
+    private fun deviceLogsCreated(body: ByteArray, header: (String) -> String?, now: Instant): FakeResponse {
+        val digest = md5Base64(body)
+        if (header("Digest") != "MD5=$digest") {
+            return response(
+                status = 400,
+                reason = "Bad Request",
+                body = buildJsonObject {
+                    put("code", "digests-not-equal")
+                    put("message", "The Digest header does not match the MD5 of the body")
+                },
+            )
+        }
+        return response(
+            status = 201,
+            reason = "Created",
+            body = buildJsonObject {
+                put("id", DEVICE_LOGS_ID)
+                put("userId", USER_ID)
+                put("digestMD5", digest)
+                put("mediaType", "application/json")
+                put("size", body.size)
+                put("createdTime", now.toString())
+                put("startAtTime", header("X-Logs-Start-At-Time"))
+                put("endAtTime", header("X-Logs-End-At-Time"))
+            },
+        )
     }
 
     private fun ok(body: JsonElement) = response(status = 200, reason = "OK", body = body)
