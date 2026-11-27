@@ -417,7 +417,7 @@ private fun PumpSettingsDataDto.DisplayDto.toDomain() = PumpSettingsData.Display
 
 private fun PumpSettingsData.Display.toDto() = PumpSettingsDataDto.DisplayDto(bloodGlucose = bloodGlucose?.toDto())
 
-private fun PumpSettingsDataDto.InsulinModelDto.ModelTypeDto.toDomain(): PumpSettingsData.InsulinModel.ModelType = when (this) {
+internal fun PumpSettingsDataDto.InsulinModelDto.ModelTypeDto.toDomain(): PumpSettingsData.InsulinModel.ModelType = when (this) {
     PumpSettingsDataDto.InsulinModelDto.ModelTypeDto.Fiasp -> PumpSettingsData.InsulinModel.ModelType.Fiasp
     PumpSettingsDataDto.InsulinModelDto.ModelTypeDto.Other -> PumpSettingsData.InsulinModel.ModelType.Other
     PumpSettingsDataDto.InsulinModelDto.ModelTypeDto.RapidAdult -> PumpSettingsData.InsulinModel.ModelType.RapidAdult

@@ -1,5 +1,6 @@
 package org.tidepool.sdk.model.prescription
 
+import org.tidepool.sdk.model.data.PumpSettingsData
 import kotlin.time.Instant
 
 data class Prescription(
@@ -33,6 +34,8 @@ data class InitialSettings(
     val cgmId: String?,
     val pumpId: String?,
     val preMealTargetRange: GlucoseTargetRange? = null,
+    /** The prescribed insulin model, typed as TidepoolKit types it: `TPumpSettingsDatum.InsulinModel.ModelType`. */
+    val insulinModel: PumpSettingsData.InsulinModel.ModelType? = null,
 )
 
 data class GlucoseTarget(val startSeconds: Long, val low: Double, val high: Double)

@@ -2,6 +2,8 @@ package org.tidepool.sdk.dto.prescription
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.tidepool.sdk.dto.data.PumpSettingsDataDto
+import org.tidepool.sdk.dto.data.toDomain
 import org.tidepool.sdk.model.prescription.BasalRate
 import org.tidepool.sdk.model.prescription.CarbRatio
 import org.tidepool.sdk.model.prescription.ClaimedPrescription
@@ -98,6 +100,7 @@ internal fun InitialSettingsDto.toDomain(): InitialSettings = InitialSettings(
     preMealTargetRange = bloodGlucoseTargetPreprandial?.run {
         if (low != null && high != null && target == null && range == null) GlucoseTargetRange(low, high) else null
     },
+    insulinModel = insulinModel?.toDomain(),
 )
 
 internal fun Prescription.toDto(): PrescriptionDto = PrescriptionDto(
@@ -141,6 +144,8 @@ data class InitialSettingsDto(
     @SerialName("cgmId") val cgmId: String? = null,
     @SerialName("pumpId") val pumpId: String? = null,
     @SerialName("bloodGlucoseTargetPreprandial") val bloodGlucoseTargetPreprandial: GlucoseTargetDto? = null,
+    // A value this version doesn't know decodes as null (coerceInputValues), not as a failed claim.
+    @SerialName("insulinModel") val insulinModel: PumpSettingsDataDto.InsulinModelDto.ModelTypeDto? = null,
 )
 
 @Serializable
