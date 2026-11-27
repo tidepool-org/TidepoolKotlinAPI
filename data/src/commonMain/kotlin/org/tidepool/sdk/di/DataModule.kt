@@ -271,7 +271,10 @@ internal fun createTidepoolHttpClient(
         }
 
         install(Logging) {
-            logger = httpLogger
+            // Blank identifiers first, so a logger that splits long lines can't cut one in two.
+            logger = object : Logger {
+                override fun log(message: String) = httpLogger.log(redactIdentifiers(message))
+            }
             level = logLevel
             sanitizeHeader { it == SESSION_TOKEN_HEADER }
         }

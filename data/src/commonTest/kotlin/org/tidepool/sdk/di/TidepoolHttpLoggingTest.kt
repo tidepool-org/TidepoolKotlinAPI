@@ -43,7 +43,17 @@ class TidepoolHttpLoggingTest {
         assertFalse(log.contains("secret-token"), log)
     }
 
-    private suspend fun upload(logLevel: LogLevel) {
+    @Test
+    fun `identifiers in the URL are blanked before the logger gets the line`() = runTest {
+        upload(LogLevel.INFO, url = "https://test.invalid/v1/users/1a2b3c4d5e/data_sets?email=person%40example.org&limit=1")
+
+        val log = logged.joinToString("\n")
+        assertTrue(log.contains("v1/users/***/data_sets?email=***&limit=1"), log)
+        assertFalse(log.contains("1a2b3c4d5e"), log)
+        assertFalse(log.contains("example.org"), log)
+    }
+
+    private suspend fun upload(logLevel: LogLevel, url: String = "https://test.invalid/v1/data_sets/data-set/data") {
         val client = createTidepoolHttpClient(
             engine = MockEngine {
                 respond(
@@ -60,7 +70,7 @@ class TidepoolHttpLoggingTest {
             },
             logLevel = logLevel,
         )
-        client.post("https://test.invalid/v1/data_sets/data-set/data") {
+        client.post(url) {
             header("X-Tidepool-Session-Token", "secret-token")
             setBody("""[{"type":"cbg","id":"glucose-reading"}]""")
         }
