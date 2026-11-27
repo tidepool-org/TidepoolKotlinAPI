@@ -55,7 +55,7 @@ internal fun BaseDataEntity.toDomain(): BaseData = when (this) {
 }
 
 internal fun BaseDataEntity.toDto(): BaseDataDto {
-    Logger.d("BaseDataEntity") { "toDto(): ${javaClass.simpleName}, ${annotations?.let { "\"$it\"" }}"}
+    Logger.d("BaseDataEntity") { "toDto(): ${javaClass.simpleName}" }
     return when (this) {
         is BasalAutomatedDataEntity -> toDto()
         is BolusDataEntity -> toDto()

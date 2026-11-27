@@ -215,7 +215,7 @@ class DataService internal constructor(
     suspend fun createDataSet(newDataSet: NewDataSet): Result<DataSet> =
         tokenProvider.getToken().flatMap { token ->
             userRepository.getCurrentUser(token).flatMap { user ->
-                Logger.d(TAG) { "Creating data set for user: ${user.userId}" }
+                Logger.d(TAG) { "Creating data set" }
                 dataRepository.createDataSet(
                     userId = user.userId,
                     newDataSet = newDataSet,
@@ -437,9 +437,6 @@ class DataService internal constructor(
         uploadDataToDataSet(data = data)
             .onSuccess {
                 Logger.d(TAG) { "${data.map { it.javaClass.simpleName }} saved for upload" }
-                Logger.v(TAG) {
-                    "${data.map { "${it.javaClass.simpleName}: ${it.annotations}" }} saved for upload"
-                }
             }
             .onFailure {
                 Logger.e(
@@ -470,12 +467,12 @@ class DataService internal constructor(
             dataSets
                 .firstOrNull { it.client?.name == clientInfo.name && it.deletedTime == null }
                 ?.let {
-                    Logger.d(TAG) { "Found existing data set with id: ${it.id}" }
+                    Logger.d(TAG) { "Found existing data set" }
                     Result.success(it)
                 }
                 ?: createDataSet(newDataSet = newContinuousDataSet(clientInfo = clientInfo))
         }.flatMap {
-            Logger.d(TAG) { "Created data set: ${it.id}" }
+            Logger.d(TAG) { "Created data set" }
             it.id?.let { Result.success(it) }
                 ?: Result.failure(IllegalStateException("No id"))
         }

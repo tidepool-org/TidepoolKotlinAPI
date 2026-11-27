@@ -32,8 +32,8 @@ import org.tidepool.sdk.api.createUserApi
 import de.jensklingenberg.ktorfit.Ktorfit
 import io.ktor.client.engine.HttpClientEngine
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.plugins.logging.ANDROID
 import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.MessageLengthLimitingLogger
 import org.tidepool.sdk.AndroidKeyValueStorage
 import org.tidepool.sdk.DnsResolver
 import org.tidepool.sdk.DnsResolverImpl
@@ -54,7 +54,7 @@ actual val platformDataModule: Module
                 .build()
         }
         single<Logger> {
-            Logger.ANDROID
+            MessageLengthLimitingLogger(delegate = KermitHttpLogger())
         }
         single<KeyValueStorage> {
             AndroidKeyValueStorage(context = get())
